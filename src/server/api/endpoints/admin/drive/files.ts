@@ -7,7 +7,7 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: false as const,
-	requireModerator: true,
+	requireAdmin: true,
 
 	params: {
 		limit: {
