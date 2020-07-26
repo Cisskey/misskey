@@ -578,7 +578,7 @@ export default Vue.extend({
 					}]
 					: []
 				),
-				...(this.appearNote.userId == this.$store.state.i.id || this.$store.state.i.isModerator || this.$store.state.i.isAdmin ? [
+				...(this.appearNote.userId == this.$store.state.i.id || this.$store.state.i.isAdmin ? [
 					null,
 					this.appearNote.userId == this.$store.state.i.id ? {
 						icon: faEdit,
