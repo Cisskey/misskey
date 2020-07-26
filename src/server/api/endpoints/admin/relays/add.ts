@@ -11,7 +11,7 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true as const,
-	requireModerator: true as const,
+	requireAdmin: true as const,
 
 	params: {
 		inbox: {
