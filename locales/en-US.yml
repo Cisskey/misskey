@@ -571,6 +571,7 @@ delayed: "Delayed"
 database: "Database"
 channel: "Channel"
 create: "Create"
+momentum: "Momentum"
 _serverDisconnectedBehavior:
   reload: "Automatically reload"
   dialog: "Show warning dialog"

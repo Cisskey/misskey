@@ -59,6 +59,10 @@
 					<dt>{{ $t('weekOverWeekChanges') }}</dt>
 					<dd>{{ notesLocalWoW | number }}</dd>
 				</dl>
+				<dl>
+					<dt>{{ $t('momentum') }}</dt>
+					<dd>{{ info.originalNotesMomentumCount | number }}</dd>
+				</dl>
 			</div>
 		</div>
 		<div class="_panel">

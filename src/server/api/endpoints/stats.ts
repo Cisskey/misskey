@@ -1,6 +1,7 @@
 import define from '../define';
 import { Notes, Users } from '../../../models';
 import { federationChart, driveChart } from '../../../services/chart';
+import { Raw } from 'typeorm';
 
 export const meta = {
 	requireCredential: false as const,
@@ -28,6 +29,11 @@ export const meta = {
 				optional: false as const, nullable: false as const,
 				description: 'The count of all local notes of this instance.',
 			},
+			originalNotesMomentumCount: {
+				type: 'number' as const,
+				optional: false as const, nullable: false as const,
+				description: 'The momentum count per min of all local notes of this instance.',
+			},
 			usersCount: {
 				type: 'number' as const,
 				optional: false as const, nullable: false as const,
@@ -50,6 +56,7 @@ export const meta = {
 export default define(meta, async () => {
 	const [notesCount,
 		originalNotesCount,
+		originalNotesMomentumCount,
 		usersCount,
 		originalUsersCount,
 		instances,
@@ -58,6 +65,12 @@ export default define(meta, async () => {
 	] = await Promise.all([
 		Notes.count({ cache: 3600000 }), // 1 hour
 		Notes.count({ where: { userHost: null }, cache: 3600000 }),
+		Notes.count({
+			where: {
+				userHost: null,
+				createdAt: Raw(column => `${column} > NOW() - interval '1 minute'`),
+			}}
+		),
 		Users.count({ cache: 3600000 }),
 		Users.count({ where: { host: null }, cache: 3600000 }),
 		federationChart.getChart('hour', 1, null).then(chart => chart.instance.total[0]),
@@ -68,6 +81,7 @@ export default define(meta, async () => {
 	return {
 		notesCount,
 		originalNotesCount,
+		originalNotesMomentumCount,
 		usersCount,
 		originalUsersCount,
 		instances,
