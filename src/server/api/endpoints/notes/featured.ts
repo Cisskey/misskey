@@ -55,6 +55,7 @@ export default define(meta, async (ps, user) => {
 
 	let notes = await query
 		.orderBy('note.score', 'DESC')
+		.addOrderBy('note.createdAt', 'DESC')
 		.take(max)
 		.getMany();
 
