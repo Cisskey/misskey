@@ -23,7 +23,7 @@ export default Vue.extend({
 	methods: {
 		search() {
 			const engine = this.$store.state.settings.webSearchEngine ||
-				'https://www.google.com/?#q={{query}}';
+				'https://www.google.com/search?q={{query}}';
 			const url = engine.replace('{{query}}', this.query)
 			window.open(url, '_blank');
 		}
