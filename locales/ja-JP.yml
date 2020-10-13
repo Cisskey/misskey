@@ -577,6 +577,8 @@ useGlobalSettingDesc: "オンにすると、アカウントの通知設定が使
 autoShowCwContent: "CW 投稿の自動展開"
 webhookNotification: "Webhook 通知"
 momentum: "勢い"
+featuredNgWord: "ハイライト NG ワード"
+featuredNgWordDescription: "キーワードを改行区切りで入力してください。ここで登録したキーワードが含まれるノートはハイライトから除外されます。"
 
 _serverDisconnectedBehavior:
   reload: "自動でリロード"

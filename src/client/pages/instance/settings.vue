@@ -139,6 +139,18 @@
 	</section>
 
 	<section class="_card _vMargin">
+		<div class="_title"><fa :icon="faCommentSlash"/> {{ $t('featuredNgWord') }}</div>
+		<div class="_content">
+			<mk-textarea v-model="featuredNgWords">
+				<template #desc>{{ $t('featuredNgWordDescription') }}</template>
+			</mk-textarea>
+		</div>
+		<div class="_footer">
+			<mk-button primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
+		</div>
+	</section>
+
+	<section class="_card _vMargin">
 		<div class="_title"><fa :icon="faCloud"/> {{ $t('files') }}</div>
 		<div class="_content">
 			<mk-switch v-model="cacheRemoteFiles">{{ $t('cacheRemoteFiles') }}<template #desc>{{ $t('cacheRemoteFilesDescription') }}</template></mk-switch>
@@ -245,7 +257,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { faPencilAlt, faShareAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway } from '@fortawesome/free-solid-svg-icons';
+import { faPencilAlt, faShareAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway, faCommentSlash } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt, faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { faTwitter, faDiscord, faGithub } from '@fortawesome/free-brands-svg-icons';
 import MkButton from '../../components/ui/button.vue';
@@ -335,7 +347,8 @@ export default Vue.extend({
 			smtpUser: '',
 			smtpPass: '',
 			summalyProxy: '',
-			faPencilAlt, faTwitter, faDiscord, faGithub, faShareAlt, faTrashAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faEnvelope, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway
+			featuredNgWords: '',
+			faPencilAlt, faTwitter, faDiscord, faGithub, faShareAlt, faTrashAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faEnvelope, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway, faCommentSlash
 		}
 	},
 
@@ -404,6 +417,7 @@ export default Vue.extend({
 		this.smtpUser = this.meta.smtpUser;
 		this.smtpPass = this.meta.smtpPass;
 		this.summalyProxy = this.meta.summalyProxy;
+		this.featuredNgWords = this.meta.featuredNgWords.join('\n');
 
 		if (this.proxyAccountId) {
 			this.$root.api('users/show', { userId: this.proxyAccountId }).then(proxyAccount => {
@@ -557,6 +571,7 @@ export default Vue.extend({
 				smtpPass: this.smtpPass,
 				summalyProxy: this.summalyProxy,
 				useStarForReactionFallback: this.useStarForReactionFallback,
+				featuredNgWords: this.featuredNgWords ? this.featuredNgWords.trim().split('\n').map(x => x.trim()) : [],
 			}).then(() => {
 				this.$store.dispatch('instance/fetch');
 				if (withDialog) {

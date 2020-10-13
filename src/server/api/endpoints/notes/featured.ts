@@ -2,6 +2,7 @@ import $ from 'cafy';
 import define from '../../define';
 import { generateMutedUserQuery } from '../../common/generate-muted-user-query';
 import { Notes } from '../../../../models';
+import { fetchMeta } from '../../../../misc/fetch-meta';
 
 export const meta = {
 	desc: {
@@ -48,8 +49,18 @@ export default define(meta, async (ps, user) => {
 		.where('note.userHost IS NULL')
 		.andWhere(`note.score > 0`)
 		.andWhere(`note.createdAt > :date`, { date: new Date(Date.now() - day) })
-		.andWhere(`note.visibility = 'public'`)
-		.leftJoinAndSelect('note.user', 'user');
+		.andWhere(`note.visibility = 'public'`);
+
+	const meta = await fetchMeta();
+	const featuredNgWords = meta.featuredNgWords;
+	if (featuredNgWords !== []){
+		for (const word of featuredNgWords) {
+			query.andWhere(`COALESCE(note.text, '') NOT ILIKE '%${word}%'`);
+			query.andWhere(`COALESCE(note.cw, '') NOT ILIKE '%${word}%'`);
+		}
+	}
+
+	query.leftJoinAndSelect('note.user', 'user');
 
 	if (user) generateMutedUserQuery(query, user);
 
