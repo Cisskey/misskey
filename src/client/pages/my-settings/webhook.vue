@@ -2,7 +2,8 @@
 <section class="_card">
 	<div class="_title"><fa :icon="faLink"/> {{ $t('webhookNotification') }}</div>
 		<div class="_content">
-		<mk-info>{{ $t('_webhookNotification.description')}}</mk-info>
+		<mk-info>{{ $t('_webhookNotification.descriptionForUser')}}</mk-info>
+		<mk-info>{{ $t('_webhookNotification.descriptionForBot')}}</mk-info>
 		<mk-switch v-model="enableWebhook">
 			{{ $t('_webhookNotification.enable') }}
 		</mk-switch>
@@ -12,7 +13,8 @@
 		</mk-input>
 	</div>
 	<div class="_footer">
-		<mk-button @click="test()" inline :disabled="!url">{{ $t('_webhookNotification.test') }}</mk-button>
+		<mk-button @click="test('notification')" inline :disabled="!url">{{ $t('_webhookNotification.testNormal') }}</mk-button>
+		<mk-button @click="test('unreadMessagingMessage')" inline :disabled="!url">{{ $t('_webhookNotification.testMessage') }}</mk-button>
 		<mk-button @click="save(true)" primary inline :disabled="!changed"><fa :icon="faSave"/> {{ $t('save') }}</mk-button>
 	</div>
 </section>
@@ -26,6 +28,7 @@ import MkButton from '../../components/ui/button.vue';
 import MkInput from '../../components/ui/input.vue';
 import MkSwitch from '../../components/ui/switch.vue';
 import MkInfo from '../../components/ui/info.vue';
+import { notificationType } from '../../../services/push-notification';
 
 export default Vue.extend({
 	components: {
@@ -34,7 +37,7 @@ export default Vue.extend({
 		MkSwitch,
 		MkInfo,
 	},
-	
+
 	data() {
 		return {
 			enableWebhook: this.$store.state.i.enableWebhookNotification,
@@ -75,10 +78,12 @@ export default Vue.extend({
 			});
 		},
 
-		async test() {
+		async test(type: notificationType) {
 			await this.save(false);
 			// ここではジョブキューに追加するだけにして、送信エラーは"通知"でユーザーに知らせる
-			this.$root.api('notifications/webhook-test').then(() => {
+			this.$root.api('notifications/webhook-test', {
+				type: type
+			}).then(() => {
 				console.log('postJobQueue Add');
 			}).catch((err) => {
 				this.$root.dialog({

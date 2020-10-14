@@ -18,7 +18,7 @@ export default async (job: Bull.Job<PostWebhookJobData>) => {
 		},
 		agent: getAgentByUrl(job.data.url) as any,
 		// TODO: Webhook 通知で使われる言語を設定画面で変更できるように
-		body: buildWebhookBody(job.data.type, job.data.body, locale['ja-JP']),
+		body: buildWebhookBody(job.data.type, job.data.body, locale['ja-JP'], job.data.isBot),
 	})
 	.catch(() => {
 		throw 'network error (server side) or illegal URL';
@@ -43,7 +43,11 @@ export default async (job: Bull.Job<PostWebhookJobData>) => {
 };
 
 
-const buildWebhookBody = (type: notificationType, body: any, locale: any) => {
+const buildWebhookBody = (type: notificationType, body: any, locale: any, isBot: boolean) => {
+	if (isBot) {
+		return JSON.stringify(body);
+	}
+
 	let typeText = '';
 	let quoteText = '';
 	// 通知送信者のユーザー名 (ex. user)

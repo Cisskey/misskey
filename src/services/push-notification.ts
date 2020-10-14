@@ -8,7 +8,8 @@ import { postWebhookJob } from '../queue';
 import { UserProfiles } from '../models';
 import { ensure } from '../prelude/ensure';
 
-export type notificationType = 'notification' | 'unreadMessagingMessage';
+export const notification = ['notification', 'unreadMessagingMessage'] as const;
+export type notificationType = typeof notification[number];
 export type notificationBody = PackedNotification | PackedMessagingMessage;
 
 export default async function(userId: string, type: notificationType, body: notificationBody) {
@@ -16,7 +17,7 @@ export default async function(userId: string, type: notificationType, body: noti
 
 	const profile = await UserProfiles.findOne({userId: userId}).then(ensure);
 	if (meta.enableWebhookNotification && profile.enableWebhookNotification && profile.webhookUrl != null) {
-		postWebhookJob(userId, type, body, profile.webhookUrl);
+		postWebhookJob(userId, type, body);
 	}
 
 	if (!meta.enableServiceWorker || meta.swPublicKey == null || meta.swPrivateKey == null) return;
