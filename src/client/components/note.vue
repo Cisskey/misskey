@@ -279,7 +279,7 @@ export default Vue.extend({
 			}
 		}
 
-		if (this.appearNote.cw || this.appearNote.cw === '') {
+		if (this.appearNote.cw != null) {
 			this.showContent = this.$store.state.device.autoShowCwContentAll ||
 				(this.$store.state.device.showCwWords as string[])
 					.some(word => this.appearNote.cw.includes(word) || this.appearNote.text.includes(word));
