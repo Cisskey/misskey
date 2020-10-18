@@ -12,6 +12,7 @@ import MkGoogle from './google.vue';
 import { host } from '@/config';
 import { RouterLink } from 'vue-router';
 import 'prismjs/themes/prism-okaidia.css';
+import 'animate.css/animate.min.css';
 
 function toDirection(attr: string): string {
 	switch (attr) {
@@ -129,11 +130,12 @@ export default defineComponent({
 					const iteration = attrs.length > 1 ? attrs[1] : 'infinite';
 
 					return h('span', {
-						style: 'display: inline-block;',
-						directives: [this.$store.state.device.animatedMfm ? {
-							name: 'animate-css',
-							value: { classes: animation, iteration }
-						} : {}]
+						class: 'animate__animated',
+						style: {
+							display: 'inline-block',
+							animationName: animation,
+							animationIterationCount: iteration,
+						}
 					}, genEl(token.children));
 				}
 
