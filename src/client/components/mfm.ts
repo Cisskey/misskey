@@ -127,10 +127,8 @@ export default defineComponent({
 					const animation = attrs.length > 0 ? attrs[0] : animations[Math.floor(animations.length * Math.random())];
 					const iteration = attrs.length > 1 ? attrs[1] : 'infinite';
 
-					return (createElement as any)('span', {
-						attrs: {
-							style: 'display: inline-block;'
-						},
+					return h('span', {
+						style: 'display: inline-block;'
 						directives: [this.$store.state.device.animatedMfm ? {
 							name: 'animate-css',
 							value: { classes: animation, iteration }
@@ -154,10 +152,8 @@ export default defineComponent({
 					const duration = attrs.length > 1 ? attrs[1] : '3s';
 					const style = this.$store.state.device.animatedMfm
 						? `animation: slide ${duration} linear infinite; animation-direction: ${direction};` : '';
-					return (createElement as any)('span', {
-						attrs: {
-							style: 'display: inline-block;' + style
-						},
+					return h('span', {
+						style: 'display: inline-block;' + style
 					}, genEl(token.children));
 				}
 
