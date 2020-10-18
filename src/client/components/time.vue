@@ -1,8 +1,8 @@
 <template>
 <time class="mk-time" :title="absolute" v-tooltip="typeof time == 'string' ? new Date(time).toLocaleString() : time.toLocaleString()">
-	<template v-if="mode == 'relative'">{{ relative }}</template>
-	<template v-else-if="mode == 'absolute'">{{ absolute }}</template>
-	<template v-else-if="mode == 'detail'">{{ absolute }} ({{ relative }})</template>
+	<template v-if="_mode == 'relative'">{{ relative }}</template>
+	<template v-else-if="_mode == 'absolute'">{{ absolute }}</template>
+	<template v-else-if="_mode == 'detail'">{{ absolute }} ({{ relative }})</template>
 </time>
 </template>
 
@@ -17,13 +17,6 @@ export default defineComponent({
 		},
 		mode: {
 			type: String,
-			default: function(m: string) {
-				if (m === undefined) {
-					return this.$store.state.device.timestampFormat;
-				} else {
-					return m;
-				}
-			}
 		}
 	},
 	data() {
@@ -33,6 +26,10 @@ export default defineComponent({
 		};
 	},
 	computed: {
+		_mode(): string {
+			if (this.mode) return this.mode;
+			return this.$store.state.device.timestampFormat;
+		},
 		_time(): Date {
 			return typeof this.time == 'string' ? new Date(this.time) : this.time;
 		},
@@ -56,12 +53,12 @@ export default defineComponent({
 		}
 	},
 	created() {
-		if (this.mode == 'relative' || this.mode == 'detail') {
+		if (this._mode == 'relative' || this._mode == 'detail') {
 			this.tickId = window.requestAnimationFrame(this.tick);
 		}
 	},
 	unmounted() {
-		if (this.mode === 'relative' || this.mode === 'detail') {
+		if (this._mode === 'relative' || this._mode === 'detail') {
 			window.clearTimeout(this.tickId);
 		}
 	},
