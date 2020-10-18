@@ -82,7 +82,7 @@ export default defineComponent({
 	mounted() {
 		this.$nextTick(() => {
 			this.focus = 0;
-			if (this.$store.state.device.enableFocusReactionEmojiInput) this.$refs.text.focus();
+			if (this.$store.state.device.enableFocusReactionEmojiInput) this.$nextTick(() => this.$refs.text.focus({ preventScroll: true }));
 		});
 
 		// TODO: detach when unmount
