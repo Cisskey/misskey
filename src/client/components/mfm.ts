@@ -128,7 +128,7 @@ export default defineComponent({
 					const iteration = attrs.length > 1 ? attrs[1] : 'infinite';
 
 					return h('span', {
-						style: 'display: inline-block;'
+						style: 'display: inline-block;',
 						directives: [this.$store.state.device.animatedMfm ? {
 							name: 'animate-css',
 							value: { classes: animation, iteration }
