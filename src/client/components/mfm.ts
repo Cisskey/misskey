@@ -11,7 +11,7 @@ import MkCode from './code.vue';
 import MkGoogle from './google.vue';
 import { host } from '@/config';
 import { RouterLink } from 'vue-router';
-import 'prismjs/themes/prism.css';
+import 'prismjs/themes/prism-okaidia.css';
 
 function toDirection(attr: string): string {
 	switch (attr) {
