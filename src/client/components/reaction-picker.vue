@@ -86,7 +86,7 @@ export default defineComponent({
 		});
 
 		// TODO: detach when unmount
-		new Autocomplete(this.$refs.text, this, { model: 'text' });
+		new Autocomplete(this.$refs.text, this, { model: 'text', type: 'reactionPicker' });
 	},
 
 	methods: {
