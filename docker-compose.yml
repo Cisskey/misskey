@@ -2,7 +2,7 @@ version: "3"
 
 services:
   web:
-    image: misskey:cisskey-v12.39.1
+    image: misskey:cisskey
     build: .
     restart: always
     links:
