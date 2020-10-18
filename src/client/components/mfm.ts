@@ -203,15 +203,20 @@ export default defineComponent({
 				}
 
 				case 'blockCode': {
-					return [h('pre', {
-						class: 'language-markup',
-					}, [token.node.props.code])];
+					return [h(MkCode, {
+						key: Math.random(),
+						code: token.node.props.code,
+						lang: token.node.props.lang,
+					})];
 				}
 
 				case 'inlineCode': {
-					return [h('code', {
-						class: 'language-markup',
-					}, [token.node.props.code])];
+					return [h(MkCode, {
+						key: Math.random(),
+						code: token.node.props.code,
+						lang: token.node.props.lang,
+						inline: true
+					})];
 				}
 
 				case 'quote': {
