@@ -127,7 +127,7 @@ export default defineComponent({
 		},
 	},
 
-	emits: ['posted', 'done', 'esc'],
+	emits: ['posted', 'cancel', 'esc'],
 
 	data() {
 		return {
@@ -140,8 +140,8 @@ export default defineComponent({
 			useHashtag: false,
 			cw: null,
 			hashtag: '',
-			localOnly: false,
-			visibility: 'public',
+			localOnly: this.$store.state.settings.rememberNoteVisibility ? this.$store.state.deviceUser.localOnly : this.$store.state.settings.defaultNoteLocalOnly,
+			visibility: this.$store.state.settings.rememberNoteVisibility ? this.$store.state.deviceUser.visibility : this.$store.state.settings.defaultNoteVisibility,
 			visibleUsers: [],
 			autocomplete: null,
 			draghover: false,
@@ -209,10 +209,6 @@ export default defineComponent({
 	},
 
 	watch: {
-		localOnly() {
-			this.$store.commit('deviceUser/setLocalOnly', this.localOnly);
-		},
-
 		useHashtag() {
 			// 削除して編集のときは useHashtag の状態を更新させない
 			if (this.initialNote) return;
@@ -255,11 +251,9 @@ export default defineComponent({
 			}
 		}
 
-		// デフォルト公開範囲
-		if (this.channel == null) {
-			this.applyVisibility(this.$store.state.settings.rememberNoteVisibility ? this.$store.state.deviceUser.visibility : this.$store.state.settings.defaultNoteVisibility);
-
-			this.localOnly = this.$store.state.settings.rememberNoteVisibility ? this.$store.state.deviceUser.localOnly : this.$store.state.settings.defaultNoteLocalOnly;
+		if (this.channel) {
+			this.visibility = 'public';
+			this.localOnly = true; // TODO: チャンネルが連合するようになった折には消す
 		}
 
 		// 公開以外へのリプライ時は元の公開範囲を引き継ぐ
@@ -312,7 +306,7 @@ export default defineComponent({
 					this.text = draft.data.text;
 					this.useCw = draft.data.useCw;
 					this.cw = draft.data.cw;
-					this.applyVisibility(draft.data.visibility);
+					this.visibility = draft.data.visibility;
 					this.localOnly = draft.data.localOnly;
 					this.files = (draft.data.files || []).filter(e => e);
 					if (draft.data.poll) {
@@ -420,16 +414,18 @@ export default defineComponent({
 				src: this.$refs.visibilityButton
 			}, {
 				changeVisibility: visibility => {
-					this.applyVisibility(visibility);
+					this.visibility = visibility;
+					if (this.$store.state.settings.rememberNoteVisibility) {
+						this.$store.commit('deviceUser/setVisibility', visibility);
+					}
 				},
 				changeLocalOnly: localOnly => {
 					this.localOnly = localOnly;
+					if (this.$store.state.settings.rememberNoteVisibility) {
+						this.$store.commit('deviceUser/setLocalOnly', localOnly);
+					}
 				}
 			}, 'closed');
-		},
-
-		applyVisibility(v: string) {
-			this.visibility = (noteVisibilities as unknown as string[]).includes(v) ? v : 'public'; // v11互換性のため
 		},
 
 		addVisibleUser() {
@@ -588,24 +584,24 @@ export default defineComponent({
 			this.posting = true;
 			os.api('notes/create', data).then(() => {
 				this.clear();
-				this.deleteDraft();
-				this.$emit('posted');
+				this.$nextTick(() => {
+					this.deleteDraft();
+					this.$emit('posted');
+					if (this.text && this.text != '') {
+						const hashtags = parse(this.text).filter(x => x.node.type === 'hashtag').map(x => x.node.props.hashtag);
+						const history = JSON.parse(localStorage.getItem('hashtags') || '[]') as string[];
+						localStorage.setItem('hashtags', JSON.stringify(unique(hashtags.concat(history))));
+					}
+					this.posting = false;
+				});
 			}).catch(err => {
-			}).then(() => {
 				this.posting = false;
 				if (this.fixed) this.$nextTick(() => this.focus());
-				this.$emit('done');
 			});
-
-			if (this.text && this.text != '') {
-				const hashtags = parse(this.text).filter(x => x.node.type === 'hashtag').map(x => x.node.props.hashtag);
-				const history = JSON.parse(localStorage.getItem('hashtags') || '[]') as string[];
-				localStorage.setItem('hashtags', JSON.stringify(unique(hashtags.concat(history))));
-			}
 		},
 
 		cancel() {
-			this.$emit('done');
+			this.$emit('cancel');
 		},
 
 		insertMention() {
