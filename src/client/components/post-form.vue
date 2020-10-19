@@ -593,10 +593,10 @@ export default defineComponent({
 						localStorage.setItem('hashtags', JSON.stringify(unique(hashtags.concat(history))));
 					}
 					this.posting = false;
+					if (this.fixed) this.$nextTick(() => this.focus());
 				});
 			}).catch(err => {
 				this.posting = false;
-				if (this.fixed) this.$nextTick(() => this.focus());
 			});
 		},
 
