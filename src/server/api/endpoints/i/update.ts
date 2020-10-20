@@ -14,7 +14,7 @@ import { Users, DriveFiles, UserProfiles, Pages } from '../../../../models';
 import { User } from '../../../../models/entities/user';
 import { UserProfile } from '../../../../models/entities/user-profile';
 import { ensure } from '../../../../prelude/ensure';
-import { notificationTypes } from '../../../../types';
+import { notificationTypes, webhookTypes } from '../../../../types';
 
 export const meta = {
 	desc: {
@@ -167,6 +167,13 @@ export const meta = {
 				'ja-JP': 'Webhook 通知の POST 先 URL'
 			}
 		},
+
+		webhookType: {
+			validator: $.str.or(webhookTypes as unknown as string[]),
+			desc: {
+				'ja-JP': 'Webhook 通知によって POST する JSON の形式',
+			},
+		},
 	},
 
 	errors: {
@@ -232,6 +239,7 @@ export default define(meta, async (ps, user, token) => {
 	if (typeof ps.alwaysMarkNsfw === 'boolean') profileUpdates.alwaysMarkNsfw = ps.alwaysMarkNsfw;
 	if (typeof ps.enableWebhookNotification === 'boolean') profileUpdates.enableWebhookNotification = ps.enableWebhookNotification;
 	if (ps.webhookUrl !== undefined) profileUpdates.webhookUrl = ps.webhookUrl;
+	if (ps.webhookType !== undefined) profileUpdates.webhookType = ps.webhookType;
 
 	if (ps.avatarId) {
 		const avatar = await DriveFiles.findOne(ps.avatarId);

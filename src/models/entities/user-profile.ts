@@ -2,7 +2,7 @@ import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn } from 'type
 import { id } from '../id';
 import { User } from './user';
 import { Page } from './page';
-import { notificationTypes } from '../../types';
+import { notificationTypes, webhookType, webhookTypes } from '../../types';
 
 @Entity()
 export class UserProfile {
@@ -176,6 +176,12 @@ export class UserProfile {
 		length: 256, nullable: true,
 	})
 	public webhookUrl: string | null;
+
+	@Column('enum', {
+		enum: webhookTypes,
+		default: 'slack',
+	})
+	public webhookType: webhookType;
 
 	//#region Denormalized fields
 	@Index()

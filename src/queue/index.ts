@@ -15,8 +15,9 @@ import { DriveFile } from '../models/entities/drive-file';
 import { getJobInfo } from './get-job-info';
 import { IActivity } from '../remote/activitypub/type';
 import { notificationType, notificationBody } from '../services/push-notification';
-import { UserProfiles, Users } from '../models';
+import { UserProfiles } from '../models';
 import { ensure } from '../prelude/ensure';
+import { webhookType } from '../types';
 
 function initializeQueue(name: string, limitPerSec = -1, limitDuration?: number, groupKey?: string) {
 	return new Queue(name, {
@@ -47,7 +48,7 @@ export type PostWebhookJobData = {
 	type: notificationType,
 	body: notificationBody,
 	url: string,
-	isBot: boolean,
+	jsonType: webhookType,
 };
 
 function renderError(e: Error): any {
@@ -239,13 +240,12 @@ export function createCleanRemoteFilesJob() {
 
 export async function postWebhookJob(userId: string, type: notificationType, body: notificationBody) {
 	const profile = await UserProfiles.findOne({userId: userId}).then(ensure);
-	const user = await Users.findOne({id: userId}).then(ensure);
 	const data = {
 		userId: userId,
 		type: type,
 		body: body,
 		url: profile.webhookUrl,
-		isBot: user.isBot,
+		jsonType: profile.webhookType,
 	};
 
 	return webhookQueue.add(data, {
