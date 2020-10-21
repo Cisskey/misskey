@@ -252,6 +252,7 @@ export class UserRepository extends Repository<User> {
 				enableWebhookNotification: profile!.enableWebhookNotification,
 				webhookUrl: profile?.webhookUrl,
 				webhookType: profile?.webhookType,
+				webhookSecret: profile?.webhookSecret,
 			} : {}),
 
 			...(opts.includeSecrets ? {

@@ -1341,3 +1341,5 @@ _webhookNotification:
   testMessage: "送信テスト（メッセージ）"
   instanceDescription: "Webhook 通知を行うには有効にする必要があります。"
   jsonType: "POST する JSON の形式"
+  secret: "Secret"
+  secretDescription: "X-Misskey-Signature ヘッダーを生成するときに使われる秘密鍵を入力します。入力しない場合は、X-Misskey-Signature ヘッダーなしで POST されます。"

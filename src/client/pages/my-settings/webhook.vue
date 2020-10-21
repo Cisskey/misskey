@@ -17,6 +17,10 @@
 			<span>{{ $t('_webhookNotification.url') }}</span>
 			<template #desc>{{ $t('_webhookNotification.urlDescription') }}</template>
 		</mk-input>
+		<mk-input v-model="secret" v-if="type === 'bot'">
+			<span>{{ $t('_webhookNotification.secret') }}</span>
+			<template #desc>{{ $t('_webhookNotification.secretDescription') }}</template>
+		</mk-input>
 	</div>
 	<div class="_footer">
 		<mk-button @click="test('notification')" inline :disabled="!url">{{ $t('_webhookNotification.testNormal') }}</mk-button>
@@ -53,6 +57,7 @@ export default Vue.extend({
 			changed: false,
 			types: webhookTypes,
 			type: this.$store.state.i.webhookType || 'slack',
+			secret: this.$store.state.i.webhookSecret,
 			faSave, faLink,
 		}
 	},
@@ -67,6 +72,9 @@ export default Vue.extend({
 		type() {
 			this.changed = true;
 		},
+		secret() {
+			this.changed = true;
+		},
 	},
 
 	methods: {
@@ -75,6 +83,7 @@ export default Vue.extend({
 				enableWebhookNotification: this.enableWebhook,
 				webhookUrl: this.url || null,
 				webhookType: this.type,
+				webhookSecret: this.secret || null,
 			}).then(() => {
 				this.changed = false;
 				if (notify) {

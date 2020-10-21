@@ -183,6 +183,11 @@ export class UserProfile {
 	})
 	public webhookType: webhookType;
 
+	@Column('varchar', {
+		length: 128, nullable: true,
+	})
+	public webhookSecret: string | null;
+
 	//#region Denormalized fields
 	@Index()
 	@Column('varchar', {

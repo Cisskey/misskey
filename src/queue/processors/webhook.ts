@@ -7,8 +7,6 @@ import config from '../../config';
 import { notificationType, notificationBody } from '../../services/push-notification';
 import { PostWebhookJobData } from '..';
 import { createNotification } from '../../services/create-notification';
-import { Users } from '../../models';
-import { ensure } from '../../prelude/ensure';
 import * as crypto from 'crypto';
 
 export default async (job: Bull.Job<PostWebhookJobData>) => {
@@ -23,7 +21,7 @@ export default async (job: Bull.Job<PostWebhookJobData>) => {
 		if (job.data.type === 'unreadMessagingMessage') return;
 
 		body = JSON.stringify(job.data.body);
-		signature = await createSignature(job.data.userId, JSON.stringify(job.data.body));
+		signature = await createSignature(JSON.stringify(job.data.body), job.data.secret);
 	} else if (job.data.jsonType === 'slack') {
 		// TODO: Webhook 通知で使われる言語を設定画面で変更できるように
 		body = buildBodySlack(job.data.type, job.data.body, locale['ja-JP']);
@@ -66,14 +64,11 @@ export default async (job: Bull.Job<PostWebhookJobData>) => {
 
 /**
  * i token をシークレットとする Signature(SHA256) を作成
- * @param userId
- * @param body
  * @returns `sha256=` で始まる Signature
  */
-const createSignature = async (userId: string, body: string) => {
-	const user = await Users.findOne(userId).then(ensure);
-	if (user.token == null) return;
-	const hmac = crypto.createHmac('sha256', user.token).update(body);
+const createSignature = async (body: string, secret: string | null) => {
+	if (secret == null) return;
+	const hmac = crypto.createHmac('sha256', secret).update(body);
 	const header = `sha256=${hmac.digest('hex')}`;
 	return header;
 }

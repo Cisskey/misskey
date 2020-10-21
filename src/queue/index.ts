@@ -49,6 +49,7 @@ export type PostWebhookJobData = {
 	body: notificationBody,
 	url: string,
 	jsonType: webhookType,
+	secret: string | null,
 };
 
 function renderError(e: Error): any {
@@ -246,6 +247,7 @@ export async function postWebhookJob(userId: string, type: notificationType, bod
 		body: body,
 		url: profile.webhookUrl,
 		jsonType: profile.webhookType,
+		secret: profile.webhookSecret,
 	};
 
 	return webhookQueue.add(data, {
