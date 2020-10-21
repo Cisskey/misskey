@@ -81,9 +81,9 @@ export default Vue.extend({
 		async save(notify?: boolean) {
 			await this.$root.api('i/update', {
 				enableWebhookNotification: this.enableWebhook,
-				webhookUrl: this.url || null,
+				webhookUrl: this.url.trim() || null,
 				webhookType: this.type,
-				webhookSecret: this.secret || null,
+				webhookSecret: this.secret.trim() || null,
 			}).then(() => {
 				this.changed = false;
 				if (notify) {
