@@ -27,12 +27,12 @@ export default async (job: Bull.Job<PostWebhookJobData>) => {
 		body = buildBodySlack(job.data.type, job.data.body, locale['ja-JP']);
 	}
 
-	let headers = {
+	const headers = {
 		'Content-type': 'application/json',
 		...(signature ? {
 			'X-Misskey-Signature': signature,
 		} : {}),
-	}
+	};
 
 	await fetch(job.data.url, {
 		method: 'POST',
@@ -71,7 +71,7 @@ const createSignature = async (body: string, secret: string | null) => {
 	const hmac = crypto.createHmac('sha256', secret).update(body);
 	const header = `sha256=${hmac.digest('hex')}`;
 	return header;
-}
+};
 
 const buildBodySlack = (type: notificationType, body: any, locale: any) => {
 	let typeText = '';
