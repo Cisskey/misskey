@@ -1,15 +1,15 @@
 <template>
-<time class="mk-time" v-tooltip="typeof time == 'string' ? new Date(time).toLocaleString() : time.toLocaleString()">
-	<span v-if="mode == 'relative'">{{ relative }}</span>
-	<span v-if="mode == 'absolute'">{{ absolute }}</span>
-	<span v-if="mode == 'detail'">{{ absolute }} ({{ relative }})</span>
+<time class="mk-time" :title="absolute" v-tooltip="typeof time == 'string' ? new Date(time).toLocaleString() : time.toLocaleString()">
+	<template v-if="_mode == 'relative'">{{ relative }}</template>
+	<template v-else-if="_mode == 'absolute'">{{ absolute }}</template>
+	<template v-else-if="_mode == 'detail'">{{ absolute }} ({{ relative }})</template>
 </time>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 
-export default Vue.extend({
+export default defineComponent({
 	props: {
 		time: {
 			type: [Date, String],
@@ -17,13 +17,6 @@ export default Vue.extend({
 		},
 		mode: {
 			type: String,
-			default: function(m: string) {
-				if (m === undefined) {
-					return this.$store.state.device.timestampFormat;
-				} else {
-					return m;
-				}
-			}
 		}
 	},
 	data() {
@@ -33,6 +26,10 @@ export default Vue.extend({
 		};
 	},
 	computed: {
+		_mode(): string {
+			if (this.mode) return this.mode;
+			return this.$store.state.device.timestampFormat;
+		},
 		_time(): Date {
 			return typeof this.time == 'string' ? new Date(this.time) : this.time;
 		},
@@ -56,12 +53,12 @@ export default Vue.extend({
 		}
 	},
 	created() {
-		if (this.mode == 'relative' || this.mode == 'detail') {
+		if (this._mode == 'relative' || this._mode == 'detail') {
 			this.tickId = window.requestAnimationFrame(this.tick);
 		}
 	},
-	destroyed() {
-		if (this.mode === 'relative' || this.mode === 'detail') {
+	unmounted() {
+		if (this._mode === 'relative' || this._mode === 'detail') {
 			window.clearTimeout(this.tickId);
 		}
 	},
