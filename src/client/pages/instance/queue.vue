@@ -1,39 +1,31 @@
 <template>
 <div>
-	<portal to="icon"><fa :icon="faExchangeAlt"/></portal>
-	<portal to="title">{{ $t('jobQueue') }}</portal>
-
-	<x-queue :connection="connection" domain="inbox">
-		<template #title><fa :icon="faExchangeAlt"/> In</template>
-	</x-queue>
-	<x-queue :connection="connection" domain="deliver">
-		<template #title><fa :icon="faExchangeAlt"/> Out</template>
-	</x-queue>
-	<x-queue :connection="connection" domain="webhook">
-		<template #title><fa :icon="faExchangeAlt"/> Webhook</template>
-	</x-queue>
-	<section class="_card">
+	<XQueue :connection="connection" domain="inbox">
+		<template #title><Fa :icon="faExchangeAlt"/> In</template>
+	</XQueue>
+	<XQueue :connection="connection" domain="deliver">
+		<template #title><Fa :icon="faExchangeAlt"/> Out</template>
+	</XQueue>
+	<XQueue :connection="connection" domain="webhook">
+		<template #title><Fa :icon="faExchangeAlt"/> Webhook</template>
+	</XQueue>
+	<section class="_section">
 		<div class="_content">
-			<mk-button @click="clear()"><fa :icon="faTrashAlt"/> {{ $t('clearQueue') }}</mk-button>
+			<MkButton @click="clear()"><Fa :icon="faTrashAlt"/> {{ $t('clearQueue') }}</MkButton>
 		</div>
 	</section>
 </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent } from 'vue';
 import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
-import MkButton from '../../components/ui/button.vue';
+import MkButton from '@/components/ui/button.vue';
 import XQueue from './queue.chart.vue';
+import * as os from '@/os';
 
-export default Vue.extend({
-	metaInfo() {
-		return {
-			title: `${this.$t('jobQueue')} | ${this.$t('instance')}`
-		};
-	},
-
+export default defineComponent({
 	components: {
 		MkButton,
 		XQueue,
@@ -41,7 +33,13 @@ export default Vue.extend({
 
 	data() {
 		return {
-			connection: this.$root.stream.useSharedConnection('queueStats'),
+			INFO: {
+				header: [{
+					title: this.$t('jobQueue'),
+					icon: faExchangeAlt,
+				}],
+			},
+			connection: os.stream.useSharedConnection('queueStats'),
 			faExchangeAlt, faTrashAlt
 		}
 	},
@@ -55,13 +53,13 @@ export default Vue.extend({
 		});
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		this.connection.dispose();
 	},
 
 	methods: {
 		clear() {
-			this.$root.dialog({
+			os.dialog({
 				type: 'warning',
 				title: this.$t('clearQueueConfirmTitle'),
 				text: this.$t('clearQueueConfirmText'),
@@ -69,12 +67,7 @@ export default Vue.extend({
 			}).then(({ canceled }) => {
 				if (canceled) return;
 
-				this.$root.api('admin/queue/clear', {}).then(() => {
-					this.$root.dialog({
-						type: 'success',
-						iconOnly: true, autoClose: true
-					});
-				});
+				os.apiWithDialog('admin/queue/clear', {});
 			});
 		}
 	}
