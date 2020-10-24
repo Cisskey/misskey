@@ -72,6 +72,7 @@ export default defineComponent({
 				case 'privacy': return defineAsyncComponent(() => import('./privacy.vue'));
 				case 'reaction': return defineAsyncComponent(() => import('./reaction.vue'));
 				case 'notifications': return defineAsyncComponent(() => import('./notifications.vue'));
+				case 'webhook': return defineAsyncComponent(() => import('./webhook.vue'));
 				case 'mute-block': return defineAsyncComponent(() => import('./mute-block.vue'));
 				case 'word-mute': return defineAsyncComponent(() => import('./word-mute.vue'));
 				case 'integration': return defineAsyncComponent(() => import('./integration.vue'));
@@ -82,6 +83,7 @@ export default defineComponent({
 				case 'theme': return defineAsyncComponent(() => import('./theme.vue'));
 				case 'sidebar': return defineAsyncComponent(() => import('./sidebar.vue'));
 				case 'sounds': return defineAsyncComponent(() => import('./sounds.vue'));
+				case 'cw-content': return defineAsyncComponent(() => import('./cw-content.vue'));
 				case 'plugins': return defineAsyncComponent(() => import('./plugins.vue'));
 				case 'import-export': return defineAsyncComponent(() => import('./import-export.vue'));
 				case 'regedit': return defineAsyncComponent(() => import('./regedit.vue'));
