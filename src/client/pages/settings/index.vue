@@ -1,6 +1,7 @@
 <template>
 <div class="vvcocwet" :class="{ wide: !narrow }" ref="el">
 	<div class="nav" v-if="!narrow || page == null">
+		<div class="menu">
 			<MkA class="item" :class="{ active: page === 'profile' }" replace to="/settings/profile"><Fa :icon="faUser" fixed-width class="icon"/>{{ $t('profile') }}</MkA>
 			<MkA class="item" :class="{ active: page === 'privacy' }" replace to="/settings/privacy"><Fa :icon="faLockOpen" fixed-width class="icon"/>{{ $t('privacy') }}</MkA>
 			<MkA class="item" :class="{ active: page === 'reaction' }" replace to="/settings/reaction"><Fa :icon="faLaugh" fixed-width class="icon"/>{{ $t('reaction') }}</MkA>
