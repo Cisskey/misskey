@@ -9,9 +9,8 @@ import { concat } from '../../prelude/array';
 import MkFormula from './formula.vue';
 import MkCode from './code.vue';
 import MkGoogle from './google.vue';
+import MkA from './ui/a.vue';
 import { host } from '@/config';
-import { RouterLink } from 'vue-router';
-import 'prismjs/themes/prism-okaidia.css';
 import 'animate.css/animate.min.css';
 
 function toDirection(attr: string): string {
@@ -197,7 +196,7 @@ export default defineComponent({
 				}
 
 				case 'hashtag': {
-					return [h(RouterLink, {
+					return [h(MkA, {
 						key: Math.random(),
 						to: this.isNote ? `/tags/${encodeURIComponent(token.node.props.hashtag)}` : `/explore/tags/${encodeURIComponent(token.node.props.hashtag)}`,
 						style: 'color:var(--hashtag);'
