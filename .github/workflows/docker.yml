@@ -2,8 +2,7 @@ name: Docker build
 on:
   push:
     branches:
-      - master
-      - develop
+      - cisskey
   pull_request:
 
 jobs:
