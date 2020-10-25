@@ -135,7 +135,7 @@
 		</div>
 	</section>
 
-	<section class="_card _vMargin">
+	<section class="_section">
 		<div class="_title"><Fa :icon="faCommentSlash"/> {{ $t('featuredNgWord') }}</div>
 		<div class="_content">
 			<MkTextarea v-model:value="featuredNgWords">
