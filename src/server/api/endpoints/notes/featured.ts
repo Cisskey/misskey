@@ -53,11 +53,9 @@ export default define(meta, async (ps, user) => {
 
 	const meta = await fetchMeta();
 	const featuredNgWords = meta.featuredNgWords;
-	if (featuredNgWords !== []){
-		for (const word of featuredNgWords) {
-			query.andWhere(`COALESCE(note.text, '') NOT ILIKE '%${word}%'`);
-			query.andWhere(`COALESCE(note.cw, '') NOT ILIKE '%${word}%'`);
-		}
+	for (const word of featuredNgWords) {
+		query.andWhere(`COALESCE(note.text, '') NOT ILIKE '%${word}%'`);
+		query.andWhere(`COALESCE(note.cw, '') NOT ILIKE '%${word}%'`);
 	}
 
 	query.leftJoinAndSelect('note.user', 'user');
