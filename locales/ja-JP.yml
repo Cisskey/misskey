@@ -586,6 +586,8 @@ useGlobalSettingDesc: "オンにすると、アカウントの通知設定が使
 autoShowCwContent: "CW 投稿の自動展開"
 webhookNotification: "Webhook 通知"
 momentum: "勢い"
+featuredNgWord: "ハイライト NG ワード"
+featuredNgWordDescription: "キーワードを改行区切りで入力してください。ここで登録したキーワードが含まれるノートはハイライトから除外されます。"
 other: "その他"
 regenerateLoginToken: "ログイントークンを再生成"
 regenerateLoginTokenDescription: "ログインに使用される内部トークンを再生成します。通常この操作を行う必要はありません。再生成すると、全てのデバイスでログアウトされます。"

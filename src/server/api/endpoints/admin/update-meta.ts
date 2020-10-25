@@ -429,7 +429,14 @@ export const meta = {
 
 		objectStorageSetPublicRead: {
 			validator: $.optional.bool
-		}
+		},
+
+		featuredNgWords: {
+			validator: $.optional.nullable.arr($.str),
+			desc: {
+				'ja-JP': 'ハイライトから除外するキーワード',
+			},
+		},
 	}
 };
 
@@ -690,6 +697,10 @@ export default define(meta, async (ps, me) => {
 
 	if (ps.objectStorageSetPublicRead !== undefined) {
 		set.objectStorageSetPublicRead = ps.objectStorageSetPublicRead;
+	}
+
+	if (Array.isArray(ps.featuredNgWords)) {
+		set.featuredNgWords = ps.featuredNgWords.filter(Boolean);
 	}
 
 	await getConnection().transaction(async transactionalEntityManager => {
