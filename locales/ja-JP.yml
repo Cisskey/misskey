@@ -1362,9 +1362,13 @@ _autoShowCwContent:
   showWordsDescription: "改行区切りでキーワードを入力します。キーワードが注釈または本文に含まれている場合のみ自動展開します。"
 
 _webhookNotification:
-  description: "Slack や Discord にて発行した Webhook URL に Slack 形式の JSON で POST します。インスタンス側の設定で許可されている場合のみ動作します。"
+  descriptionForSlack: "Slack: Slack や Discord にて発行した Webhook URL に Slack 形式の JSON で POST します。インスタンス側の設定で許可されている場合のみ動作します。"
+  descriptionForBot: "bot: PackedNotification 形式の JSON を POST します。"
   enable: "Webhook 通知を有効にする"
   url: "POST 先 URL"
   urlDescription: "Slack の場合は URL をそのまま入力します。Discord の場合は URL を入力し後、末尾に /slack を追加します。"
   test: "送信テスト"
   instanceDescription: "Webhook 通知を行うには有効にする必要があります。"
+  jsonType: "POST する JSON の形式"
+  secret: "Secret"
+  secretDescription: "X-Misskey-Signature ヘッダーを生成するときに使われる秘密鍵を入力します。入力しない場合は、X-Misskey-Signature ヘッダーなしで POST されます。"
