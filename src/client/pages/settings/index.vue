@@ -21,6 +21,7 @@
 		</div>
 		<div class="menu">
 			<div class="label">{{ $t('otherSettings') }}</div>
+			<MkA class="item" :class="{ active: page === 'import-export' }" replace to="/settings/import-export"><Fa :icon="faBoxes" fixed-width class="icon"/>{{ $t('importAndExport') }}</MkA>
 			<MkA class="item" :class="{ active: page === 'mute-block' }" replace to="/settings/mute-block"><Fa :icon="faBan" fixed-width class="icon"/>{{ $t('muteAndBlock') }}</MkA>
 			<MkA class="item" :class="{ active: page === 'word-mute' }" replace to="/settings/word-mute"><Fa :icon="faCommentSlash" fixed-width class="icon"/>{{ $t('wordMute') }}</MkA>
 			<MkA class="item" :class="{ active: page === 'api' }" replace to="/settings/api"><Fa :icon="faKey" fixed-width class="icon"/>API</MkA>
@@ -40,7 +41,7 @@
 
 <script lang="ts">
 import { computed, defineAsyncComponent, defineComponent, onMounted, ref } from 'vue';
-import { faCog, faPalette, faPlug, faUser, faListUl, faLock, faCommentSlash, faMusic, faCogs, faEllipsisH, faBan, faShareAlt, faLockOpen, faKey, faLink, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faPalette, faPlug, faUser, faListUl, faLock, faCommentSlash, faMusic, faCogs, faEllipsisH, faBan, faShareAlt, faLockOpen, faKey, faBoxes, faLink, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { faLaugh, faBell } from '@fortawesome/free-regular-svg-icons';
 import { store } from '@/store';
 import { i18n } from '@/i18n';
@@ -106,7 +107,7 @@ export default defineComponent({
 				store.dispatch('logout');
 				location.href = '/';
 			},
-			faPalette, faPlug, faUser, faListUl, faLock, faLaugh, faCommentSlash, faMusic, faBell, faCogs, faEllipsisH, faBan, faShareAlt, faLockOpen, faKey, faLink, faEyeSlash,
+			faPalette, faPlug, faUser, faListUl, faLock, faLaugh, faCommentSlash, faMusic, faBell, faCogs, faEllipsisH, faBan, faShareAlt, faLockOpen, faKey, faBoxes, faLink, faEyeSlash,
 		};
 	},
 });
@@ -122,9 +123,6 @@ export default defineComponent({
 }
 
 .vvcocwet {
-	max-width: 1000px;
-	margin: 0 auto;
-
 	> .nav {
 		> .menu {
 			margin: 16px 0;
@@ -174,7 +172,7 @@ export default defineComponent({
 
 		> .nav {
 			width: 30%;
-			max-width: 260px;
+			max-width: 300px;
 		}
 
 		> .main {
