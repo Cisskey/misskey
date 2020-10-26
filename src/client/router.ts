@@ -107,7 +107,6 @@ export function resolve(path: string) {
 	const route = resolved.matched[0];
 	return {
 		component: markRaw(route.components.default),
-		// TODO: route.propsには関数以外も入る可能性があるのでよしなにハンドリングする
-		props: route.props?.default ? route.props.default(resolved) : resolved.params
+		props: typeof route.props?.default === 'function' ? route.props.default(resolved) : resolved.params
 	};
 }
