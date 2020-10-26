@@ -5,9 +5,10 @@
 	<div class="wbrkwala">
 		<MkLoading v-if="fetching"/>
 		<transition-group tag="div" name="chart" class="tags" v-else>
-			<div v-for="stat in stats" :key="stat.tag">
+			<div v-for="stat in stats" :key="stat.key">
 				<div class="tag">
-					<MkA class="a" :to="`/tags/${ encodeURIComponent(stat.tag) }`" :title="stat.tag">#{{ stat.tag }}</MkA>
+					<MkA v-if="stat.tag" class="a" :to="`/tags/${ encodeURIComponent(stat.tag) }`" :title="stat.tag">#{{ stat.tag }}</MkA>
+					<MkA v-if="stat.channel" class="a" :to="`/channels/${stat.channel.id}`" :title="stat.channel.name"><Fa :icon="faSatelliteDish"/>{{ stat.channel.name }}</MkA>
 					<p>{{ $t('nUsersMentioned', { n: stat.usersCount }) }}</p>
 				</div>
 				<MkMiniChart class="chart" :src="stat.chart"/>
@@ -19,7 +20,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faHashtag } from '@fortawesome/free-solid-svg-icons';
+import { faHashtag, faSatelliteDish } from '@fortawesome/free-solid-svg-icons';
 import MkContainer from '@/components/ui/container.vue';
 import define from './define';
 import MkMiniChart from '@/components/mini-chart.vue';
@@ -44,7 +45,7 @@ export default defineComponent({
 		return {
 			stats: [],
 			fetching: true,
-			faHashtag
+			faHashtag, faSatelliteDish,
 		};
 	},
 	mounted() {
@@ -56,7 +57,11 @@ export default defineComponent({
 	},
 	methods: {
 		fetch() {
-			os.api('hashtags/trend').then(stats => {
+			Promise.all([os.api('hashtags/trend'), os.api('channels/trend')]).then(res => {
+				const stats = []
+				res[0].forEach(stat => stats.push({ key: stat.tag, ...stat }));
+				res[1].forEach(stat => stats.push({ key: stat.channelId, ...stat }));
+				stats.sort((a, b) => b.usersCount - a.usersCount);
 				this.stats = stats;
 				this.fetching = false;
 			});
