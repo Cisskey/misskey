@@ -169,7 +169,7 @@ export const meta = {
 		},
 
 		webhookType: {
-			validator: $.str.or(webhookTypes as unknown as string[]),
+			validator: $.optional.str.or(webhookTypes as unknown as string[]),
 			desc: {
 				'ja-JP': 'Webhook 通知によって POST する JSON の形式',
 			},
