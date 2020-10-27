@@ -40,6 +40,7 @@
 		<MkAvatar class="avatar" :user="appearNote.user"/>
 		<div class="main">
 			<XNoteHeader class="header" :note="appearNote" :mini="true"/>
+			<MkInstanceTicker v-if="showTicker" class="ticker" :instance="appearNote.user.instance"/>
 			<div class="body" ref="noteBody">
 				<p v-if="appearNote.cw != null" class="cw">
 					<Mfm v-if="appearNote.cw != ''" class="text" :text="appearNote.cw" :author="appearNote.user" :i="$store.state.i" :custom-emojis="appearNote.emojis"/>
@@ -136,6 +137,7 @@ export default defineComponent({
 		XCwButton,
 		XPoll,
 		MkUrlPreview: defineAsyncComponent(() => import('@/components/url-preview.vue')),
+		MkInstanceTicker: defineAsyncComponent(() => import('@/components/instance-ticker.vue')),
 	},
 
 	inject: {
@@ -255,6 +257,12 @@ export default defineComponent({
 			} else {
 				return null;
 			}
+		},
+
+		showTicker() {
+			if (this.$store.state.device.instanceTicker === 'always') return true;
+			if (this.$store.state.device.instanceTicker === 'remote' && this.appearNote.user.instance) return true;
+			return false;
 		}
 	},
 

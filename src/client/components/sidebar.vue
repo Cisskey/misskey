@@ -249,7 +249,7 @@ export default defineComponent({
 				icon: faQuestionCircle,
 			}, {
 				type: 'link',
-				text: this.$t('aboutX', { x: instanceName || host }),
+				text: this.$t('aboutX', { x: instanceName }),
 				to: '/about',
 				icon: faInfoCircle,
 			}, {

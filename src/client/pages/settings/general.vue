@@ -58,6 +58,12 @@
 			<MkRadio v-model="fontSize" value="large"><span style="font-size: 18px;">Aa</span></MkRadio>
 			<MkRadio v-model="fontSize" value="veryLarge"><span style="font-size: 20px;">Aa</span></MkRadio>
 		</div>
+		<div class="_content">
+			<div>{{ $t('instanceTicker') }}</div>
+			<MkRadio v-model="instanceTicker" value="none">{{ $t('_instanceTicker.none') }}</MkRadio>
+			<MkRadio v-model="instanceTicker" value="remote">{{ $t('_instanceTicker.remote') }}</MkRadio>
+			<MkRadio v-model="instanceTicker" value="always">{{ $t('_instanceTicker.always') }}</MkRadio>
+		</div>
 	</section>
 
 	<section class="_card _vMargin">
@@ -190,6 +196,11 @@ export default defineComponent({
 		timestampFormat: {
 			get() { return this.$store.state.device.timestampFormat; },
 			set(value) { this.$store.commit('device/set', { key: 'timestampFormat', value }); }
+		},
+
+		instanceTicker: {
+			get() { return this.$store.state.device.instanceTicker; },
+			set(value) { this.$store.commit('device/set', { key: 'instanceTicker', value }); }
 		},
 
 		enableInfiniteScroll: {
