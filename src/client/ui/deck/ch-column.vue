@@ -14,8 +14,8 @@
 import { defineComponent } from 'vue';
 import { faCog, faSatelliteDish, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import XColumn from './column.vue';
-import XTimeline from '../timeline.vue';
-import XPostForm from '../post-form.vue';
+import XTimeline from '@/components/timeline.vue';
+import XPostForm from '@/components/post-form.vue';
 import * as os from '@/os';
 
 export default defineComponent({

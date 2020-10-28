@@ -380,4 +380,9 @@ export class Meta {
 		default: false,
 	})
 	public objectStorageSetPublicRead: boolean;
+
+	@Column('varchar', {
+		length: 256, array: true, default: '{}'
+	})
+	public featuredNgWords: string[];
 }

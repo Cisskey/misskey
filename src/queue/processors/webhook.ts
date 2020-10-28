@@ -7,18 +7,38 @@ import config from '../../config';
 import { notificationType, notificationBody } from '../../services/push-notification';
 import { PostWebhookJobData } from '..';
 import { createNotification } from '../../services/create-notification';
+import * as crypto from 'crypto';
 
 export default async (job: Bull.Job<PostWebhookJobData>) => {
 	// 無限ループ防止
 	if ((job.data.body as any).type === 'app') return;
+
+	let body;
+	let signature;
+
+	if (job.data.jsonType === 'bot') {
+		// JSON 形式がややこしくなるので、とりあえず、チャットでの通知は送信しない
+		if (job.data.type === 'unreadMessagingMessage') return;
+
+		body = JSON.stringify(job.data.body);
+		signature = await createSignature(JSON.stringify(job.data.body), job.data.secret);
+	} else if (job.data.jsonType === 'slack') {
+		// TODO: Webhook 通知で使われる言語を設定画面で変更できるように
+		body = buildBodySlack(job.data.type, job.data.body, locale['ja-JP']);
+	}
+
+	const headers = {
+		'Content-type': 'application/json',
+		...(signature ? {
+			'X-Misskey-Signature': signature,
+		} : {}),
+	};
+
 	await fetch(job.data.url, {
 		method: 'POST',
-		headers: {
-			'Content-type': 'application/json',
-		},
+		headers: headers,
 		agent: getAgentByUrl(job.data.url) as any,
-		// TODO: Webhook 通知で使われる言語を設定画面で変更できるように
-		body: buildWebhookBody(job.data.type, job.data.body, locale['ja-JP']),
+		body: body,
 	})
 	.catch(() => {
 		throw 'network error (server side) or illegal URL';
@@ -42,8 +62,18 @@ export default async (job: Bull.Job<PostWebhookJobData>) => {
 	});
 };
 
+/**
+ * i token をシークレットとする Signature(SHA256) を作成
+ * @returns `sha256=` で始まる Signature
+ */
+const createSignature = async (body: string, secret: string | null) => {
+	if (secret == null) return;
+	const hmac = crypto.createHmac('sha256', secret).update(body);
+	const header = `sha256=${hmac.digest('hex')}`;
+	return header;
+};
 
-const buildWebhookBody = (type: notificationType, body: any, locale: any) => {
+const buildBodySlack = (type: notificationType, body: any, locale: any) => {
 	let typeText = '';
 	let quoteText = '';
 	// 通知送信者のユーザー名 (ex. user)

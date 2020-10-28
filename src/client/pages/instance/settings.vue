@@ -136,6 +136,18 @@
 	</section>
 
 	<section class="_section">
+		<div class="_title"><Fa :icon="faCommentSlash"/> {{ $t('featuredNgWord') }}</div>
+		<div class="_content">
+			<MkTextarea v-model:value="featuredNgWords">
+				<template #desc>{{ $t('featuredNgWordDescription') }}</template>
+			</MkTextarea>
+		</div>
+		<div class="_footer">
+			<MkButton primary @click="save(true)"><fa :icon="faSave"/> {{ $t('save') }}</MkButton>
+		</div>
+	</section>
+
+	<section class="_section">
 		<div class="_title"><Fa :icon="faCloud"/> {{ $t('files') }}</div>
 		<div class="_content">
 			<MkSwitch v-model:value="cacheRemoteFiles">{{ $t('cacheRemoteFiles') }}<template #desc>{{ $t('cacheRemoteFilesDescription') }}</template></MkSwitch>
@@ -242,7 +254,7 @@
 
 <script lang="ts">
 import { defineComponent, defineAsyncComponent } from 'vue';
-import { faPencilAlt, faShareAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway } from '@fortawesome/free-solid-svg-icons';
+import { faPencilAlt, faShareAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway, faCommentSlash } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt, faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { faTwitter, faDiscord, faGithub } from '@fortawesome/free-brands-svg-icons';
 import MkButton from '@/components/ui/button.vue';
@@ -332,7 +344,8 @@ export default defineComponent({
 			smtpUser: '',
 			smtpPass: '',
 			summalyProxy: '',
-			faPencilAlt, faTwitter, faDiscord, faGithub, faShareAlt, faTrashAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faEnvelope, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway
+			featuredNgWords: '',
+			faPencilAlt, faTwitter, faDiscord, faGithub, faShareAlt, faTrashAlt, faGhost, faCog, faPlus, faCloud, faInfoCircle, faBan, faSave, faServer, faLink, faEnvelope, faThumbtack, faUser, faShieldAlt, faKey, faBolt, faArchway, faCommentSlash
 		}
 	},
 
@@ -401,6 +414,7 @@ export default defineComponent({
 		this.smtpUser = this.meta.smtpUser;
 		this.smtpPass = this.meta.smtpPass;
 		this.summalyProxy = this.meta.summalyProxy;
+		this.featuredNgWords = this.meta.featuredNgWords.join('\n');
 
 		if (this.proxyAccountId) {
 			os.api('users/show', { userId: this.proxyAccountId }).then(proxyAccount => {
@@ -554,6 +568,7 @@ export default defineComponent({
 				smtpPass: this.smtpPass,
 				summalyProxy: this.summalyProxy,
 				useStarForReactionFallback: this.useStarForReactionFallback,
+				featuredNgWords: this.featuredNgWords ? this.featuredNgWords.trim().split('\n').map(x => x.trim()) : [],
 			}).then(() => {
 				this.$store.dispatch('instance/fetch');
 				if (withDialog) {

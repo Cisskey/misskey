@@ -1,5 +1,5 @@
 <template>
-<time class="mk-time" :title="absolute" v-tooltip="typeof time == 'string' ? new Date(time).toLocaleString() : time.toLocaleString()">
+<time :title="absolute" v-tooltip="typeof time == 'string' ? new Date(time).toLocaleString() : time.toLocaleString()">
 	<template v-if="_mode == 'relative'">{{ relative }}</template>
 	<template v-else-if="_mode == 'absolute'">{{ absolute }}</template>
 	<template v-else-if="_mode == 'detail'">{{ absolute }} ({{ relative }})</template>
