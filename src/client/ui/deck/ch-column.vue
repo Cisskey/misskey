@@ -41,7 +41,7 @@ export default defineComponent({
 			menu: [],
 			indicated: false,
 			columnActive: true,
-			showFixedPostForm: false,
+			showFixedPostForm: this.column.showFixedPostForm || false,
 			faCog, faSatelliteDish, faEye, faEyeSlash,
 		};
 	},
@@ -53,6 +53,9 @@ export default defineComponent({
 
 		showFixedPostForm() {
 			this.setMenu();
+
+			this.column.showFixedPostForm = this.showFixedPostForm;
+			this.$store.commit('deviceUser/updateDeckColumn', this.column);
 		},
 	},
 
