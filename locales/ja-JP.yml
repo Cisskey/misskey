@@ -603,6 +603,7 @@ fillAbuseReportDescription: "通報理由の詳細を記入してください。
 abuseReported: "内容が送信されました。ご報告ありがとうございました。"
 send: "送信"
 abuseMarkAsResolved: "対応済みにする"
+selectChannel: "チャンネルを選択"
 openInNewTab: "新しいタブで開く"
 openInSideView: "サイドビューで開く"
 defaultNavigationBehaviour: "デフォルトのナビゲーション"
@@ -1389,6 +1390,8 @@ _deck:
   swapDown: "下に移動"
   stackLeft: "左に重ねる"
   popRight: "右に出す"
+  showFixedPostForm: "投稿フォームを表示"
+  hideFixedPostForm: "投稿フォームを非表示"
 
   _columns:
     widgets: "ウィジェット"
@@ -1398,6 +1401,7 @@ _deck:
     list: "リスト"
     mentions: "あなた宛て"
     direct: "ダイレクト"
+    channel: "チャンネル"
 
 _autoShowCwContent:
   showAll: "すべての CW 投稿を自動で展開する"

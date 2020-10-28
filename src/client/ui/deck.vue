@@ -169,6 +169,7 @@ export default defineComponent({
 				'list',
 				'mentions',
 				'direct',
+				'channel',
 			];
 
 			const { canceled, result: column } = await os.dialog({

@@ -193,7 +193,7 @@ export default defineComponent({
 			}];
 
 			if (this.menu) {
-				for (const i of this.menu.reverse()) {
+				for (const i of this.menu.slice().reverse()) {
 					items.unshift(i);
 				}
 			}

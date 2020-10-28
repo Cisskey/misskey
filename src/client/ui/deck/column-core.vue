@@ -8,6 +8,7 @@
 <!-- TODO: <XTlColumn v-else-if="column.type === 'hashtag'" :column="column" :is-stacked="isStacked" v-on="$listeners"/> -->
 <XMentionsColumn v-else-if="column.type === 'mentions'" :column="column" :is-stacked="isStacked" v-on="$listeners"/>
 <XDirectColumn v-else-if="column.type === 'direct'" :column="column" :is-stacked="isStacked" v-on="$listeners"/>
+<XChColumn v-else-if="column.type === 'channel'" :column="column" :is-stacked="isStacked" v-on="$listeners"/>
 </template>
 
 <script lang="ts">
@@ -19,6 +20,7 @@ import XNotificationsColumn from './notifications-column.vue';
 import XWidgetsColumn from './widgets-column.vue';
 import XMentionsColumn from './mentions-column.vue';
 import XDirectColumn from './direct-column.vue';
+import XChColumn from './ch-column.vue';
 
 export default defineComponent({
 	components: {
@@ -28,7 +30,8 @@ export default defineComponent({
 		XNotificationsColumn,
 		XWidgetsColumn,
 		XMentionsColumn,
-		XDirectColumn
+		XDirectColumn,
+		XChColumn,
 	},
 	props: {
 		column: {
