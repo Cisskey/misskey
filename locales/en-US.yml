@@ -1036,6 +1036,7 @@ _pages:
       text: "Content"
       attachCanvasImage: "Post with Canvas as Image"
       canvasId: "Canvas ID"
+      channel: "Channel"
     textInput: "Text input"
     _textInput:
       name: "Variable name"
