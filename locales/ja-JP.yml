@@ -1104,6 +1104,7 @@ _pages:
       text: "内容"
       attachCanvasImage: "キャンバスの画像を添付する"
       canvasId: "キャンバスID"
+      channel: "チャンネル"
 
     textInput: "テキスト入力"
     _textInput:

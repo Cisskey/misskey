@@ -6,6 +6,11 @@
 		<MkTextarea v-model:value="value.text">{{ $t('_pages.blocks._post.text') }}</MkTextarea>
 		<MkSwitch v-model:value="value.attachCanvasImage"><span>{{ $t('_pages.blocks._post.attachCanvasImage') }}</span></MkSwitch>
 		<MkInput v-if="value.attachCanvasImage" v-model:value="value.canvasId"><span>{{ $t('_pages.blocks._post.canvasId') }}</span></MkInput>
+		<MkSelect v-model:value="value.channelId">
+			<template #label>{{ $t('_pages.blocks._post.channel') }}</template>
+			<option value=""></option>
+			<option v-for="channel in channels" :value="channel.id">{{ channel.name }}</option>
+		</MkSelect>
 	</section>
 </XContainer>
 </template>
@@ -17,11 +22,12 @@ import XContainer from '../page-editor.container.vue';
 import MkTextarea from '@/components/ui/textarea.vue';
 import MkInput from '@/components/ui/input.vue';
 import MkSwitch from '@/components/ui/switch.vue';
+import MkSelect from '@/components/ui/select.vue';
 import * as os from '@/os';
 
 export default defineComponent({
 	components: {
-		XContainer, MkTextarea, MkInput, MkSwitch
+		XContainer, MkTextarea, MkInput, MkSwitch, MkSelect
 	},
 
 	props: {
@@ -32,6 +38,7 @@ export default defineComponent({
 
 	data() {
 		return {
+			channels: [],
 			faPaperPlane
 		};
 	},
@@ -40,6 +47,18 @@ export default defineComponent({
 		if (this.value.text == null) this.value.text = '';
 		if (this.value.attachCanvasImage == null) this.value.attachCanvasImage = false;
 		if (this.value.canvasId == null) this.value.canvasId = '';
+		if (this.value.channelId == null) this.value.channelId = '';
+		this.fetch();
+	},
+
+	methods: {
+		fetch() {
+			os.api('channels/followed', {
+				limit: 100,
+			}).then(channels => {
+				this.channels = channels;
+			});
+		}
 	},
 });
 </script>
