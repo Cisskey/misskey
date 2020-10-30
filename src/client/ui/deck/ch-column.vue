@@ -71,7 +71,7 @@ export default defineComponent({
 
 	methods: {
 		async selectChannel() {
-			const channels = await os.api('channels/followed');
+			const channels = await os.api('channels/followed', { limit: 100 });
 			const { canceled, result: channel } = await os.dialog({
 				title: this.$t('selectChannel'),
 				type: null,
