@@ -5,7 +5,7 @@
 		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
-	<XPostForm v-if="showFixedPostForm" :channel="{ id: column.chId }" class="" fixed/>
+	<XPostForm v-if="showFixedPostForm" :channel="{ id: column.chId }" class="" fixed :autofocus="false"/>
 	<XTimeline v-if="column.chId" ref="timeline" src="channel" :channel="column.chId" @after="() => $emit('loaded')" @queue="queueUpdated" @note="onNote" :key="column.chId"/>
 </XColumn>
 </template>
