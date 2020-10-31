@@ -13,6 +13,8 @@ const logger = new Logger('deliver');
 let latest: string | null = null;
 
 export default async (job: Bull.Job) => {
+	if (true) return 'skip (unsupported)';
+
 	const { host } = new URL(job.data.to);
 
 	// ブロックしてたら中断
