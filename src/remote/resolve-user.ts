@@ -36,6 +36,9 @@ export async function resolveUser(username: string, host: string | null, option?
 		});
 	}
 
+	// リモートユーザーの解決を一切しないように
+	throw new Error('disable resolve remote user');
+
 	const user = await Users.findOne({ usernameLower, host }, option) as IRemoteUser;
 
 	const acctLower = `${usernameLower}@${host}`;
