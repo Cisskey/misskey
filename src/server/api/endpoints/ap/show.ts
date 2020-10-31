@@ -79,6 +79,9 @@ async function fetchAny(uri: string) {
 		}
 	}
 
+	// リモートのユーザー、投稿情報は一切取得しないように
+	return null;
+
 	// ブロックしてたら中断
 	const meta = await fetchMeta();
 	if (meta.blockedHosts.includes(extractDbHost(uri))) return null;
