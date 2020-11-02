@@ -48,6 +48,10 @@ export function toString(tokens: MfmForest | null, opts?: RestoreOptions): strin
 
 		flip: tagHandler('flip'),
 
+		twitch: tagHandler('twitch'),
+
+		shake: tagHandler('shake'),
+
 		blockCode(token) {
 			return `\`\`\`${token.node.props.lang || ''}\n${token.node.props.code}\n\`\`\`\n`;
 		},
