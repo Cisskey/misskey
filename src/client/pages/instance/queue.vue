@@ -34,10 +34,8 @@ export default defineComponent({
 	data() {
 		return {
 			INFO: {
-				header: [{
-					title: this.$t('jobQueue'),
-					icon: faExchangeAlt,
-				}],
+				title: this.$t('jobQueue'),
+				icon: faExchangeAlt,
 			},
 			connection: os.stream.useSharedConnection('queueStats'),
 			faExchangeAlt, faTrashAlt

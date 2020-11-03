@@ -38,7 +38,7 @@ export const defaultDeviceUserSettings = {
 		'announcements',
 		'search',
 		'-',
-		'deck',
+		'ui',
 	],
 	deck: {
 		columns: [],
