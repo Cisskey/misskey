@@ -1,7 +1,7 @@
 <template>
 <MkModal ref="modal" :src="src" @click="$refs.modal.close()" @closed="$emit('closed')">
-	<div class="omfetrab _popup">
-		<input ref="search" class="search" v-model.trim="q" :placeholder="$t('search')" @paste.stop="paste" @keyup.enter="done()" autofocus>
+	<div class="omfetrab _popup" :class="['w' + width, 'h' + height, { big }]">
+		<input ref="search" class="search" :class="{ filled: q != null && q != '' }" v-model.trim="q" :placeholder="$t('search')" @paste.stop="paste" @keyup.enter="done()">
 		<div class="emojis">
 			<section class="result">
 				<div v-if="searchResultCustom.length > 0">
@@ -30,31 +30,27 @@
 			</section>
 
 			<div class="index">
-				<section>
+				<section v-if="showPinned">
 					<div>
-						<button v-for="emoji in reactions || $store.state.settings.reactions"
+						<button v-for="emoji in pinned"
 							class="_button"
-							:title="emoji.name"
 							@click="chosen(emoji, $event)"
-							:key="emoji"
 							tabindex="0"
 						>
-							<MkEmoji :emoji="emoji.startsWith(':') ? null : emoji" :name="emoji.startsWith(':') ? emoji.substr(1, emoji.length - 2) : null" :normal="true"/>
+							<MkEmoji :emoji="emoji" :normal="true"/>
 						</button>
 					</div>
 				</section>
 
 				<section>
-					<header class="_acrylic"><Fa :icon="faHistory" fixed-width/> {{ $t('recentUsed') }}</header>
+					<header class="_acrylic"><Fa :icon="faClock" fixed-width/> {{ $t('recentUsed') }}</header>
 					<div>
-						<button v-for="emoji in ($store.state.device.recentEmojis || [])"
+						<button v-for="emoji in $store.state.device.recentlyUsedEmojis"
 							class="_button"
-							:title="emoji.name"
 							@click="chosen(emoji, $event)"
 							:key="emoji"
 						>
-							<MkEmoji v-if="emoji.char != null" :emoji="emoji.char"/>
-							<img v-else :src="$store.state.device.disableShowingAnimatedImages ? getStaticImageUrl(emoji.url) : emoji.url"/>
+							<MkEmoji :emoji="emoji" :normal="true"/>
 						</button>
 					</div>
 				</section>
@@ -98,11 +94,12 @@
 import { defineComponent, markRaw } from 'vue';
 import { emojilist } from '../../misc/emojilist';
 import { getStaticImageUrl } from '@/scripts/get-static-image-url';
-import { faAsterisk, faLeaf, faUtensils, faFutbol, faCity, faDice, faGlobe, faHistory, faUser, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faAsterisk, faLeaf, faUtensils, faFutbol, faCity, faDice, faGlobe, faClock, faUser, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { faHeart, faFlag, faLaugh } from '@fortawesome/free-regular-svg-icons';
 import MkModal from '@/components/ui/modal.vue';
 import Particle from '@/components/particle.vue';
 import * as os from '@/os';
+import { isDeviceTouch } from '../scripts/is-device-touch';
 
 export default defineComponent({
 	components: {
@@ -113,7 +110,11 @@ export default defineComponent({
 		src: {
 			required: false
 		},
-		reactions: {
+		showPinned: {
+			required: false,
+			default: true
+		},
+		asReactionPicker: {
 			required: false
 		},
 	},
@@ -124,13 +125,17 @@ export default defineComponent({
 		return {
 			emojilist: markRaw(emojilist),
 			getStaticImageUrl,
+			pinned: this.$store.state.settings.reactions,
+			width: this.asReactionPicker ? this.$store.state.device.reactionPickerWidth : 3,
+			height: this.asReactionPicker ? this.$store.state.device.reactionPickerHeight : 2,
+			big: this.asReactionPicker ? isDeviceTouch : false,
 			customEmojiCategories: this.$store.getters['instance/emojiCategories'],
 			customEmojis: this.$store.state.instance.meta.emojis,
 			visibleCategories: {},
 			q: null,
 			searchResultCustom: [],
 			searchResultUnicode: [],
-			faGlobe, faHistory, faChevronDown,
+			faGlobe, faClock, faChevronDown,
 			categories: [{
 				name: 'face',
 				icon: faLaugh,
@@ -190,36 +195,58 @@ export default defineComponent({
 				const exactMatch = emojis.find(e => e.name === q);
 				if (exactMatch) matches.add(exactMatch);
 
-				for (const emoji of emojis) {
-					if (emoji.name.startsWith(q)) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
-				if (matches.size >= max) return matches;
+				if (q.includes(' ')) { // AND検索
+					const keywords = q.split(' ');
 
-				for (const emoji of emojis) {
-					if (emoji.aliases.some(alias => alias.startsWith(q))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+					// 名前にキーワードが含まれている
+					for (const emoji of emojis) {
+						if (keywords.every(keyword => emoji.name.includes(keyword))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
-				}
-				if (matches.size >= max) return matches;
+					if (matches.size >= max) return matches;
 
-				for (const emoji of emojis) {
-					if (emoji.name.includes(q)) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+					// 名前またはエイリアスにキーワードが含まれている
+					for (const emoji of emojis) {
+						if (keywords.every(keyword => emoji.name.includes(keyword) || emoji.aliases.some(alias => alias.includes(keyword)))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
-				}
-				if (matches.size >= max) return matches;
+				} else {
+					for (const emoji of emojis) {
+						if (emoji.name.startsWith(q)) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+					if (matches.size >= max) return matches;
 
-				for (const emoji of emojis) {
-					if (emoji.aliases.some(alias => alias.includes(q))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+					for (const emoji of emojis) {
+						if (emoji.aliases.some(alias => alias.startsWith(q))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+					if (matches.size >= max) return matches;
+
+					for (const emoji of emojis) {
+						if (emoji.name.includes(q)) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+					if (matches.size >= max) return matches;
+
+					for (const emoji of emojis) {
+						if (emoji.aliases.some(alias => alias.includes(q))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
 				}
+
 				return matches;
 			};
 
@@ -231,36 +258,58 @@ export default defineComponent({
 				const exactMatch = emojis.find(e => e.name === q);
 				if (exactMatch) matches.add(exactMatch);
 
-				for (const emoji of emojis) {
-					if (emoji.name.startsWith(q)) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
-					}
-				}
-				if (matches.size >= max) return matches;
+				if (q.includes(' ')) { // AND検索
+					const keywords = q.split(' ');
 
-				for (const emoji of emojis) {
-					if (emoji.keywords.some(keyword => keyword.startsWith(q))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+					// 名前にキーワードが含まれている
+					for (const emoji of emojis) {
+						if (keywords.every(keyword => emoji.name.includes(keyword))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
-				}
-				if (matches.size >= max) return matches;
+					if (matches.size >= max) return matches;
 
-				for (const emoji of emojis) {
-					if (emoji.name.includes(q)) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+					// 名前またはエイリアスにキーワードが含まれている
+					for (const emoji of emojis) {
+						if (keywords.every(keyword => emoji.name.includes(keyword) || emoji.keywords.some(alias => alias.includes(keyword)))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
-				}
-				if (matches.size >= max) return matches;
+				} else {
+					for (const emoji of emojis) {
+						if (emoji.name.startsWith(q)) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+					if (matches.size >= max) return matches;
 
-				for (const emoji of emojis) {
-					if (emoji.keywords.some(keyword => keyword.includes(q))) {
-						matches.add(emoji);
-						if (matches.size >= max) break;
+					for (const emoji of emojis) {
+						if (emoji.keywords.some(keyword => keyword.startsWith(q))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+					if (matches.size >= max) return matches;
+
+					for (const emoji of emojis) {
+						if (emoji.name.includes(q)) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
+					}
+					if (matches.size >= max) return matches;
+
+					for (const emoji of emojis) {
+						if (emoji.keywords.some(keyword => keyword.includes(q))) {
+							matches.add(emoji);
+							if (matches.size >= max) break;
+						}
 					}
 				}
+
 				return matches;
 			};
 
@@ -270,12 +319,18 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$refs.search.focus({
-			preventScroll: true
-		});
+		if (!os.isMobile) {
+			this.$refs.search.focus({
+				preventScroll: true
+			});
+		}
 	},
 
 	methods: {
+		getKey(emoji: any) {
+			return typeof emoji === 'string' ? emoji : (emoji.char || `:${emoji.name}:`);
+		},
+
 		chosen(emoji: any, ev) {
 			if (ev) {
 				const el = ev.currentTarget || ev.target;
@@ -285,15 +340,17 @@ export default defineComponent({
 				os.popup(Particle, { x, y }, {}, 'end');
 			}
 
-			const getKey = (emoji: any) => typeof emoji === 'string' ? emoji : emoji.char || `:${emoji.name}:`;
-			this.$emit('done', getKey(emoji));
+			const key = this.getKey(emoji);
+			this.$emit('done', key);
 			this.$refs.modal.close();
 
 			// 最近使った絵文字更新
-			let recents = this.$store.state.device.recentEmojis || [];
-			recents = recents.filter((e: any) => getKey(e) !== getKey(emoji));
-			recents.unshift(emoji)
-			this.$store.commit('device/set', { key: 'recentEmojis', value: recents.splice(0, 16) });
+			if (!this.pinned.includes(key)) {
+				let recents = this.$store.state.device.recentlyUsedEmojis;
+				recents = recents.filter((e: any) => e !== key);
+				recents.unshift(key);
+				this.$store.commit('device/set', { key: 'recentlyUsedEmojis', value: recents.splice(0, 16) });
+			}
 		},
 
 		paste(event) {
@@ -317,6 +374,14 @@ export default defineComponent({
 				this.chosen(exactMatchUnicode);
 				return true;
 			}
+			if (this.searchResultCustom.length > 0) {
+				this.chosen(this.searchResultCustom[0]);
+				return true;
+			}
+			if (this.searchResultUnicode.length > 0) {
+				this.chosen(this.searchResultUnicode[0]);
+				return true;
+			}
 		},
 	}
 });
@@ -324,8 +389,40 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .omfetrab {
-	width: 350px;
+	$pad: 8px;
+	--eachSize: 40px;
+
+	display: flex;
+	flex-direction: column;
 	contain: content;
+
+	&.big {
+		--eachSize: 44px;
+	}
+
+	&.w1 {
+		width: calc((var(--eachSize) * 5) + (#{$pad} * 2));
+	}
+
+	&.w2 {
+		width: calc((var(--eachSize) * 6) + (#{$pad} * 2));
+	}
+
+	&.w3 {
+		width: calc((var(--eachSize) * 7) + (#{$pad} * 2));
+	}
+
+	&.h1 {
+		--height: calc((var(--eachSize) * 4) + (#{$pad} * 2));
+	}
+
+	&.h2 {
+		--height: calc((var(--eachSize) * 6) + (#{$pad} * 2));
+	}
+
+	&.h3 {
+		--height: calc((var(--eachSize) * 8) + (#{$pad} * 2));
+	}
 
 	> .search {
 		width: 100%;
@@ -336,17 +433,27 @@ export default defineComponent({
 		border: none;
 		background: transparent;
 		color: var(--fg);
+
+		&:not(.filled) {
+			order: 1;
+			z-index: 2;
+			box-shadow: 0px -1px 0 0px var(--divider);
+		}
 	}
 
 	> .emojis {
-		$height: 300px;
-
-		height: $height;
+		height: var(--height);
 		overflow-y: auto;
 		overflow-x: hidden;
 
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
 		> .index {
-			min-height: $height;
+			min-height: var(--height);
 			position: relative;
 			border-bottom: solid 1px var(--divider);
 				
@@ -373,45 +480,33 @@ export default defineComponent({
 			}
 
 			> div {
-				display: grid;
-				grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-				gap: 4px;
-				padding: 8px;
+				padding: $pad;
 
 				> button {
 					position: relative;
 					padding: 0;
-					width: 100%;
+					width: var(--eachSize);
+					height: var(--eachSize);
+					border-radius: 4px;
 
 					&:focus {
 						outline: solid 2px var(--focus);
 						z-index: 1;
 					}
 
-					&:before {
-						content: '';
-						display: block;
-						width: 1px;
-						height: 0;
-						padding-bottom: 100%;
+					&:hover {
+						background: rgba(0, 0, 0, 0.05);
 					}
 
-					&:hover {
-						> * {
-							transform: scale(1.2);
-							transition: transform 0s;
-						}
+					&:active {
+						background: var(--accent);
+						box-shadow: inset 0 0.15em 0.3em rgba(27, 31, 35, 0.15);
 					}
 
 					> * {
-						position: absolute;
-						top: 0;
-						left: 0;
-						width: 100%;
-						height: 100%;
-						object-fit: contain;
-						font-size: 28px;
-						transition: transform 0.2s ease;
+						font-size: 24px;
+						height: 1.25em;
+						vertical-align: -.25em;
 						pointer-events: none;
 					}
 				}
@@ -419,6 +514,10 @@ export default defineComponent({
 
 			&.result {
 				border-bottom: solid 1px var(--divider);
+
+				&:empty {
+					display: none;
+				}
 			}
 
 			&.unicode {
