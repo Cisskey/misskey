@@ -139,5 +139,10 @@ export default defineComponent({
 		word-break: break-all;
 		padding: 4px 6px;
 	}
+
+	::v-deep(.title) {
+		text-align: center;
+		border-bottom: solid 1px var(--divider);
+	}
 }
 </style>
