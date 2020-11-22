@@ -22,7 +22,7 @@
 
 	<XPostForm :channel="channel" class="post-form _content _panel _vMargin" fixed v-if="this.$store.getters.isSignedIn"/>
 
-	<XTimeline class="_content _vMargin" src="channel" :channel="channelId" @before="before" @after="after"/>
+	<XTimeline class="_content _vMargin" src="channel" :key="channelId" :channel="channelId" @before="before" @after="after"/>
 </div>
 </template>
 
