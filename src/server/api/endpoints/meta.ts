@@ -129,6 +129,8 @@ export default define(meta, async (ps, me) => {
 		bannerUrl: instance.bannerUrl,
 		errorImageUrl: instance.errorImageUrl,
 		iconUrl: instance.iconUrl,
+		backgroundImageUrl: instance.backgroundImageUrl,
+		logoImageUrl: instance.logoImageUrl,
 		maxNoteTextLength: Math.min(instance.maxNoteTextLength, DB_MAX_NOTE_TEXT_LENGTH),
 		emojis: await Emojis.packMany(emojis),
 		enableEmail: instance.enableEmail,
@@ -143,6 +145,7 @@ export default define(meta, async (ps, me) => {
 
 		...(ps.detail ? {
 			pinnedPages: instance.pinnedPages,
+			pinnedClipId: instance.pinnedClipId,
 			cacheRemoteFiles: instance.cacheRemoteFiles,
 			proxyRemoteFiles: instance.proxyRemoteFiles,
 			requireSetup: (await Users.count({

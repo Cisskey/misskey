@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MkLoading from '@/pages/_loading_.vue';
 import MkError from '@/pages/_error_.vue';
 import MkTimeline from '@/pages/timeline.vue';
-import { store } from './store';
+import { $i } from './account';
 
 const page = (path: string) => defineAsyncComponent({
 	loader: () => import(`./pages/${path}.vue`),
@@ -17,12 +17,12 @@ export const router = createRouter({
 	history: createWebHistory(),
 	routes: [
 		// NOTE: MkTimelineをdynamic importするとAsyncComponentWrapperが間に入るせいでkeep-aliveのコンポーネント指定が効かなくなる
-		{ path: '/', name: 'index', component: store.getters.isSignedIn ? MkTimeline : page('welcome') },
+		{ path: '/', name: 'index', component: $i ? MkTimeline : page('welcome') },
 		{ path: '/@:acct/:page?', name: 'user', component: page('user/index'), props: route => ({ acct: route.params.acct, page: route.params.page || 'index' }) },
 		{ path: '/@:user/pages/:page', component: page('page'), props: route => ({ pageName: route.params.page, username: route.params.user }) },
 		{ path: '/@:user/pages/:pageName/view-source', component: page('page-editor/page-editor'), props: route => ({ initUser: route.params.user, initPageName: route.params.pageName }) },
 		{ path: '/@:acct/room', props: true, component: page('room/room') },
-		{ path: '/settings/:page?', name: 'settings', component: page('settings/index'), props: route => ({ page: route.params.page || null }) },
+		{ path: '/settings/:page(.*)?', name: 'settings', component: page('settings/index'), props: route => ({ page: route.params.page || null }) },
 		{ path: '/announcements', component: page('announcements') },
 		{ path: '/about', component: page('about') },
 		{ path: '/about-misskey', component: page('about-misskey') },
@@ -57,7 +57,6 @@ export const router = createRouter({
 		{ path: '/my/groups/:group', component: page('my-groups/group') },
 		{ path: '/my/antennas', component: page('my-antennas/index') },
 		{ path: '/my/clips', component: page('my-clips/index') },
-		{ path: '/my/apps', component: page('apps') },
 		{ path: '/scratchpad', component: page('scratchpad') },
 		{ path: '/instance', component: page('instance/index') },
 		{ path: '/instance/emojis', component: page('instance/emojis') },

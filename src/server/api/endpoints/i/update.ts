@@ -92,6 +92,10 @@ export const meta = {
 			}
 		},
 
+		isExplorable: {
+			validator: $.optional.bool,
+		},
+
 		carefulBot: {
 			validator: $.optional.bool,
 			desc: {
@@ -103,6 +107,13 @@ export const meta = {
 			validator: $.optional.bool,
 			desc: {
 				'ja-JP': 'フォローしているユーザーからのフォローリクエストを自動承認するか'
+			}
+		},
+
+		noCrawle: {
+			validator: $.optional.bool,
+			desc: {
+				'ja-JP': '検索エンジンによるインデックスを拒否するか否か'
 			}
 		},
 
@@ -230,9 +241,11 @@ export default define(meta, async (ps, user, token) => {
 	}
 	if (ps.mutingNotificationTypes !== undefined) profileUpdates.mutingNotificationTypes = ps.mutingNotificationTypes as typeof notificationTypes[number][];
 	if (typeof ps.isLocked === 'boolean') updates.isLocked = ps.isLocked;
+	if (typeof ps.isExplorable === 'boolean') updates.isExplorable = ps.isExplorable;
 	if (typeof ps.isBot === 'boolean') updates.isBot = ps.isBot;
 	if (typeof ps.carefulBot === 'boolean') profileUpdates.carefulBot = ps.carefulBot;
 	if (typeof ps.autoAcceptFollowed === 'boolean') profileUpdates.autoAcceptFollowed = ps.autoAcceptFollowed;
+	if (typeof ps.noCrawle === 'boolean') profileUpdates.noCrawle = ps.noCrawle;
 	if (typeof ps.isCat === 'boolean') updates.isCat = ps.isCat;
 	if (typeof ps.injectFeaturedNote === 'boolean') profileUpdates.injectFeaturedNote = ps.injectFeaturedNote;
 	if (typeof ps.alwaysMarkNsfw === 'boolean') profileUpdates.alwaysMarkNsfw = ps.alwaysMarkNsfw;

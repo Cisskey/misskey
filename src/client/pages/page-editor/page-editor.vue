@@ -3,7 +3,11 @@
 	<div class="_content">
 		<MkA class="view" v-if="pageId" :to="`/@${ author.username }/pages/${ currentName }`"><Fa :icon="faExternalLinkSquareAlt"/> {{ $t('_pages.viewPage') }}</MkA>
 
-		<MkButton @click="save" primary class="save" style="margin: 16px auto 16px auto;"><Fa :icon="faSave"/> {{ $t('save') }}</MkButton>
+		<div class="buttons" style="margin: 16px 0;">
+			<MkButton inline @click="save" primary class="save"><Fa :icon="faSave"/> {{ $t('save') }}</MkButton>
+			<MkButton inline @click="duplicate" class="duplicate" v-if="pageId"><Fa :icon="faCopy"/> {{ $t('duplicate') }}</MkButton>
+			<MkButton inline @click="del" class="delete" v-if="pageId"><Fa :icon="faTrashAlt"/> {{ $t('delete') }}</MkButton>
+		</div>
 
 		<MkContainer :body-togglable="true" :expanded="true" class="_vMargin">
 			<template #header><Fa :icon="faCog"/> {{ $t('_pages.pageSetting') }}</template>
@@ -53,18 +57,18 @@
 		<MkContainer :body-togglable="true" class="_vMargin">
 			<template #header><Fa :icon="faMagic"/> {{ $t('_pages.variables') }}</template>
 			<div class="qmuvgica">
-				<XDraggable tag="div" class="variables" v-show="variables.length > 0" :list="variables" handle=".drag-handle" :group="{ name: 'variables' }" animation="150" swap-threshold="0.5">
-					<XVariable v-for="variable in variables"
-						:value="variable"
-						:removable="true"
-						@update:value="v => updateVariable(v)"
-						@remove="() => removeVariable(variable)"
-						:key="variable.name"
-						:hpml="hpml"
-						:name="variable.name"
-						:title="variable.name"
-						:draggable="true"
-					/>
+				<XDraggable tag="div" class="variables" v-show="variables.length > 0" v-model="variables" item-key="name" handle=".drag-handle" :group="{ name: 'variables' }" animation="150" swap-threshold="0.5">
+					<template #item="{element}">
+						<XVariable
+							:value="element"
+							:removable="true"
+							@remove="() => removeVariable(element)"
+							:hpml="hpml"
+							:name="element.name"
+							:title="element.name"
+							:draggable="true"
+						/>
+					</template>
 				</XDraggable>
 
 				<MkButton @click="addVariable()" class="add" v-if="!readonly"><Fa :icon="faPlus"/></MkButton>
@@ -89,7 +93,7 @@ import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/themes/prism-okaidia.css';
 import 'vue-prism-editor/dist/prismeditor.min.css';
-import { faICursor, faPlus, faMagic, faCog, faCode, faExternalLinkSquareAlt, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { faICursor, faPlus, faMagic, faCog, faCode, faExternalLinkSquareAlt, faPencilAlt, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { faSave, faStickyNote, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import { v4 as uuid } from 'uuid';
 import XVariable from './page-editor.script-block.vue';
@@ -109,7 +113,7 @@ import { selectFile } from '@/scripts/select-file';
 
 export default defineComponent({
 	components: {
-		XDraggable: defineAsyncComponent(() => import('vue-draggable-next').then(x => x.VueDraggableNext)),
+		XDraggable: defineAsyncComponent(() => import('vuedraggable').then(x => x.default)),
 		XVariable, XBlocks, MkTextarea, MkContainer, MkButton, MkSelect, MkSwitch, MkInput,
 	},
 
@@ -137,7 +141,7 @@ export default defineComponent({
 				title: this.$t('_pages.newPage'),
 				icon: faPencilAlt,
 			}),
-			author: this.$store.state.i,
+			author: this.$i,
 			readonly: false,
 			page: null,
 			pageId: null,
@@ -155,7 +159,7 @@ export default defineComponent({
 			hpml: null,
 			script: '',
 			url,
-			faPlus, faICursor, faSave, faStickyNote, faMagic, faCog, faTrashAlt, faExternalLinkSquareAlt, faCode
+			faPlus, faICursor, faSave, faStickyNote, faMagic, faCog, faTrashAlt, faExternalLinkSquareAlt, faCode, faCopy
 		};
 	},
 
@@ -227,8 +231,8 @@ export default defineComponent({
 	},
 
 	methods: {
-		save() {
-			const options = {
+		getSaveOptions() {
+			return {
 				title: this.title.trim(),
 				name: this.name.trim(),
 				summary: this.summary,
@@ -240,6 +244,10 @@ export default defineComponent({
 				variables: this.variables,
 				eyeCatchingImageId: this.eyeCatchingImageId,
 			};
+		},
+
+		save() {
+			const options = this.getSaveOptions();
 
 			const onError = err => {
 				if (err.id == '3d81ceae-475f-4600-b2a8-2bc116157532') {
@@ -301,6 +309,20 @@ export default defineComponent({
 			});
 		},
 
+		duplicate() {
+			this.title = this.title + ' - copy';
+			this.name = this.name + '-copy';
+			os.api('pages/create', this.getSaveOptions()).then(page => {
+				this.pageId = page.id;
+				this.currentName = this.name.trim();
+				os.dialog({
+					type: 'success',
+					text: this.$t('_pages.created')
+				});
+				this.$router.push(`/pages/edit/${this.pageId}`);
+			});
+		},
+
 		async add() {
 			const { canceled, result: type } = await os.dialog({
 				type: null,
@@ -341,12 +363,7 @@ export default defineComponent({
 		},
 
 		removeVariable(v) {
-			const i = this.variables.findIndex(x => x.name === v.name);
-			const newValue = [
-				...this.variables.slice(0, i),
-				...this.variables.slice(i + 1)
-			];
-			this.variables = newValue;
+			this.variables = this.variables.filter(x => x.name !== v.name);
 		},
 
 		getPageBlockList() {

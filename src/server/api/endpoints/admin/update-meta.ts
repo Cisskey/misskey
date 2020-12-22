@@ -94,6 +94,14 @@ export const meta = {
 			}
 		},
 
+		backgroundImageUrl: {
+			validator: $.optional.nullable.str,
+		},
+
+		logoImageUrl: {
+			validator: $.optional.nullable.str,
+		},
+
 		name: {
 			validator: $.optional.nullable.str,
 			desc: {
@@ -210,6 +218,10 @@ export const meta = {
 
 		pinnedPages: {
 			validator: $.optional.arr($.str),
+		},
+
+		pinnedClipId: {
+			validator: $.optional.nullable.type(ID),
 		},
 
 		langs: {
@@ -487,6 +499,14 @@ export default define(meta, async (ps, me) => {
 		set.iconUrl = ps.iconUrl;
 	}
 
+	if (ps.backgroundImageUrl !== undefined) {
+		set.backgroundImageUrl = ps.backgroundImageUrl;
+	}
+
+	if (ps.logoImageUrl !== undefined) {
+		set.logoImageUrl = ps.logoImageUrl;
+	}
+
 	if (ps.name !== undefined) {
 		set.name = ps.name;
 	}
@@ -557,6 +577,10 @@ export default define(meta, async (ps, me) => {
 
 	if (Array.isArray(ps.pinnedPages)) {
 		set.pinnedPages = ps.pinnedPages.filter(Boolean);
+	}
+
+	if (ps.pinnedClipId !== undefined) {
+		set.pinnedClipId = ps.pinnedClipId;
 	}
 
 	if (ps.summalyProxy !== undefined) {

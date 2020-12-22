@@ -1,11 +1,11 @@
 import { Component, defineAsyncComponent, markRaw, reactive, Ref, ref } from 'vue';
 import { EventEmitter } from 'eventemitter3';
 import Stream from '@/scripts/stream';
-import { store } from '@/store';
 import { apiUrl, debug } from '@/config';
 import MkPostFormDialog from '@/components/post-form-dialog.vue';
 import MkWaitingDialog from '@/components/waiting-dialog.vue';
 import { resolve } from '@/router';
+import { $i } from './account';
 
 const ua = navigator.userAgent.toLowerCase();
 export const isMobile = /mobile|iphone|ipad|android/.test(ua);
@@ -39,7 +39,7 @@ export function api(endpoint: string, data: Record<string, any> = {}, token?: st
 
 	const promise = new Promise((resolve, reject) => {
 		// Append a credential
-		if (store.getters.isSignedIn) (data as any).i = store.state.i.token;
+		if ($i) (data as any).i = $i.token;
 		if (token !== undefined) (data as any).i = token;
 
 		// Send request
@@ -344,15 +344,6 @@ export function post(props: Record<string, any>) {
 	});
 }
 
-export function sound(type: string) {
-	if (store.state.device.sfxVolume === 0) return;
-	const sound = store.state.device['sfx' + type.substr(0, 1).toUpperCase() + type.substr(1)];
-	if (sound == null) return;
-	const audio = new Audio(`/assets/sounds/${sound}.mp3`);
-	audio.volume = store.state.device.sfxVolume;
-	audio.play();
-}
-
 export const deckGlobalEvents = new EventEmitter();
 
 export const uploads = ref([]);
@@ -376,7 +367,7 @@ export function upload(file: File, folder?: any, name?: string) {
 			uploads.value.push(ctx);
 
 			const data = new FormData();
-			data.append('i', store.state.i.token);
+			data.append('i', $i.token);
 			data.append('force', 'true');
 			data.append('file', file);
 

@@ -1,5 +1,5 @@
 import define from '../define';
-import { Notes, Users } from '../../../models';
+import { NoteReactions, Notes, Users } from '../../../models';
 import { federationChart, driveChart } from '../../../services/chart';
 import { Raw } from 'typeorm';
 
@@ -54,11 +54,14 @@ export const meta = {
 };
 
 export default define(meta, async () => {
-	const [notesCount,
+	const [
+		notesCount,
 		originalNotesCount,
 		originalNotesMomentumCount,
 		usersCount,
 		originalUsersCount,
+		reactionsCount,
+		//originalReactionsCount,
 		instances,
 		driveUsageLocal,
 		driveUsageRemote
@@ -73,6 +76,8 @@ export default define(meta, async () => {
 		),
 		Users.count({ cache: 3600000 }),
 		Users.count({ where: { host: null }, cache: 3600000 }),
+		NoteReactions.count({ cache: 3600000 }), // 1 hour
+		//NoteReactions.count({ where: { userHost: null }, cache: 3600000 }),
 		federationChart.getChart('hour', 1, null).then(chart => chart.instance.total[0]),
 		driveChart.getChart('hour', 1, null).then(chart => chart.local.totalSize[0]),
 		driveChart.getChart('hour', 1, null).then(chart => chart.remote.totalSize[0]),
@@ -84,6 +89,8 @@ export default define(meta, async () => {
 		originalNotesMomentumCount,
 		usersCount,
 		originalUsersCount,
+		reactionsCount,
+		//originalReactionsCount,
 		instances,
 		driveUsageLocal,
 		driveUsageRemote

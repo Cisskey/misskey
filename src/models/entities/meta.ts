@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user';
 import { id } from '../id';
+import { Clip } from './clip';
 
 @Entity()
 export class Meta {
@@ -77,9 +78,15 @@ export class Meta {
 	public blockedHosts: string[];
 
 	@Column('varchar', {
-		length: 512, array: true, default: '{"/announcements", "/featured", "/channels", "/explore", "/games/reversi", "/about-misskey"}'
+		length: 512, array: true, default: '{"/featured", "/channels", "/explore", "/pages", "/about-misskey"}'
 	})
 	public pinnedPages: string[];
+
+	@Column({
+		...id(),
+		nullable: true,
+	})
+	public pinnedClipId: Clip['id'] | null;
 
 	@Column('varchar', {
 		length: 512,
@@ -93,6 +100,18 @@ export class Meta {
 		nullable: true
 	})
 	public bannerUrl: string | null;
+
+	@Column('varchar', {
+		length: 512,
+		nullable: true
+	})
+	public backgroundImageUrl: string | null;
+
+	@Column('varchar', {
+		length: 512,
+		nullable: true
+	})
+	public logoImageUrl: string | null;
 
 	@Column('varchar', {
 		length: 512,

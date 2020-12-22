@@ -1,29 +1,31 @@
 <template>
-<div>
-	<div class="_section">
-		<MkButton full primary @click="configure"><Fa :icon="faCog"/> {{ $t('notificationSetting') }}</MkButton>
-	</div>
-	<div class="_section">
-		<MkButton full @click="readAllNotifications">{{ $t('markAsReadAllNotifications') }}</MkButton>
-		<MkButton full @click="readAllUnreadNotes">{{ $t('markAsReadAllUnreadNotes') }}</MkButton>
-		<MkButton full @click="readAllMessagingMessages">{{ $t('markAsReadAllTalkMessages') }}</MkButton>
-	</div>
-</div>
+<FormBase>
+	<FormLink @click="configure">{{ $t('notificationSetting') }}</FormLink>
+	<FormGroup>
+		<FormButton @click="readAllNotifications">{{ $t('markAsReadAllNotifications') }}</FormButton>
+		<FormButton @click="readAllUnreadNotes">{{ $t('markAsReadAllUnreadNotes') }}</FormButton>
+		<FormButton @click="readAllMessagingMessages">{{ $t('markAsReadAllTalkMessages') }}</FormButton>
+	</FormGroup>
+</FormBase>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { faBell } from '@fortawesome/free-regular-svg-icons';
-import MkButton from '@/components/ui/button.vue';
-import MkSwitch from '@/components/ui/switch.vue';
+import FormButton from '@/components/form/button.vue';
+import FormLink from '@/components/form/link.vue';
+import FormBase from '@/components/form/base.vue';
+import FormGroup from '@/components/form/group.vue';
 import { notificationTypes } from '../../../types';
 import * as os from '@/os';
 
 export default defineComponent({
 	components: {
-		MkButton,
-		MkSwitch,
+		FormBase,
+		FormLink,
+		FormButton,
+		FormGroup,
 	},
 
 	emits: ['info'],
@@ -56,7 +58,7 @@ export default defineComponent({
 		},
 
 		configure() {
-			const includingTypes = notificationTypes.filter(x => !this.$store.state.i.mutingNotificationTypes.includes(x));
+			const includingTypes = notificationTypes.filter(x => !this.$i.mutingNotificationTypes.includes(x));
 			os.popup(import('@/components/notification-setting-window.vue'), {
 				includingTypes,
 				showGlobalToggle: false,
@@ -66,7 +68,7 @@ export default defineComponent({
 					await os.apiWithDialog('i/update', {
 						mutingNotificationTypes: notificationTypes.filter(x => !value.includes(x)),
 					}).then(i => {
-						this.$store.state.i.mutingNotificationTypes = i.mutingNotificationTypes;
+						this.$i.mutingNotificationTypes = i.mutingNotificationTypes;
 					});
 				}
 			}, 'closed');

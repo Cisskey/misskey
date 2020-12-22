@@ -43,14 +43,14 @@
 			<MkInstanceTicker v-if="showTicker" class="ticker" :instance="appearNote.user.instance"/>
 			<div class="body">
 				<p v-if="appearNote.cw != null" class="cw">
-					<Mfm v-if="appearNote.cw != ''" class="text" :text="appearNote.cw" :author="appearNote.user" :i="$store.state.i" :custom-emojis="appearNote.emojis"/>
+					<Mfm v-if="appearNote.cw != ''" class="text" :text="appearNote.cw" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
 					<XCwButton v-model:value="showContent" :note="appearNote"/>
 				</p>
 				<div class="content" v-show="appearNote.cw == null || showContent">
 					<div class="text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ $t('private') }})</span>
 						<MkA class="reply" v-if="appearNote.replyId" :to="`/notes/${appearNote.replyId}`"><Fa :icon="faReply"/></MkA>
-						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$store.state.i" :custom-emojis="appearNote.emojis"/>
+						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
 						<a class="rp" v-if="appearNote.renote != null">RN:</a>
 					</div>
 					<div class="files" v-if="appearNote.files.length > 0">
@@ -179,7 +179,7 @@ export default defineComponent({
 
 	computed: {
 		rs() {
-			return this.$store.state.settings.reactions;
+			return this.$store.state.reactions;
 		},
 		keymap(): any {
 			return {
@@ -219,11 +219,11 @@ export default defineComponent({
 		},
 
 		isMyNote(): boolean {
-			return this.$store.getters.isSignedIn && (this.$store.state.i.id === this.appearNote.userId);
+			return this.$i && (this.$i.id === this.appearNote.userId);
 		},
 
 		isMyRenote(): boolean {
-			return this.$store.getters.isSignedIn && (this.$store.state.i.id === this.note.userId);
+			return this.$i && (this.$i.id === this.note.userId);
 		},
 
 		canRenote(): boolean {
@@ -259,14 +259,14 @@ export default defineComponent({
 		},
 
 		showTicker() {
-			if (this.$store.state.device.instanceTicker === 'always') return true;
-			if (this.$store.state.device.instanceTicker === 'remote' && this.appearNote.user.instance) return true;
+			if (this.$store.state.instanceTicker === 'always') return true;
+			if (this.$store.state.instanceTicker === 'remote' && this.appearNote.user.instance) return true;
 			return false;
 		}
 	},
 
 	async created() {
-		if (this.$store.getters.isSignedIn) {
+		if (this.$i) {
 			this.connection = os.stream;
 		}
 
@@ -279,7 +279,7 @@ export default defineComponent({
 			this.$emit('update:note', Object.freeze(result));
 		}
 
-		this.muted = await checkWordMute(this.appearNote, this.$store.state.i, this.$store.state.settings.mutedWords);
+		this.muted = await checkWordMute(this.appearNote, this.$i, this.$store.state.mutedWords);
 
 		if (this.detail) {
 			os.api('notes/children', {
@@ -308,7 +308,7 @@ export default defineComponent({
 	mounted() {
 		this.capture(true);
 
-		if (this.$store.getters.isSignedIn) {
+		if (this.$i) {
 			this.connection.on('_connected_', this.onStreamConnected);
 		}
 	},
@@ -316,7 +316,7 @@ export default defineComponent({
 	beforeUnmount() {
 		this.decapture(true);
 
-		if (this.$store.getters.isSignedIn) {
+		if (this.$i) {
 			this.connection.off('_connected_', this.onStreamConnected);
 		}
 	},
@@ -343,14 +343,14 @@ export default defineComponent({
 		},
 
 		capture(withHandler = false) {
-			if (this.$store.getters.isSignedIn) {
+			if (this.$i) {
 				this.connection.send(document.body.contains(this.$el) ? 'sn' : 's', { id: this.appearNote.id });
 				if (withHandler) this.connection.on('noteUpdated', this.onStreamNoteUpdated);
 			}
 		},
 
 		decapture(withHandler = false) {
-			if (this.$store.getters.isSignedIn) {
+			if (this.$i) {
 				this.connection.send('un', {
 					id: this.appearNote.id
 				});
@@ -398,7 +398,7 @@ export default defineComponent({
 						n.reactions[reaction] = 1;
 					}
 
-					if (body.userId === this.$store.state.i.id) {
+					if (body.userId === this.$i.id) {
 						n.myReactions.push(reaction);
 					}
 
@@ -423,8 +423,13 @@ export default defineComponent({
 						[reaction]: Math.max(0, currentCount - 1)
 					};
 
+<<<<<<< HEAD
 					if (body.userId === this.$store.state.i.id) {
 						n.myReactions = n.myReactions.filter(r => r !== reaction);
+=======
+					if (body.userId === this.$i.id) {
+						n.myReaction = null;
+>>>>>>> misskey/develop
 					}
 
 					this.updateAppearNote(n);
@@ -443,7 +448,7 @@ export default defineComponent({
 					choices[choice] = {
 						...choices[choice],
 						votes: choices[choice].votes + 1,
-						...(body.userId === this.$store.state.i.id ? {
+						...(body.userId === this.$i.id ? {
 							isVoted: true
 						} : {})
 					};
@@ -499,8 +504,25 @@ export default defineComponent({
 		},
 
 		renoteDirectly() {
-			os.api('notes/create', {
+			os.apiWithDialog('notes/create', {
 				renoteId: this.appearNote.id
+			}, undefined, (res: any) => {
+				os.dialog({
+					type: 'success',
+					text: this.$t('renoted'),
+				});
+			}, (e: Error) => {
+				if (e.id === 'b5c90186-4ab0-49c8-9bba-a1f76c282ba4') {
+					os.dialog({
+						type: 'error',
+						text: this.$t('cantRenote'),
+					});
+				} else if (e.id === 'fd4cc33e-2a37-48dd-99cc-9b806eb2031a') {
+					os.dialog({
+						type: 'error',
+						text: this.$t('cantReRenote'),
+					});
+				}
 			});
 		},
 
@@ -534,6 +556,23 @@ export default defineComponent({
 			pleaseLogin();
 			os.apiWithDialog('notes/favorites/create', {
 				noteId: this.appearNote.id
+			}, undefined, (res: any) => {
+				os.dialog({
+					type: 'success',
+					text: this.$t('favorited'),
+				});
+			}, (e: Error) => {
+				if (e.id === 'a402c12b-34dd-41d2-97d8-4d2ffd96a1a6') {
+					os.dialog({
+						type: 'error',
+						text: this.$t('alreadyFavorited'),
+					});
+				} else if (e.id === '6dd26674-e060-4816-909a-45ba3f4da458') {
+					os.dialog({
+						type: 'error',
+						text: this.$t('cantFavorite'),
+					});
+				}
 			});
 		},
 
@@ -581,7 +620,7 @@ export default defineComponent({
 
 		getMenu() {
 			let menu;
-			if (this.$store.getters.isSignedIn) {
+			if (this.$i) {
 				const statePromise = os.api('notes/state', {
 					noteId: this.appearNote.id
 				});
@@ -616,7 +655,7 @@ export default defineComponent({
 					text: this.$t('clip'),
 					action: () => this.clip()
 				},
-				(this.appearNote.userId != this.$store.state.i.id) ? statePromise.then(state => state.isWatching ? {
+				(this.appearNote.userId != this.$i.id) ? statePromise.then(state => state.isWatching ? {
 					icon: faEyeSlash,
 					text: this.$t('unwatch'),
 					action: () => this.toggleWatch(false)
@@ -625,7 +664,7 @@ export default defineComponent({
 					text: this.$t('watch'),
 					action: () => this.toggleWatch(true)
 				}) : undefined,
-				this.appearNote.userId == this.$store.state.i.id ? (this.$store.state.i.pinnedNoteIds || []).includes(this.appearNote.id) ? {
+				this.appearNote.userId == this.$i.id ? (this.$i.pinnedNoteIds || []).includes(this.appearNote.id) ? {
 					icon: faThumbtack,
 					text: this.$t('unpin'),
 					action: () => this.togglePin(false)
@@ -634,7 +673,7 @@ export default defineComponent({
 					text: this.$t('pin'),
 					action: () => this.togglePin(true)
 				} : undefined,
-				...(this.$store.state.i.isModerator || this.$store.state.i.isAdmin ? [
+				...(this.$i.isModerator || this.$i.isAdmin ? [
 					null,
 					{
 						icon: faBullhorn,
@@ -643,7 +682,7 @@ export default defineComponent({
 					}]
 					: []
 				),
-				...(this.appearNote.userId != this.$store.state.i.id ? [
+				...(this.appearNote.userId != this.$i.id ? [
 					null,
 					{
 						icon: faExclamationCircle,
@@ -658,9 +697,9 @@ export default defineComponent({
 					}]
 					: []
 				),
-				...(this.appearNote.userId == this.$store.state.i.id || this.$store.state.i.isModerator || this.$store.state.i.isAdmin ? [
+				...(this.appearNote.userId == this.$i.id || this.$i.isModerator || this.$i.isAdmin ? [
 					null,
-					this.appearNote.userId == this.$store.state.i.id ? {
+					this.appearNote.userId == this.$i.id ? {
 						icon: faEdit,
 						text: this.$t('deleteAndEdit'),
 						action: this.delEdit

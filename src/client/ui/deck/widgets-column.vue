@@ -13,17 +13,19 @@
 				<MkButton inline @click="edit = false">{{ $t('close') }}</MkButton>
 			</header>
 			<XDraggable
-				:list="column.widgets"
+				v-model="_widgets"
+				item-key="id"
 				animation="150"
-				@sort="onWidgetSort"
 			>
-				<div v-for="widget in column.widgets" class="customize-container" :key="widget.id" @click="widgetFunc(widget.id)">
-					<button class="remove _button" @click.prevent.stop="removeWidget(widget)"><Fa :icon="faTimes"/></button>
-					<component :is="`mkw-${widget.name}`" :widget="widget" :setting-callback="setting => settings[widget.id] = setting" :column="column"/>
-				</div>
+				<template #item="{element}">
+					<div class="customize-container" @click="widgetFunc(element.id)">
+						<button class="remove _button" @click.prevent.stop="removeWidget(element)"><Fa :icon="faTimes"/></button>
+						<component :is="`mkw-${element.name}`" :widget="element" :setting-callback="setting => settings[element.id] = setting" :column="column" @updateProps="saveWidget(element.id, $event)"/>
+					</div>
+				</template>
 			</XDraggable>
 		</template>
-		<component v-else class="widget" v-for="widget in column.widgets" :is="`mkw-${widget.name}`" :key="widget.id" :widget="widget" :column="column"/>
+		<component v-else class="widget" v-for="widget in column.widgets" :is="`mkw-${widget.name}`" :key="widget.id" :widget="widget" :column="column" @updateProps="saveWidget(widget.id, $event)"/>
 	</div>
 </XColumn>
 </template>
@@ -36,11 +38,12 @@ import MkSelect from '@/components/ui/select.vue';
 import MkButton from '@/components/ui/button.vue';
 import XColumn from './column.vue';
 import { widgets } from '../../widgets';
+import { addColumnWidget, removeColumnWidget, setColumnWidgets, updateColumnWidget } from './deck-store';
 
 export default defineComponent({
 	components: {
 		XColumn,
-		XDraggable: defineAsyncComponent(() => import('vue-draggable-next').then(x => x.VueDraggableNext)),
+		XDraggable: defineAsyncComponent(() => import('vuedraggable').then(x => x.default)),
 		MkSelect,
 		MkButton,
 	},
@@ -67,6 +70,17 @@ export default defineComponent({
 		};
 	},
 
+	computed: {
+		_widgets: {
+			get() {
+				return this.column.widgets;
+			},
+			set(value) {
+				setColumnWidgets(this.column.id, value);
+			}
+		}
+	},
+
 	created() {
 		this.menu = [{
 			icon: faCog,
@@ -82,34 +96,24 @@ export default defineComponent({
 			this.settings[id]();
 		},
 
-		onWidgetSort() {
-			this.saveWidgets();
-		},
-
 		addWidget() {
 			if (this.widgetAdderSelected == null) return;
 
-			this.$store.commit('deviceUser/addDeckWidget', {
-				id: this.column.id,
-				widget: {
-					name: this.widgetAdderSelected,
-					id: uuid(),
-					data: {}
-				}
+			addColumnWidget(this.column.id, {
+				name: this.widgetAdderSelected,
+				id: uuid(),
+				data: {}
 			});
 
 			this.widgetAdderSelected = null;
 		},
 
 		removeWidget(widget) {
-			this.$store.commit('deviceUser/removeDeckWidget', {
-				id: this.column.id,
-				widget
-			});
+			removeColumnWidget(this.column.id, widget);
 		},
 
-		saveWidgets() {
-			this.$store.commit('deviceUser/updateDeckColumn', this.column);
+		saveWidget(id, data) {
+			updateColumnWidget(this.column.id, id, data);
 		}
 	}
 });

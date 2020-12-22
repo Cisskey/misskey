@@ -12,7 +12,7 @@
 		<nav class="nav" :class="{ iconOnly, hidden }" v-show="showing">
 			<div>
 				<button class="item _button account" @click="openAccountMenu">
-					<MkAvatar :user="$store.state.i" class="avatar"/><MkAcct class="text" :user="$store.state.i"/>
+					<MkAvatar :user="$i" class="avatar"/><MkAcct class="text" :user="$i"/>
 				</button>
 				<MkA class="item index" active-class="active" to="/" exact>
 					<Fa :icon="faHome" fixed-width/><span class="text">{{ $t('timeline') }}</span>
@@ -25,7 +25,7 @@
 					</component>
 				</template>
 				<div class="divider"></div>
-				<button class="item _button" :class="{ active: $route.path === '/instance' || ($route.path.startsWith('/instance/') && !($route.path === '/instance/emojis')) }" v-if="$store.state.i.isAdmin || $store.state.i.isModerator" @click="oepnInstanceMenu">
+				<button class="item _button" :class="{ active: $route.path === '/instance' || ($route.path.startsWith('/instance/') && !($route.path === '/instance/emojis')) }" v-if="$i.isAdmin || $i.isModerator" @click="oepnInstanceMenu">
 					<Fa :icon="faServer" fixed-width/><span class="text">{{ $t('instance') }}</span>
 				</button>
 				<MkA class="item" active-class="active" to="/instance/emojis" v-if="$store.getters.isSignedIn">
@@ -52,6 +52,7 @@ import { host } from '@/config';
 import { search } from '@/scripts/search';
 import * as os from '@/os';
 import { sidebarDef } from '@/sidebar';
+import { getAccounts, addAccount, login } from '@/account';
 
 export default defineComponent({
 	data() {
@@ -70,7 +71,7 @@ export default defineComponent({
 
 	computed: {
 		menu(): string[] {
-			return this.$store.state.deviceUser.menu;
+			return this.$store.state.menu;
 		},
 
 		otherNavItemIndicated(): boolean {
@@ -87,7 +88,7 @@ export default defineComponent({
 			this.showing = false;
 		},
 
-		'$store.state.device.sidebarDisplay'() {
+		'$store.reactiveState.sidebarDisplay'() {
 			this.calcViewState();
 		},
 
@@ -111,8 +112,8 @@ export default defineComponent({
 
 	methods: {
 		calcViewState() {
-			this.iconOnly = (window.innerWidth <= 1279) || (this.$store.state.device.sidebarDisplay === 'icon');
-			this.hidden = (window.innerWidth <= 650) || (this.$store.state.device.sidebarDisplay === 'hide');
+			this.iconOnly = (window.innerWidth <= 1279) || (this.$store.state.sidebarDisplay === 'icon');
+			this.hidden = (window.innerWidth <= 650);
 		},
 
 		show() {
@@ -136,7 +137,8 @@ export default defineComponent({
 		},
 
 		async openAccountMenu(ev) {
-			const accounts = (await os.api('users/show', { userIds: this.$store.state.device.accounts.map(x => x.id) })).filter(x => x.id !== this.$store.state.i.id);
+			const storedAccounts = getAccounts();
+			const accounts = (await os.api('users/show', { userIds: storedAccounts.map(x => x.id) })).filter(x => x.id !== this.$i.id);
 
 			const accountItems = accounts.map(account => ({
 				type: 'user',
@@ -147,8 +149,8 @@ export default defineComponent({
 			os.modalMenu([...[{
 				type: 'link',
 				text: this.$t('profile'),
-				to: `/@${ this.$store.state.i.username }`,
-				avatar: this.$store.state.i,
+				to: `/@${ this.$i.username }`,
+				avatar: this.$i,
 			}, null, ...accountItems, {
 				icon: faPlus,
 				text: this.$t('addAcount'),
@@ -172,7 +174,7 @@ export default defineComponent({
 				text: this.$t('dashboard'),
 				to: '/instance',
 				icon: faTachometerAlt,
-			}, null, this.$store.state.i.isAdmin ? {
+			}, null, this.$i.isAdmin ? {
 				type: 'link',
 				text: this.$t('settings'),
 				to: '/instance/settings',
@@ -233,7 +235,7 @@ export default defineComponent({
 		addAcount() {
 			os.popup(import('./signin-dialog.vue'), {}, {
 				done: res => {
-					this.$store.dispatch('addAcount', res);
+					addAccount(res.id, res.i);
 					os.success();
 				},
 			}, 'closed');
@@ -242,30 +244,20 @@ export default defineComponent({
 		createAccount() {
 			os.popup(import('./signup-dialog.vue'), {}, {
 				done: res => {
-					this.$store.dispatch('addAcount', res);
+					addAccount(res.id, res.i);
 					this.switchAccountWithToken(res.i);
 				},
 			}, 'closed');
 		},
 
 		switchAccount(account: any) {
-			const token = this.$store.state.device.accounts.find((x: any) => x.id === account.id).token;
+			const storedAccounts = getAccounts();
+			const token = storedAccounts.find(x => x.id === account.id).token;
 			this.switchAccountWithToken(token);
 		},
 
 		switchAccountWithToken(token: string) {
-			os.waiting();
-
-			os.api('i', {}, token).then((i: any) => {
-				this.$store.dispatch('switchAccount', {
-					...i,
-					token: token
-				}).then(() => {
-					this.$nextTick(() => {
-						location.reload();
-					});
-				});
-			});
+			login(token);
 		},
 	}
 });
@@ -297,7 +289,7 @@ export default defineComponent({
 .mvcprjjd {
 	$ui-font-size: 1em; // TODO: どこかに集約したい
 	$nav-width: 250px;
-	$nav-icon-only-width: 80px;
+	$nav-icon-only-width: 86px;
 
 	> .nav-back {
 		z-index: 1001;
@@ -385,7 +377,6 @@ export default defineComponent({
 			box-sizing: border-box;
 			overflow: auto;
 			background: var(--navBg);
-			border-right: solid 1px var(--divider);
 
 			> .divider {
 				margin: 16px 0;

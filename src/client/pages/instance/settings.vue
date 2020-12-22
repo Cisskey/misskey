@@ -7,6 +7,8 @@
 			<MkTextarea v-model:value="description">{{ $t('instanceDescription') }}</MkTextarea>
 			<MkInput v-model:value="iconUrl"><template #icon><Fa :icon="faLink"/></template>{{ $t('iconUrl') }}</MkInput>
 			<MkInput v-model:value="bannerUrl"><template #icon><Fa :icon="faLink"/></template>{{ $t('bannerUrl') }}</MkInput>
+			<MkInput v-model:value="backgroundImageUrl"><template #icon><Fa :icon="faLink"/></template>{{ $t('backgroundImageUrl') }}</MkInput>
+			<MkInput v-model:value="logoImageUrl"><template #icon><Fa :icon="faLink"/></template>{{ $t('logoImageUrl') }}</MkInput>
 			<MkInput v-model:value="tosUrl"><template #icon><Fa :icon="faLink"/></template>{{ $t('tosUrl') }}</MkInput>
 			<MkInput v-model:value="maintainerName">{{ $t('maintainerName') }}</MkInput>
 			<MkInput v-model:value="maintainerEmail" type="email"><template #icon><Fa :icon="faEnvelope"/></template>{{ $t('maintainerEmail') }}</MkInput>
@@ -15,6 +17,8 @@
 			<MkButton primary @click="save(true)"><Fa :icon="faSave"/> {{ $t('save') }}</MkButton>
 		</div>
 	</section>
+
+	<MkInput v-model:value="pinnedClipId">{{ $t('pinnedClipId') }}</MkInput>
 
 	<section class="_card _vMargin">
 		<div class="_content">
@@ -277,6 +281,7 @@ import MkInfo from '@/components/ui/info.vue';
 import { url } from '@/config';
 import getAcct from '../../../misc/acct/render';
 import * as os from '@/os';
+import { fetchInstance } from '@/instance';
 
 export default defineComponent({
 	components: {
@@ -305,6 +310,7 @@ export default defineComponent({
 			blockedHosts: '',
 			pinnedUsers: '',
 			pinnedPages: '',
+			pinnedClipId: null,
 			maintainerName: null,
 			maintainerEmail: null,
 			name: null,
@@ -314,6 +320,8 @@ export default defineComponent({
 			email: null,
 			bannerUrl: null,
 			iconUrl: null,
+			logoImageUrl: null,
+			backgroundImageUrl: null,
 			maxNoteTextLength: 0,
 			enableRegistration: false,
 			enableLocalTimeline: false,
@@ -369,6 +377,8 @@ export default defineComponent({
 		this.tosUrl = this.meta.tosUrl;
 		this.bannerUrl = this.meta.bannerUrl;
 		this.iconUrl = this.meta.iconUrl;
+		this.logoImageUrl = this.meta.logoImageUrl;
+		this.backgroundImageUrl = this.meta.backgroundImageUrl;
 		this.enableEmail = this.meta.enableEmail;
 		this.email = this.meta.email;
 		this.maintainerName = this.meta.maintainerName;
@@ -391,6 +401,7 @@ export default defineComponent({
 		this.blockedHosts = this.meta.blockedHosts.join('\n');
 		this.pinnedUsers = this.meta.pinnedUsers.join('\n');
 		this.pinnedPages = this.meta.pinnedPages.join('\n');
+		this.pinnedClipId = this.meta.pinnedClipId;
 		this.enableServiceWorker = this.meta.enableServiceWorker;
 		this.swPublicKey = this.meta.swPublickey;
 		this.swPrivateKey = this.meta.swPrivateKey;
@@ -524,6 +535,8 @@ export default defineComponent({
 				tosUrl: this.tosUrl,
 				bannerUrl: this.bannerUrl,
 				iconUrl: this.iconUrl,
+				logoImageUrl: this.logoImageUrl,
+				backgroundImageUrl: this.backgroundImageUrl,
 				maintainerName: this.maintainerName,
 				maintainerEmail: this.maintainerEmail,
 				maxNoteTextLength: this.maxNoteTextLength,
@@ -544,6 +557,7 @@ export default defineComponent({
 				blockedHosts: this.blockedHosts.split('\n') || [],
 				pinnedUsers: this.pinnedUsers ? this.pinnedUsers.split('\n') : [],
 				pinnedPages: this.pinnedPages ? this.pinnedPages.split('\n') : [],
+				pinnedClipId: (this.pinnedClipId && this.pinnedClipId) != '' ? this.pinnedClipId : null,
 				enableServiceWorker: this.enableServiceWorker,
 				swPublicKey: this.swPublicKey,
 				swPrivateKey: this.swPrivateKey,
@@ -580,7 +594,7 @@ export default defineComponent({
 				useStarForReactionFallback: this.useStarForReactionFallback,
 				featuredNgWords: this.featuredNgWords ? this.featuredNgWords.trim().split('\n').map(x => x.trim()) : [],
 			}).then(() => {
-				this.$store.dispatch('instance/fetch');
+				fetchInstance();
 				if (withDialog) {
 					os.success();
 				}

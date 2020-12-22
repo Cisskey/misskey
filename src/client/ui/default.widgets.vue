@@ -3,25 +3,27 @@
 	<template v-if="editMode">
 		<MkButton primary @click="addWidget" class="add"><Fa :icon="faPlus"/></MkButton>
 		<XDraggable
-			:list="widgets"
+			v-model="widgets"
+			item-key="id"
 			handle=".handle"
 			animation="150"
 			class="sortable"
-			@sort="onWidgetSort"
 		>
-			<div v-for="widget in widgets" class="customize-container _panel" :key="widget.id">
-				<header>
-					<span class="handle"><Fa :icon="faBars"/></span>{{ $t('_widgets.' + widget.name) }}<button class="remove _button" @click="removeWidget(widget)"><Fa :icon="faTimes"/></button>
-				</header>
-				<div @click="widgetFunc(widget.id)">
-					<component class="_close_ _forceContainerFull_" :is="`mkw-${widget.name}`" :widget="widget" :ref="widget.id" :setting-callback="setting => settings[widget.id] = setting"/>
+			<template #item="{element}">
+				<div class="customize-container _panel">
+					<header>
+						<span class="handle"><Fa :icon="faBars"/></span>{{ $t('_widgets.' + element.name) }}<button class="remove _button" @click="removeWidget(element)"><Fa :icon="faTimes"/></button>
+					</header>
+					<div @click="widgetFunc(element.id)">
+						<component class="_inContainer_ _forceContainerFull_" :is="`mkw-${element.name}`" :widget="element" :ref="element.id" :setting-callback="setting => settings[element.id] = setting" @updateProps="saveWidget(element.id, $event)"/>
+					</div>
 				</div>
-			</div>
+			</template>
 		</XDraggable>
 		<button @click="editMode = false" class="_textButton" style="font-size: 0.9em;"><Fa :icon="faCheck"/> {{ $t('editWidgetsExit') }}</button>
 	</template>
 	<template v-else>
-		<component v-for="widget in widgets" class="_close_ _forceContainerFull_" :is="`mkw-${widget.name}`" :key="widget.id" :widget="widget"/>
+		<component v-for="widget in widgets" class="_inContainer_ _forceContainerFull_" :is="`mkw-${widget.name}`" :key="widget.id" :widget="widget" @updateProps="saveWidget(widget.id, $event)"/>
 		<button @click="editMode = true" class="_textButton" style="font-size: 0.9em;"><Fa :icon="faPencilAlt"/> {{ $t('editWidgets') }}</button>
 	</template>
 </div>
@@ -38,7 +40,7 @@ import MkButton from '@/components/ui/button.vue';
 export default defineComponent({
 	components: {
 		MkButton,
-		XDraggable: defineAsyncComponent(() => import('vue-draggable-next').then(x => x.VueDraggableNext)),
+		XDraggable: defineAsyncComponent(() => import('vuedraggable').then(x => x.default)),
 	},
 
 	emits: ['mounted'],
@@ -52,8 +54,13 @@ export default defineComponent({
 	},
 
 	computed: {
-		widgets(): any {
-			return this.$store.state.deviceUser.widgets;
+		widgets: {
+			get() {
+				return this.$store.reactiveState.widgets.value;
+			},
+			set(value) {
+				this.$store.set('widgets', value);
+			}
 		},
 	},
 
@@ -64,11 +71,6 @@ export default defineComponent({
 	methods: {
 		widgetFunc(id) {
 			this.settings[id]();
-		},
-
-		onWidgetSort() {
-			// TODO: vuexを直接書き換えているのでなんとかする
-			this.saveHome();
 		},
 
 		async addWidget() {
@@ -85,20 +87,23 @@ export default defineComponent({
 			});
 			if (canceled) return;
 
-			this.$store.commit('deviceUser/addWidget', {
+			this.$store.set('widgets', [...this.$store.state.widgets, {
 				name: widget,
 				id: uuid(),
 				place: null,
 				data: {}
-			});
+			}]);
 		},
 
 		removeWidget(widget) {
-			this.$store.commit('deviceUser/removeWidget', widget);
+			this.$store.set('widgets', this.$store.state.widgets.filter(w => w.id != widget.id));
 		},
 
-		saveHome() {
-			this.$store.commit('deviceUser/setWidgets', this.widgets);
+		saveWidget(id, data) {
+			this.$store.set('widgets', this.$store.state.widgets.map(w => w.id === id ? {
+				...w,
+				data: data
+			} : w));
 		}
 	}
 });

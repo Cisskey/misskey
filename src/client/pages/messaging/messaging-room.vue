@@ -38,6 +38,7 @@ import parseAcct from '../../../misc/acct/parse';
 import { isBottom, onScrollBottom, scroll } from '@/scripts/scroll';
 import * as os from '@/os';
 import { popout } from '@/scripts/popout';
+import * as sound from '@/scripts/sound';
 
 const Component = defineComponent({
 	components: {
@@ -109,7 +110,7 @@ const Component = defineComponent({
 
 	mounted() {
 		this.fetch();
-		if (this.$store.state.device.enableInfiniteScroll) {
+		if (this.$store.state.enableInfiniteScroll) {
 			this.$nextTick(() => this.ilObserver.observe(this.$refs.loadMore as Element));
 		}
 	},
@@ -218,12 +219,12 @@ const Component = defineComponent({
 		},
 
 		onMessage(message) {
-			os.sound('chat');
+			sound.play('chat');
 
 			const _isBottom = isBottom(this.$el, 64);
 
 			this.messages.push(message);
-			if (message.userId != this.$store.state.i.id && !document.hidden) {
+			if (message.userId != this.$i.id && !document.hidden) {
 				this.connection.send('read', {
 					id: message.id
 				});
@@ -234,7 +235,7 @@ const Component = defineComponent({
 				this.$nextTick(() => {
 					this.scrollToBottom();
 				});
-			} else if (message.userId != this.$store.state.i.id) {
+			} else if (message.userId != this.$i.id) {
 				// Notify
 				this.notifyNewMessage();
 			}
@@ -298,7 +299,7 @@ const Component = defineComponent({
 		onVisibilitychange() {
 			if (document.hidden) return;
 			for (const message of this.messages) {
-				if (message.userId !== this.$store.state.i.id && !message.isRead) {
+				if (message.userId !== this.$i.id && !message.isRead) {
 					this.connection.send('read', {
 						id: message.id
 					});

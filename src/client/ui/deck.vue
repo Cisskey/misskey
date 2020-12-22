@@ -1,9 +1,9 @@
 <template>
-<div class="mk-deck" :class="`${$store.state.device.deckColumnAlign}`" v-hotkey.global="keymap">
+<div class="mk-deck" :class="`${deckStore.state.columnAlign}`" v-hotkey.global="keymap">
 	<XSidebar ref="nav"/>
 
 	<!-- TODO: deckMainColumnPlace を見て位置変える -->
-	<deck-column class="column" v-if="$store.state.device.deckAlwaysShowMainColumn || $route.name !== 'index'">
+	<DeckColumn class="column" v-if="deckStore.state.alwaysShowMainColumn || $route.name !== 'index'">
 		<template #header>
 			<XHeader :info="pageInfo"/>
 		</template>
@@ -15,19 +15,19 @@
 				</keep-alive>
 			</transition>
 		</router-view>
-	</deck-column>
+	</DeckColumn>
 
 	<template v-for="ids in layout">
 		<div v-if="ids.length > 1" class="folder column">
-			<deck-column-core v-for="id in ids" :ref="id" :key="id" :column="columns.find(c => c.id === id)" :is-stacked="true" @parent-focus="moveFocus(id, $event)"/>
+			<DeckColumnCore v-for="id in ids" :ref="id" :key="id" :column="columns.find(c => c.id === id)" :is-stacked="true" @parent-focus="moveFocus(id, $event)"/>
 		</div>
-		<deck-column-core v-else class="column" :ref="ids[0]" :key="ids[0]" :column="columns.find(c => c.id === ids[0])" @parent-focus="moveFocus(ids[0], $event)"/>
+		<DeckColumnCore v-else class="column" :ref="ids[0]" :key="ids[0]" :column="columns.find(c => c.id === ids[0])" @parent-focus="moveFocus(ids[0], $event)"/>
 	</template>
 
 	<button @click="addColumn" class="_button add"><Fa :icon="faPlus"/></button>
 
-	<button v-if="$store.getters.isSignedIn" class="nav _button" @click="showNav()"><Fa :icon="faBars"/><i v-if="navIndicated"><Fa :icon="faCircle"/></i></button>
-	<button v-if="$store.getters.isSignedIn" class="post _buttonPrimary" @click="post()"><Fa :icon="faPencilAlt"/></button>
+	<button v-if="$i" class="nav _button" @click="showNav()"><Fa :icon="faBars"/><i v-if="navIndicated"><Fa :icon="faCircle"/></i></button>
+	<button v-if="$i" class="post _buttonPrimary" @click="post()"><Fa :icon="faPencilAlt"/></button>
 
 	<XCommon/>
 </div>
@@ -48,6 +48,7 @@ import { getScrollContainer } from '@/scripts/scroll';
 import * as os from '@/os';
 import { sidebarDef } from '@/sidebar';
 import XCommon from './_common_/common.vue';
+import { deckStore, addColumn } from './deck/deck-store';
 
 export default defineComponent({
 	components: {
@@ -60,6 +61,7 @@ export default defineComponent({
 
 	data() {
 		return {
+			deckStore,
 			host: host,
 			pageInfo: null,
 			pageKey: 0,
@@ -70,17 +72,14 @@ export default defineComponent({
 	},
 
 	computed: {
-		deck() {
-			return this.$store.state.deviceUser.deck;
+		columns() {
+			return deckStore.reactiveState.columns.value;
 		},
-		columns(): any[] {
-			return this.deck.columns;
-		},
-		layout(): any[] {
-			return this.deck.layout;
+		layout() {
+			return deckStore.reactiveState.layout.value;
 		},
 		navIndicated(): boolean {
-			if (!this.$store.getters.isSignedIn) return false;
+			if (!this.$i) return false;
 			for (const def in this.menuDef) {
 				if (this.menuDef[def].indicated) return true;
 			}
@@ -161,7 +160,7 @@ export default defineComponent({
 			});
 			if (canceled) return;
 
-			this.$store.commit('deviceUser/addDeckColumn', {
+			addColumn({
 				type: column,
 				id: uuid(),
 				name: this.$t('_deck._columns.' + column),

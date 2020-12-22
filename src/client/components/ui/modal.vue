@@ -1,10 +1,10 @@
 <template>
-<div class="mk-modal" v-hotkey.global="keymap" :style="{ pointerEvents: showing ? 'auto' : 'none' }">
-	<transition :name="$store.state.device.animation ? 'modal-bg' : ''" appear>
+<div class="mk-modal" v-hotkey.global="keymap" :style="{ pointerEvents: showing ? 'auto' : 'none', '--transformOrigin': transformOrigin }">
+	<transition :name="$store.state.animation ? 'modal-bg' : ''" appear>
 		<div class="bg _modalBg" v-if="showing" @click="onBgClick"></div>
 	</transition>
 	<div class="content" :class="{ popup, fixed, top: position === 'top' }" @click.self="onBgClick" ref="content">
-		<transition :name="$store.state.device.animation ? popup ? 'modal-popup-content' : 'modal-content' : ''" appear @after-leave="$emit('closed')" @after-enter="childRendered">
+		<transition :name="$store.state.animation ? popup ? 'modal-popup-content' : 'modal-content' : ''" appear @after-leave="$emit('closed')" @after-enter="childRendered">
 			<slot v-if="showing"></slot>
 		</transition>
 	</div>
@@ -150,7 +150,7 @@ export default defineComponent({
 });
 </script>
 
-<style vars="{ transformOrigin }">
+<style>
 .modal-popup-content-enter-active, .modal-popup-content-leave-active,
 .modal-content-enter-from, .modal-content-leave-to {
   transform-origin: var(--transformOrigin);
