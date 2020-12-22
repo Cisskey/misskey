@@ -212,11 +212,11 @@ export default defineComponent({
 		useHashtag() {
 			// 削除して編集のときは useHashtag の状態を更新させない
 			if (this.initialNote) return;
-			this.$store.set('setUseHashtag', this.useHashtag);
+			this.$store.set('useHashtag', this.useHashtag);
 		},
 
 		hashtag() {
-			this.$store.set('setHashtag', this.hashtag);
+			this.$store.set('hashtag', this.hashtag);
 		},
 	},
 
