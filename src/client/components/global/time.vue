@@ -28,7 +28,7 @@ export default defineComponent({
 	computed: {
 		_mode(): string {
 			if (this.mode) return this.mode;
-			return this.$store.state.device.timestampFormat;
+			return this.$store.state.timestampFormat;
 		},
 		_time(): Date {
 			return typeof this.time == 'string' ? new Date(this.time) : this.time;
