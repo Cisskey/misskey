@@ -30,6 +30,7 @@ export const locale = await count(clientDb.i18n).then(async n => {
 });
 
 export const i18n = createI18n({
+	globalInjection: true,
 	sync: false,
 	locale: _lang,
 	messages: { [_lang]: locale }
