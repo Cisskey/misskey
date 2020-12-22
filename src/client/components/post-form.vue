@@ -212,11 +212,11 @@ export default defineComponent({
 		useHashtag() {
 			// 削除して編集のときは useHashtag の状態を更新させない
 			if (this.initialNote) return;
-			this.$store.commit('deviceUser/setUseHashtag', this.useHashtag);
+			this.$store.set('setUseHashtag', this.useHashtag);
 		},
 
 		hashtag() {
-			this.$store.commit('deviceUser/setHashtag', this.hashtag);
+			this.$store.set('setHashtag', this.hashtag);
 		},
 	},
 
@@ -313,8 +313,8 @@ export default defineComponent({
 						this.poll = draft.data.poll;
 					}
 				}
-				this.useHashtag = this.$store.state.deviceUser.useHashtag;
-				this.hashtag = this.$store.state.deviceUser.hashtag;
+				this.useHashtag = this.$store.state.useHashtag;
+				this.hashtag = this.$store.state.hashtag;
 			}
 
 			// 削除して編集
