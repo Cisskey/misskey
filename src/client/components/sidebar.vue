@@ -28,7 +28,7 @@
 				<button class="item _button" :class="{ active: $route.path === '/instance' || ($route.path.startsWith('/instance/') && !($route.path === '/instance/emojis')) }" v-if="$i.isAdmin || $i.isModerator" @click="oepnInstanceMenu">
 					<Fa :icon="faServer" fixed-width/><span class="text">{{ $t('instance') }}</span>
 				</button>
-				<MkA class="item" active-class="active" to="/instance/emojis" v-if="$store.getters.isSignedIn">
+				<MkA class="item" active-class="active" to="/instance/emojis">
 					<fa :icon="faLaugh" fixed-width/><span class="text">{{ $t('customEmojis') }}</span>
 				</MkA>
 				<button class="item _button" @click="more">
