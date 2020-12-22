@@ -1,15 +1,15 @@
 import { VNode, defineComponent, h } from 'vue';
-import { MfmForest } from '../../mfm/prelude';
-import { parse, parsePlain } from '../../mfm/parse';
-import MkUrl from './url.vue';
-import MkLink from './link.vue';
-import MkMention from './mention.vue';
-import MkEmoji from './emoji.vue';
-import { concat } from '../../prelude/array';
-import MkFormula from './formula.vue';
-import MkCode from './code.vue';
-import MkGoogle from './google.vue';
-import MkA from './ui/a.vue';
+import { MfmForest } from '@/../mfm/prelude';
+import { parse, parsePlain } from '@/../mfm/parse';
+import MkUrl from '@/components/global/url.vue';
+import MkLink from '@/components/link.vue';
+import MkMention from '@/components/mention.vue';
+import MkEmoji from '@/components/global/emoji.vue';
+import { concat } from '@/../prelude/array';
+import MkFormula from '@/components/formula.vue';
+import MkCode from '@/components/code.vue';
+import MkGoogle from '@/components/google.vue';
+import MkA from '@/components/global/a.vue';
 import { host } from '@/config';
 import 'animate.css/animate.min.css';
 
@@ -89,7 +89,7 @@ export default defineComponent({
 
 				case 'big': {
 					return h('strong', {
-						style: `display: inline-block; font-size: 150%;` + (this.$store.state.device.animatedMfm ? 'animation: anime-tada 1s linear infinite both;' : ''),
+						style: `display: inline-block; font-size: 150%;` + (this.$store.state.animatedMfm ? 'animation: anime-tada 1s linear infinite both;' : ''),
 					}, genEl(token.children));
 				}
 
@@ -107,7 +107,7 @@ export default defineComponent({
 
 				case 'motion': {
 					return h('span', {
-						style: 'display: inline-block;' + (this.$store.state.device.animatedMfm ? 'animation: anime-rubberBand 1s linear infinite both;' : ''),
+						style: 'display: inline-block;' + (this.$store.state.animatedMfm ? 'animation: anime-rubberBand 1s linear infinite both;' : ''),
 					}, genEl(token.children));
 				}
 
@@ -141,7 +141,7 @@ export default defineComponent({
 				case 'spin': {
 					const attrs = token.node.props.attrs || [];
 					const direction = attrs.length > 0 ? toDirection(attrs[0]) : 'normal';
-					const style = this.$store.state.device.animatedMfm
+					const style = this.$store.state.animatedMfm
 						? `animation: anime-spin 1.5s linear infinite; animation-direction: ${direction};` : '';
 					return h('span', {
 						style: 'display: inline-block;' + style
@@ -152,7 +152,7 @@ export default defineComponent({
 					const attrs = token.node.props.attrs || [];
 					const direction = attrs.length > 0 ? toDirection(attrs[0]) : 'normal';
 					const duration = attrs.length > 1 ? attrs[1] : '3s';
-					const style = this.$store.state.device.animatedMfm
+					const style = this.$store.state.animatedMfm
 						? `animation: slide ${duration} linear infinite; animation-direction: ${direction};` : '';
 					return h('span', {
 						style: 'display: inline-block;' + style
@@ -161,7 +161,7 @@ export default defineComponent({
 
 				case 'jump': {
 					return h('span', {
-						style: this.$store.state.device.animatedMfm ? 'display: inline-block; animation: anime-jump 0.75s linear infinite;' : 'display: inline-block;'
+						style: this.$store.state.animatedMfm ? 'display: inline-block; animation: anime-jump 0.75s linear infinite;' : 'display: inline-block;'
 					}, genEl(token.children));
 				}
 
@@ -173,13 +173,13 @@ export default defineComponent({
 
 				case 'twitch': {
 					return h('span', {
-						style: this.$store.state.device.animatedMfm ? 'display: inline-block; animation: anime-twitch 0.5s ease infinite;' : 'display: inline-block;'
+						style: this.$store.state.animatedMfm ? 'display: inline-block; animation: anime-twitch 0.5s ease infinite;' : 'display: inline-block;'
 					}, genEl(token.children));
 				}
 
 				case 'shake': {
 					return h('span', {
-						style: this.$store.state.device.animatedMfm ? 'display: inline-block; animation: anime-shake 0.5s ease infinite;' : 'display: inline-block;'
+						style: this.$store.state.animatedMfm ? 'display: inline-block; animation: anime-shake 0.5s ease infinite;' : 'display: inline-block;'
 					}, genEl(token.children));
 				}
 
