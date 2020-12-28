@@ -73,7 +73,8 @@ export async function masterMain() {
 	bootLogger.succ('Misskey initialized');
 
 	if (!program.disableClustering) {
-		await spawnWorkers(config.clusterLimit);
+		const workers = config.clusterLimit || os.cpus().length;
+		await spawnWorkers(workers);
 	}
 
 	bootLogger.succ(`Now listening on port ${config.port} on ${config.url}`, null, true);
@@ -163,8 +164,7 @@ async function init(): Promise<Config> {
 	return config;
 }
 
-async function spawnWorkers(limit: number = 1) {
-	const workers = Math.min(limit, os.cpus().length);
+async function spawnWorkers(workers: number = 1) {
 	bootLogger.info(`Starting ${workers} worker${workers === 1 ? '' : 's'}...`);
 	await Promise.all([...Array(workers)].map(spawnWorker));
 	bootLogger.succ('All workers started');
