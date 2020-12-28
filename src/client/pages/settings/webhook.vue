@@ -54,17 +54,15 @@ export default defineComponent({
 	data() {
 		return {
 			INFO: {
-				header: [{
-					title: this.$t('webhookNotification'),
-					icon: faLink
-				}]
+				title: this.$ts.webhookNotification,
+				icon: faLink
 			},
-			enableWebhook: this.$store.state.i.enableWebhookNotification,
-			url: this.$store.state.i.webhookUrl,
+			enableWebhook: this.$i.enableWebhookNotification,
+			url: this.$i.webhookUrl,
 			changed: false,
 			types: webhookTypes,
-			type: this.$store.state.i.webhookType || 'slack',
-			secret: this.$store.state.i.webhookSecret,
+			type: this.$i.webhookType || 'slack',
+			secret: this.$i.webhookSecret,
 			faSave, faLink,
 		}
 	},
@@ -109,6 +107,12 @@ export default defineComponent({
 				webhookSecret: this.secret.trim() || null
 			}).then(() => {
 				this.changed = false;
+
+				this.$i.enableWebhookNotification = this.enableWebhook;
+				this.$i.webhookUrl = this.url.trim() || null;
+				this.$i.webhookType = this.type;
+				this.$i.webhookSecret = this.secret.trim() || null;
+
 				if (notify) {
 					os.dialog({
 						type: 'success',

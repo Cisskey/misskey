@@ -7,7 +7,7 @@
 			<FormLink :active="page === 'privacy'" replace to="/settings/privacy"><template #icon><Fa :icon="faLockOpen"/></template>{{ $ts.privacy }}</FormLink>
 			<FormLink :active="page === 'reaction'" replace to="/settings/reaction"><template #icon><Fa :icon="faLaugh"/></template>{{ $ts.reaction }}</FormLink>
 			<FormLink :active="page === 'notifications'" replace to="/settings/notifications"><template #icon><Fa :icon="faBell"/></template>{{ $ts.notifications }}</FormLink>
-			<FormLink :active="page === 'webhook'" replace to="/settings/webhook"><template #icon><Fa :icon="faLink"/></template>{{ $ts.webhookNotification) }}</FormLink>
+			<FormLink :active="page === 'webhook'" replace to="/settings/webhook"><template #icon><Fa :icon="faLink"/></template>{{ $ts.webhookNotification }}</FormLink>
 			<FormLink :active="page === 'email'" replace to="/settings/email"><template #icon><Fa :icon="faEnvelope"/></template>{{ $ts.email }}</FormLink>
 			<FormLink :active="page === 'integration'" replace to="/settings/integration"><template #icon><Fa :icon="faShareAlt"/></template>{{ $ts.integration }}</FormLink>
 			<FormLink :active="page === 'security'" replace to="/settings/security"><template #icon><Fa :icon="faLock"/></template>{{ $ts.security }}</FormLink>

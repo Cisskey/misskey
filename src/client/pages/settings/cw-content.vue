@@ -22,6 +22,7 @@ import { faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import MkSwitch from '@/components/ui/switch.vue';
 import MkButton from '@/components/ui/button.vue';
 import MkTextarea from '@/components/ui/textarea.vue';
+import { defaultStore } from '@/store';
 
 export default defineComponent({
 	components: {
@@ -40,7 +41,7 @@ export default defineComponent({
 					icon: faEyeSlash
 				}]
 			},
-			items: (this.$store.state.device.showCwWords as string[]).join('\n'),
+			items: (this.$store.state.showCwWords as string[]).join('\n'),
 			changed: false,
 			faEyeSlash, faSave,
 		}
@@ -66,10 +67,7 @@ export default defineComponent({
 			return this.items.trim().split('\n').filter(x => x.trim() !== '');
 		},
 
-		autoShowCwContentAll: {
-			get() { return this.$store.state.device.autoShowCwContentAll; },
-			set(value) { this.$store.commit('device/set', { key: 'autoShowCwContentAll', value }); }
-		},
+		autoShowCwContentAll: defaultStore.makeGetterSetter('autoShowCwContentAll'),
 	},
 
 	mounted() {
@@ -78,7 +76,7 @@ export default defineComponent({
 
 	methods: {
 		save() {
-			this.$store.commit('device/set', { key: 'showCwWords', value: this.splited });
+			this.$store.set('showCwWords', this.splited);
 			this.changed = false;
 			location.reload()
 		},

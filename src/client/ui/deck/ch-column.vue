@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
+<XColumn :func="{ handler: selectChannel, title: $ts.selectChannel }" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
 	<template #header>
 		<Fa :icon="faSatelliteDish"/>
 		<span style="margin-left: 8px;">{{ column.name }}</span>
@@ -17,6 +17,7 @@ import XColumn from './column.vue';
 import XTimeline from '@/components/timeline.vue';
 import XPostForm from '@/components/post-form.vue';
 import * as os from '@/os';
+import { removeColumn, updateColumn } from './deck-store';
 
 export default defineComponent({
 	components: {
@@ -52,15 +53,12 @@ export default defineComponent({
 		},
 
 		showFixedPostForm() {
-			this.setMenu();
-
-			this.column.showFixedPostForm = this.showFixedPostForm;
-			this.$store.commit('deviceUser/updateDeckColumn', this.column);
+			updateColumn(this.column.id, {
+				chId: this.column.chId,
+				name: this.column.name,
+				showFixedPostForm: this.showFixedPostForm,
+			});
 		},
-	},
-
-	created() {
-		this.setMenu();
 	},
 
 	mounted() {
@@ -82,32 +80,22 @@ export default defineComponent({
 				},
 				showCancelButton: true
 			});
-			if (canceled) return;
+			if (canceled) {
+				if (this.column.chId == null) {
+					removeColumn(this.column.id);
+				}
+				return;
+			}
 
-			this.column.chId = channel.id;
-			this.column.name = channel.name;
-			this.$store.commit('deviceUser/updateDeckColumn', this.column);
+			updateColumn(this.column.id, {
+				chId: channel.id,
+				name: channel.name,
+				showFixedPostForm: this.column.showFixedPostForm,
+			});
 		},
 
 		focus() {
 			(this.$refs.timeline as any).focus();
-		},
-
-		setMenu() {
-			const m = [{
-				icon: faCog,
-				text: this.$t('selectChannel'),
-				action: this.selectChannel
-			}, {
-				icon: this.showFixedPostForm ? faEyeSlash : faEye,
-				text: this.showFixedPostForm ? this.$t('_deck.hideFixedPostForm') : this.$t('_deck.showFixedPostForm'),
-				action: () => {
-					this.showFixedPostForm = !this.showFixedPostForm;
-				}
-			}];
-
-			this.menu.splice(0, this.menu.length);
-			this.menu.push(...m)
 		},
 
 		queueUpdated(q) {
