@@ -28,6 +28,7 @@ if (localStorage.getItem('vuex') != null) {
 		}
 	}
 
+	localStorage.setItem('vuex-old', JSON.stringify(vuex));
 	localStorage.removeItem('vuex');
 	localStorage.removeItem('i');
 
@@ -40,18 +41,22 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import widgets from '@/widgets';
 import directives from '@/directives';
 import components from '@/components';
-import { version, ui } from '@/config';
+import { version, ui, lang } from '@/config';
 import { router } from '@/router';
 import { applyTheme } from '@/scripts/theme';
 import { isDeviceDarkmode } from '@/scripts/is-device-darkmode';
-import { i18n, lang } from '@/i18n';
-import { stream, isMobile, dialog } from '@/os';
+import { i18n } from '@/i18n';
+import { stream, isMobile, dialog, post } from '@/os';
 import * as sound from '@/scripts/sound';
 import { $i, refreshAccount, login, updateAccount, signout } from '@/account';
 import { defaultStore, ColdDeviceStorage } from '@/store';
 import { fetchInstance, instance } from '@/instance';
+import { makeHotkey } from './scripts/hotkey';
+import { search } from './scripts/search';
 
 console.info(`Misskey v${version}`);
+
+window.clearTimeout((window as any).mkBootTimer);
 
 if (_DEV_) {
 	console.warn('Development mode!!!');
@@ -85,7 +90,7 @@ if (_DEV_) {
 // タッチデバイスでCSSの:hoverを機能させる
 document.addEventListener('touchend', () => {}, { passive: true });
 
-if (localStorage.getItem('theme') == null) {
+if (localStorage.theme == null) {
 	applyTheme(require('@/themes/l-light.json5'));
 }
 
@@ -175,10 +180,11 @@ app.config.globalProperties = {
 	$i,
 	$store: defaultStore,
 	$instance: instance,
+	$t: i18n.t,
+	$ts: i18n.locale,
 };
 
 app.use(router);
-app.use(i18n);
 // eslint-disable-next-line vue/component-definition-name-casing
 app.component('Fa', FontAwesomeIcon);
 
@@ -211,6 +217,16 @@ window.matchMedia('(prefers-color-scheme: dark)').addListener(mql => {
 });
 //#endregion
 
+// shortcut
+document.addEventListener('keydown', makeHotkey({
+	'd': () => {
+		defaultStore.set('darkMode', !defaultStore.state.darkMode);
+	},
+	'p|n': post,
+	's': search,
+	//TODO: 'h|/': help
+}));
+
 watch(defaultStore.reactiveState.useBlurEffectForModal, v => {
 	document.documentElement.style.setProperty('--modalBgFilter', v ? 'blur(4px)' : 'none');
 }, { immediate: true });
@@ -224,8 +240,8 @@ stream.on('_disconnected_', async () => {
 		reloadDialogShowing = true;
 		const { canceled } = await dialog({
 			type: 'warning',
-			title: i18n.global.t('disconnectedFromServer'),
-			text: i18n.global.t('reloadConfirm'),
+			title: i18n.locale.disconnectedFromServer,
+			text: i18n.locale.reloadConfirm,
 			showCancelButton: true
 		});
 		reloadDialogShowing = false;
