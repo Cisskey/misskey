@@ -2,7 +2,7 @@
 <div class="mk-app" :class="{ wallpaper }">
 	<XSidebar ref="nav" class="sidebar"/>
 
-	<div class="contents" ref="contents" :class="{ withHeader: $store.state.titlebar }" @contextmenu.prevent.stop="onContextmenu">
+	<div class="contents" ref="contents" :class="{ withHeader: $store.state.titlebar }" @contextmenu.stop="onContextmenu">
 		<header v-if="$store.state.titlebar" class="header" ref="header" @click="onHeaderClick">
 			<XHeader :info="pageInfo"/>
 		</header>
@@ -29,6 +29,7 @@
 
 	<div class="buttons" :class="{ navHidden }">
 		<button class="button nav _button" @click="showNav" ref="navButton"><Fa :icon="faBars"/><i v-if="navIndicated"><Fa :icon="faCircle"/></i></button>
+		<button class="button home _button" @click="$route.name === 'index' ? top() : $router.push('/')"><Fa :icon="faHome"/></button>
 		<button class="button notifications _button" @click="$router.push('/my/notifications')"><Fa :icon="faBell"/><i v-if="$i.hasUnreadNotification"><Fa :icon="faCircle"/></i></button>
 		<button class="button widget _button" @click="widgetsShowing = true"><Fa :icon="faLayerGroup"/></button>
 		<button class="button post _button" @click="post"><Fa :icon="faPencilAlt"/></button>
@@ -53,10 +54,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, defineAsyncComponent, markRaw } from 'vue';
+import { defineComponent, defineAsyncComponent } from 'vue';
 import { faLayerGroup, faBars, faHome, faCircle, faWindowMaximize, faColumns, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { faBell } from '@fortawesome/free-regular-svg-icons';
-import { host } from '@/config';
+import { instanceName } from '@/config';
 import { StickySidebar } from '@/scripts/sticky-sidebar';
 import XSidebar from '@/components/sidebar.vue';
 import XCommon from './_common_/common.vue';
@@ -86,8 +87,6 @@ export default defineComponent({
 
 	data() {
 		return {
-			host: host,
-			pageKey: 0,
 			pageInfo: null,
 			isDesktop: window.innerWidth >= DESKTOP_THRESHOLD,
 			menuDef: sidebarDef,
@@ -106,12 +105,6 @@ export default defineComponent({
 			}
 			return false;
 		}
-	},
-
-	watch: {
-		$route(to, from) {
-			this.pageKey++;
-		},
 	},
 
 	created() {
@@ -154,6 +147,7 @@ export default defineComponent({
 			if (page == null) return;
 			if (page.INFO) {
 				this.pageInfo = page.INFO;
+				document.title = `${this.pageInfo.title} | ${instanceName}`;
 			}
 		},
 
@@ -193,6 +187,7 @@ export default defineComponent({
 		},
 
 		onContextmenu(e) {
+			if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) || e.target.attributes['contenteditable']) return;
 			const path = this.$route.path;
 			os.contextMenu([{
 				type: 'label',
@@ -339,15 +334,13 @@ export default defineComponent({
 		position: fixed;
 		z-index: 1000;
 		bottom: 0;
-		padding: 0 32px 32px 32px;
+		padding: 16px;
 		display: flex;
 		width: 100%;
 		box-sizing: border-box;
-		background: linear-gradient(0deg, var(--bg), var(--X1));
-
-		@media (max-width: 500px) {
-			padding: 0 16px 16px 16px;
-		}
+		-webkit-backdrop-filter: blur(32px);
+		backdrop-filter: blur(32px);
+		background-color: var(--header);
 
 		&:not(.navHidden) {
 			display: none;
@@ -355,14 +348,25 @@ export default defineComponent({
 
 		> .button {
 			position: relative;
+			flex: 1;
 			padding: 0;
 			margin: auto;
-			width: 64px;
 			height: 64px;
-			border-radius: 100%;
-			box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12);
+			border-radius: 8px;
 			background: var(--panel);
 			color: var(--fg);
+
+			&:not(:last-child) {
+				margin-right: 12px;
+			}
+
+			@media (max-width: 400px) {
+				height: 60px;
+
+				&:not(:last-child) {
+					margin-right: 8px;
+				}
+			}
 
 			&:hover {
 				background: var(--X2);
