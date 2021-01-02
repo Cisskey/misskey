@@ -102,16 +102,16 @@ export default defineComponent({
 		async save(notify?: boolean) {
 			await os.api('i/update', {
 				enableWebhookNotification: this.enableWebhook,
-				webhookUrl: this.url.trim() || null,
+				webhookUrl: this.url?.trim() || null,
 				webhookType: this.type,
-				webhookSecret: this.secret.trim() || null
+				webhookSecret: this.secret?.trim() || null
 			}).then(() => {
 				this.changed = false;
 
 				this.$i.enableWebhookNotification = this.enableWebhook;
-				this.$i.webhookUrl = this.url.trim() || null;
+				this.$i.webhookUrl = this.url?.trim() || null;
 				this.$i.webhookType = this.type;
-				this.$i.webhookSecret = this.secret.trim() || null;
+				this.$i.webhookSecret = this.secret?.trim() || null;
 
 				if (notify) {
 					os.dialog({
