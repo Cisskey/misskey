@@ -307,8 +307,8 @@ export default defineComponent({
 		}
 
 		if (this.appearNote.cw != null) {
-			this.showContent = this.$store.state.device.autoShowCwContentAll ||
-				(this.$store.state.device.showCwWords as string[])
+			this.showContent = this.$store.state.autoShowCwContentAll ||
+				(this.$store.state.showCwWords as string[])
 					.some(word => this.appearNote.cw.includes(word) || this.appearNote.text.includes(word));
 		}
 	},
