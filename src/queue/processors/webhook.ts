@@ -1,6 +1,6 @@
 import * as Bull from 'bull';
 import { getAgentByUrl } from '../../misc/fetch';
-import getNoteSummary from '../../misc/get-note-summary';
+import { getNoteSummary } from '../../misc/get-note-summary';
 import fetch from 'node-fetch';
 import * as locale from '../../../locales/';
 import config from '../../config';
