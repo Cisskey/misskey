@@ -167,6 +167,6 @@ module.exports = {
 	experiments: {
 		topLevelAwait: true
 	},
-	devtool: false, //'source-map',
+	devtool: 'source-map',
 	mode: isProduction ? 'production' : 'development'
 };
