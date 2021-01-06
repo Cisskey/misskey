@@ -1,5 +1,5 @@
 <template>
-<XColumn :func="{ handler: selectChannel, title: $ts.selectChannel }" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
+<XColumn :func="{ handler: func, title: $ts.selectChannel }" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
 	<template #header>
 		<Fa :icon="faSatelliteDish"/>
 		<span style="margin-left: 8px;">{{ column.name }}</span>
@@ -68,6 +68,25 @@ export default defineComponent({
 	},
 
 	methods: {
+		async func(ev) {
+			await os.modalMenu([{
+				icon: faCog,
+				text: this.$t('selectChannel'),
+				action: this.selectChannel
+			}, {
+				icon: this.showFixedPostForm ? faEyeSlash : faEye,
+				text: this.showFixedPostForm ? this.$t('_deck.hideFixedPostForm') : this.$t('_deck.showFixedPostForm'),
+				action: () => {
+					this.showFixedPostForm = !this.showFixedPostForm;
+					updateColumn(this.column.id, {
+						chId: this.column.chId,
+						name: this.column.name,
+						showFixedPostForm: this.showFixedPostForm,
+					});
+				}
+			}], ev.currentTarget || ev.target);
+		},
+
 		async selectChannel() {
 			const channels = await os.api('channels/followed', { limit: 100 });
 			const { canceled, result: channel } = await os.dialog({
