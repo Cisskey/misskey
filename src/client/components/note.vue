@@ -406,13 +406,8 @@ export default defineComponent({
 						[reaction]: Math.max(0, currentCount - 1)
 					};
 
-<<<<<<< HEAD
-					if (body.userId === this.$store.state.i.id) {
-						n.myReactions = n.myReactions.filter(r => r !== reaction);
-=======
 					if (body.userId === this.$i.id) {
-						n.myReaction = null;
->>>>>>> misskey/develop
+						n.myReactions = n.myReactions.filter(r => r !== reaction);
 					}
 
 					this.updateAppearNote(n);
