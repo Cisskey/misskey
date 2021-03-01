@@ -52,10 +52,10 @@
 					<span class="localOnly" v-if="appearNote.localOnly"><Fa :icon="faBiohazard"/></span>
 				</div>
 				<div class="username"><MkAcct :user="appearNote.user"/></div>
+				<MkInstanceTicker v-if="showTicker" class="ticker" :instance="appearNote.user.instance"/>
 			</div>
 		</header>
 		<div class="main">
-			<MkInstanceTicker v-if="showTicker" class="ticker" :instance="appearNote.user.instance"/>
 			<div class="body">
 				<p v-if="appearNote.cw != null" class="cw">
 					<Mfm v-if="appearNote.cw != ''" class="text" :text="appearNote.cw" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
@@ -523,20 +523,14 @@ export default defineComponent({
 		react(viaKeyboard = false) {
 			pleaseLogin();
 			this.blur();
-			os.popup(import('@/components/emoji-picker.vue'), {
-				src: this.$refs.reactButton,
-				asReactionPicker: true
-			}, {
-				done: reaction => {
-					if (reaction) {
-						os.api('notes/reactions/create', {
-							noteId: this.appearNote.id,
-							reaction: reaction
-						});
-					}
-					this.focus();
-				},
-			}, 'closed');
+			os.pickReaction(this.$refs.reactButton, reaction => {
+				os.api('notes/reactions/create', {
+					noteId: this.appearNote.id,
+					reaction: reaction
+				});
+			}, () => {
+				this.focus();
+			});
 		},
 
 		reactDirectly(reaction) {
@@ -756,7 +750,13 @@ export default defineComponent({
 			};
 			if (isLink(e.target)) return;
 			if (window.getSelection().toString() !== '') return;
-			os.contextMenu(this.getMenu(), e).then(this.focus);
+
+			if (this.$store.state.useReactionPickerForContextMenu) {
+				e.preventDefault();
+				this.react();
+			} else {
+				os.contextMenu(this.getMenu(), e).then(this.focus);
+			}
 		},
 
 		menu(viaKeyboard = false) {
@@ -886,7 +886,8 @@ export default defineComponent({
 .note {
 	position: relative;
 	transition: box-shadow 0.1s ease;
-	overflow: hidden;
+	overflow: hidden; // overflow: clip; をSafariが対応したら消す
+	overflow: clip;
 	contain: content;
 
 	&:focus-visible {
@@ -946,7 +947,8 @@ export default defineComponent({
 		}
 
 		> span {
-			overflow: hidden;
+			overflow: hidden; // overflow: clip; をSafariが対応したら消す
+			overflow: clip;
 			flex-shrink: 1;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -1005,6 +1007,7 @@ export default defineComponent({
 				flex-direction: column;
 				justify-content: center;
 				padding-left: 16px;
+				font-size: 0.95em;
 
 				> .top {
 					> .name {

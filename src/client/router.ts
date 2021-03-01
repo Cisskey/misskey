@@ -29,6 +29,7 @@ export const router = createRouter({
 		{ path: '/featured', component: page('featured') },
 		{ path: '/docs', component: page('docs') },
 		{ path: '/theme-editor', component: page('theme-editor') },
+		{ path: '/advanced-theme-editor', component: page('advanced-theme-editor') },
 		{ path: '/docs/:doc', component: page('doc'), props: route => ({ doc: route.params.doc }) },
 		{ path: '/explore', component: page('explore') },
 		{ path: '/explore/tags/:tag', props: true, component: page('explore') },
@@ -75,12 +76,12 @@ export const router = createRouter({
 		{ path: '/games/reversi/:gameId', component: page('reversi/game'), props: route => ({ gameId: route.params.gameId }) },
 		{ path: '/mfm-cheat-sheet', component: page('mfm-cheat-sheet') },
 		{ path: '/api-console', component: page('api-console') },
+		{ path: '/preview', component: page('preview') },
 		{ path: '/test', component: page('test') },
 		{ path: '/auth/:token', component: page('auth') },
 		{ path: '/miauth/:session', component: page('miauth') },
 		{ path: '/authorize-follow', component: page('follow') },
 		{ path: '/share', component: page('share') },
-		{ path: '/test', component: page('test') },
 		{ path: '/:catchAll(.*)', component: page('not-found') }
 	],
 	// なんかHacky

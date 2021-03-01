@@ -15,16 +15,18 @@ if (localStorage.getItem('vuex') != null) {
 	localStorage.setItem('accounts', JSON.stringify(vuex.device.accounts));
 	localStorage.setItem('miux:themes', JSON.stringify(vuex.device.themes));
 
-	for (const [k, v] of 	Object.entries(vuex.device.userData)) {
-		localStorage.setItem('pizzax::base::' + k, JSON.stringify({
-			widgets: v.widgets
-		}));
-
-		if (v.deck) {
-			localStorage.setItem('pizzax::deck::' + k, JSON.stringify({
-				columns: v.deck.columns,
-				layout: v.deck.layout,
+	if (vuex.device.userData) {
+		for (const [k, v] of 	Object.entries(vuex.device.userData)) {
+			localStorage.setItem('pizzax::base::' + k, JSON.stringify({
+				widgets: v.widgets
 			}));
+
+			if (v.deck) {
+				localStorage.setItem('pizzax::deck::' + k, JSON.stringify({
+					columns: v.deck.columns,
+					layout: v.deck.layout,
+				}));
+			}
 		}
 	}
 
@@ -36,28 +38,35 @@ if (localStorage.getItem('vuex') != null) {
 	location.reload();
 }
 
+import * as Sentry from '@sentry/browser';
+import { Integrations } from '@sentry/tracing';
 import { createApp, watch } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import widgets from '@/widgets';
 import directives from '@/directives';
 import components from '@/components';
-import { version, ui, lang } from '@/config';
+import { version, ui, lang, host } from '@/config';
 import { router } from '@/router';
 import { applyTheme } from '@/scripts/theme';
 import { isDeviceDarkmode } from '@/scripts/is-device-darkmode';
 import { i18n } from '@/i18n';
-import { stream, isMobile, dialog, post } from '@/os';
+import { stream, dialog, post } from '@/os';
 import * as sound from '@/scripts/sound';
 import { $i, refreshAccount, login, updateAccount, signout } from '@/account';
 import { defaultStore, ColdDeviceStorage } from '@/store';
 import { fetchInstance, instance } from '@/instance';
-import { makeHotkey } from './scripts/hotkey';
-import { search } from './scripts/search';
+import { makeHotkey } from '@/scripts/hotkey';
+import { search } from '@/scripts/search';
+import { isMobile } from '@/scripts/is-mobile';
+import { getThemes } from '@/theme-store';
+import { initializeSw } from '@/scripts/initialize-sw';
+import { reloadChannel } from '@/scripts/unison-reload';
 
 console.info(`Misskey v${version}`);
 
-window.clearTimeout((window as any).mkBootTimer);
+// boot.jsのやつを解除
+window.onerror = null;
 
 if (_DEV_) {
 	console.warn('Development mode!!!');
@@ -88,8 +97,23 @@ if (_DEV_) {
 	});
 }
 
+if (defaultStore.state.reportError && !_DEV_) {
+	Sentry.init({
+		dsn: 'https://fd273254a07a4b61857607a9ea05d629@o501808.ingest.sentry.io/5583438',
+		tracesSampleRate: 1.0,
+	});
+
+	Sentry.setTag('misskey_version', version);
+	Sentry.setTag('ui', ui);
+	Sentry.setTag('lang', lang);
+	Sentry.setTag('host', host);
+}
+
 // タッチデバイスでCSSの:hoverを機能させる
 document.addEventListener('touchend', () => {}, { passive: true });
+
+// 一斉リロード
+reloadChannel.addEventListener('message', () => location.reload());
 
 //#region SEE: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 // TODO: いつの日にか消したい
@@ -155,8 +179,10 @@ if ($i && $i.token) {
 //#endregion
 
 fetchInstance().then(() => {
+	localStorage.setItem('v', instance.version);
+
 	// Init service worker
-	//if (this.store.state.instance.meta.swPublickey) this.registerSw(this.store.state.instance.meta.swPublickey);
+	initializeSw();
 });
 
 stream.init($i);
@@ -166,6 +192,7 @@ const app = createApp(await (
 	!$i                               ? import('@/ui/visitor.vue') :
 	ui === 'deck'                     ? import('@/ui/deck.vue') :
 	ui === 'desktop'                  ? import('@/ui/desktop.vue') :
+	ui === 'chat'                     ? import('@/ui/chat/index.vue') :
 	import('@/ui/default.vue')
 ).then(x => x.default));
 
@@ -197,7 +224,7 @@ app.mount('body');
 
 watch(defaultStore.reactiveState.darkMode, (darkMode) => {
 	import('@/scripts/theme').then(({ builtinThemes }) => {
-		const themes = builtinThemes.concat(ColdDeviceStorage.get('themes'));
+		const themes = builtinThemes.concat(getThemes());
 		applyTheme(themes.find(x => x.id === (darkMode ? ColdDeviceStorage.get('darkTheme') : ColdDeviceStorage.get('lightTheme'))));
 	});
 }, { immediate: localStorage.theme == null });
@@ -331,14 +358,6 @@ if ($i) {
 
 	main.on('readAllAnnouncements', () => {
 		updateAccount({ hasUnreadAnnouncement: false });
-	});
-
-	main.on('clientSettingUpdated', x => {
-		updateAccount({
-			clientData: {
-				[x.key]: x.value
-			}
-		});
 	});
 
 	// トークンが再生成されたとき

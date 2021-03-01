@@ -70,7 +70,6 @@ export default defineComponent({
 	data() {
 		return {
 			deckStore,
-			active: true,
 			dragging: false,
 			draghover: false,
 			dropready: false,
@@ -81,6 +80,10 @@ export default defineComponent({
 	computed: {
 		isMainColumn(): boolean {
 			return this.column.type === 'main';
+		},
+
+		active(): boolean {
+			return this.column.active !== false;
 		},
 
 		keymap(): any {
@@ -124,7 +127,9 @@ export default defineComponent({
 
 		toggleActive() {
 			if (!this.isStacked) return;
-			this.active = !this.active;
+			updateColumn(this.column.id, {
+				active: !this.column.active
+			});
 		},
 
 		getMenu() {
@@ -263,7 +268,8 @@ export default defineComponent({
 	--section-padding: 10px;
 
 	height: 100%;
-	overflow: hidden;
+	overflow: hidden; // overflow: clip; をSafariが対応したら消す
+	overflow: clip;
 	contain: content;
 
 	&.draghover {
@@ -353,7 +359,8 @@ export default defineComponent({
 		> .header {
 			display: inline-block;
 			align-items: center;
-			overflow: hidden;
+			overflow: hidden; // overflow: clip; をSafariが対応したら消す
+			overflow: clip;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}

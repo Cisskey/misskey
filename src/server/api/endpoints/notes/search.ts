@@ -49,6 +49,11 @@ export const meta = {
 			validator: $.optional.nullable.type(ID),
 			default: null
 		},
+
+		channelId: {
+			validator: $.optional.nullable.type(ID),
+			default: null
+		},
 	},
 
 	res: {
@@ -69,6 +74,12 @@ export default define(meta, async (ps, me) => {
 	if (es == null) {
 		const query = makePaginationQuery(Notes.createQueryBuilder('note'), ps.sinceId, ps.untilId)
 			.leftJoinAndSelect('note.user', 'user');
+
+		if (ps.userId) {
+			query.andWhere('note.userId = :userId', { userId: ps.userId });
+		} else if (ps.channelId) {
+			query.andWhere('note.channelId = :channelId', { channelId: ps.channelId });
+		}
 
 		const fromRegex = /^from:@?([\w-]+)(?:@([\w.-]+))?$/;
 		const toRegex = /^to:@?([\w-]+)(?:@([\w.-]+))?$/;

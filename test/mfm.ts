@@ -10,19 +10,19 @@
 
 import * as assert from 'assert';
 
-import { parse, parsePlain } from '../src/mfm/parse';
-import { toHtml } from '../src/mfm/to-html';
-import { toString } from '../src/mfm/to-string';
-import { createTree as tree, createLeaf as leaf, MfmTree } from '../src/mfm/prelude';
-import { removeOrphanedBrackets } from '../src/mfm/language';
+import {parse, parsePlain} from '../src/mfm/parse';
+import {toHtml} from '../src/mfm/to-html';
+import {toString} from '../src/mfm/to-string';
+import {createTree as tree, createLeaf as leaf, MfmTree} from '../src/mfm/prelude';
+import {removeOrphanedBrackets} from '../src/mfm/language';
 
 function text(text: string): MfmTree {
-	return leaf('text', { text });
+	return leaf('text', {text});
 }
 
 describe('createLeaf', () => {
 	it('creates leaf', () => {
-		assert.deepStrictEqual(leaf('text', { text: 'abc' }), {
+		assert.deepStrictEqual(leaf('text', {text: 'abc'}), {
 			node: {
 				type: 'text',
 				props: {
@@ -37,11 +37,11 @@ describe('createLeaf', () => {
 describe('createTree', () => {
 	it('creates tree', () => {
 		const t = tree('tree', [
-			leaf('left', { a: 2 }),
-			leaf('right', { b: 'hi' })
+			leaf('left', {a: 2}),
+			leaf('right', {b: 'hi'})
 		], {
-				c: 4
-			});
+			c: 4
+		});
 		assert.deepStrictEqual(t, {
 			node: {
 				type: 'tree',
@@ -50,8 +50,8 @@ describe('createTree', () => {
 				}
 			},
 			children: [
-				leaf('left', { a: 2 }),
-				leaf('right', { b: 'hi' })
+				leaf('left', {a: 2}),
+				leaf('right', {b: 'hi'})
 			],
 		});
 	});
@@ -168,9 +168,9 @@ describe('MFM', () => {
 				host: 'namori.net'
 			}),
 			text(' お腹ペコい '),
-			leaf('emoji', { name: 'cat' }),
+			leaf('emoji', {name: 'cat'}),
 			text(' '),
-			leaf('hashtag', { hashtag: 'yryr' }),
+			leaf('hashtag', {hashtag: 'yryr'}),
 		]);
 	});
 
@@ -215,14 +215,14 @@ describe('MFM', () => {
 			it('mixed syntax', () => {
 				const tokens = parse('**foo__');
 				assert.deepStrictEqual(tokens, [
-						text('**foo__'),
+					text('**foo__'),
 				]);
 			});
 
 			it('mixed syntax', () => {
 				const tokens = parse('__foo**');
 				assert.deepStrictEqual(tokens, [
-						text('__foo**'),
+					text('__foo**'),
 				]);
 			});
 		});
@@ -269,7 +269,7 @@ describe('MFM', () => {
 				const tokens = parse('<animate>:foo:</animate>');
 				assert.deepStrictEqual(tokens, [
 					tree('animate', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 				]);
 			});
@@ -278,7 +278,7 @@ describe('MFM', () => {
 				const tokens = parse('<animate jello>:foo:</animate>');
 				assert.deepStrictEqual(tokens, [
 					tree('animate', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {
 						attrs: ['jello']
 					}),
@@ -289,10 +289,10 @@ describe('MFM', () => {
 				const tokens = parse('<animate>:foo:</animate><animate>:foo:</animate>');
 				assert.deepStrictEqual(tokens, [
 					tree('animate', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 					tree('animate', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 				]);
 			});
@@ -302,7 +302,7 @@ describe('MFM', () => {
 				assert.deepStrictEqual(tokens, [
 					tree('animate', [
 						tree('animate', [
-							leaf('emoji', { name: 'foo' })
+							leaf('emoji', {name: 'foo'})
 						], {}),
 					], {}),
 				]);
@@ -323,7 +323,7 @@ describe('MFM', () => {
 				const tokens = parse('<spin>:foo:</spin>');
 				assert.deepStrictEqual(tokens, [
 					tree('spin', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 				]);
 			});
@@ -332,7 +332,7 @@ describe('MFM', () => {
 				const tokens = parse('<spin left>:foo:</spin>');
 				assert.deepStrictEqual(tokens, [
 					tree('spin', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {
 						attrs: ['left']
 					}),
@@ -343,10 +343,10 @@ describe('MFM', () => {
 				const tokens = parse('<spin>:foo:</spin><spin>:foo:</spin>');
 				assert.deepStrictEqual(tokens, [
 					tree('spin', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 					tree('spin', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 				]);
 			});
@@ -356,7 +356,7 @@ describe('MFM', () => {
 				assert.deepStrictEqual(tokens, [
 					tree('spin', [
 						tree('spin', [
-							leaf('emoji', { name: 'foo' })
+							leaf('emoji', {name: 'foo'})
 						], {}),
 					], {}),
 				]);
@@ -377,7 +377,7 @@ describe('MFM', () => {
 				const tokens = parse('<slide>:foo:</slide>');
 				assert.deepStrictEqual(tokens, [
 					tree('slide', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 				]);
 			});
@@ -386,7 +386,7 @@ describe('MFM', () => {
 				const tokens = parse('<slide left>:foo:</slide>');
 				assert.deepStrictEqual(tokens, [
 					tree('slide', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {
 						attrs: ['left']
 					}),
@@ -397,7 +397,7 @@ describe('MFM', () => {
 				const tokens = parse('<slide left 1.5s>:foo:</slide>');
 				assert.deepStrictEqual(tokens, [
 					tree('slide', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {
 						attrs: ['left', '1.5s']
 					}),
@@ -408,10 +408,10 @@ describe('MFM', () => {
 				const tokens = parse('<slide>:foo:</slide><slide>:foo:</slide>');
 				assert.deepStrictEqual(tokens, [
 					tree('slide', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 					tree('slide', [
-						leaf('emoji', { name: 'foo' })
+						leaf('emoji', {name: 'foo'})
 					], {}),
 				]);
 			});
@@ -421,7 +421,7 @@ describe('MFM', () => {
 				assert.deepStrictEqual(tokens, [
 					tree('slide', [
 						tree('slide', [
-							leaf('emoji', { name: 'foo' })
+							leaf('emoji', {name: 'foo'})
 						], {}),
 					], {}),
 				]);
@@ -433,7 +433,7 @@ describe('MFM', () => {
 			const tokens = parse('<jump>:foo:</jump>');
 			assert.deepStrictEqual(tokens, [
 				tree('jump', [
-					leaf('emoji', { name: 'foo' })
+					leaf('emoji', {name: 'foo'})
 				], {}),
 			]);
 		});
@@ -587,7 +587,7 @@ describe('MFM', () => {
 			it('simple', () => {
 				const tokens = parse('#alice');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'alice' })
+					leaf('hashtag', {hashtag: 'alice'})
 				]);
 			});
 
@@ -595,7 +595,7 @@ describe('MFM', () => {
 				const tokens = parse('foo\n#alice');
 				assert.deepStrictEqual(tokens, [
 					text('foo\n'),
-					leaf('hashtag', { hashtag: 'alice' })
+					leaf('hashtag', {hashtag: 'alice'})
 				]);
 			});
 
@@ -603,7 +603,7 @@ describe('MFM', () => {
 				const tokens = parse('Strawberry Pasta #alice');
 				assert.deepStrictEqual(tokens, [
 					text('Strawberry Pasta '),
-					leaf('hashtag', { hashtag: 'alice' })
+					leaf('hashtag', {hashtag: 'alice'})
 				]);
 			});
 
@@ -611,7 +611,7 @@ describe('MFM', () => {
 				const tokens = parse('こんにちは#世界');
 				assert.deepStrictEqual(tokens, [
 					text('こんにちは'),
-					leaf('hashtag', { hashtag: '世界' })
+					leaf('hashtag', {hashtag: '世界'})
 				]);
 			});
 
@@ -619,9 +619,9 @@ describe('MFM', () => {
 				const tokens = parse('Foo #bar, baz #piyo.');
 				assert.deepStrictEqual(tokens, [
 					text('Foo '),
-					leaf('hashtag', { hashtag: 'bar' }),
+					leaf('hashtag', {hashtag: 'bar'}),
 					text(', baz '),
-					leaf('hashtag', { hashtag: 'piyo' }),
+					leaf('hashtag', {hashtag: 'piyo'}),
 					text('.'),
 				]);
 			});
@@ -629,7 +629,7 @@ describe('MFM', () => {
 			it('ignore exclamation mark', () => {
 				const tokens = parse('#Foo!');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'Foo' }),
+					leaf('hashtag', {hashtag: 'Foo'}),
 					text('!'),
 				]);
 			});
@@ -637,7 +637,7 @@ describe('MFM', () => {
 			it('ignore colon', () => {
 				const tokens = parse('#Foo:');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'Foo' }),
+					leaf('hashtag', {hashtag: 'Foo'}),
 					text(':'),
 				]);
 			});
@@ -645,7 +645,7 @@ describe('MFM', () => {
 			it('ignore single quote', () => {
 				const tokens = parse('#foo\'');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text('\''),
 				]);
 			});
@@ -653,7 +653,7 @@ describe('MFM', () => {
 			it('ignore double quote', () => {
 				const tokens = parse('#foo"');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text('"'),
 				]);
 			});
@@ -661,7 +661,7 @@ describe('MFM', () => {
 			it('ignore square brackets', () => {
 				const tokens = parse('#foo]');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text(']'),
 				]);
 			});
@@ -669,7 +669,7 @@ describe('MFM', () => {
 			it('ignore 】', () => {
 				const tokens = parse('#foo】');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text('】'),
 				]);
 			});
@@ -677,7 +677,7 @@ describe('MFM', () => {
 			it('allow including number', () => {
 				const tokens = parse('#foo123');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'foo123' }),
+					leaf('hashtag', {hashtag: 'foo123'}),
 				]);
 			});
 
@@ -685,14 +685,14 @@ describe('MFM', () => {
 				const tokens1 = parse('(#foo)');
 				assert.deepStrictEqual(tokens1, [
 					text('('),
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text(')'),
 				]);
 
 				const tokens2 = parse('「#foo」');
 				assert.deepStrictEqual(tokens2, [
 					text('「'),
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text('」'),
 				]);
 			});
@@ -701,7 +701,7 @@ describe('MFM', () => {
 				const tokens = parse('「#foo(bar)」');
 				assert.deepStrictEqual(tokens, [
 					text('「'),
-					leaf('hashtag', { hashtag: 'foo(bar)' }),
+					leaf('hashtag', {hashtag: 'foo(bar)'}),
 					text('」'),
 				]);
 			});
@@ -710,14 +710,14 @@ describe('MFM', () => {
 				const tokens1 = parse('(bar #foo)');
 				assert.deepStrictEqual(tokens1, [
 					text('(bar '),
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text(')'),
 				]);
 
 				const tokens2 = parse('「bar #foo」');
 				assert.deepStrictEqual(tokens2, [
 					text('「bar '),
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text('」'),
 				]);
 			});
@@ -739,7 +739,7 @@ describe('MFM', () => {
 			it('ignore slash', () => {
 				const tokens = parse('#foo/bar');
 				assert.deepStrictEqual(tokens, [
-					leaf('hashtag', { hashtag: 'foo' }),
+					leaf('hashtag', {hashtag: 'foo'}),
 					text('/bar'),
 				]);
 			});
@@ -747,14 +747,14 @@ describe('MFM', () => {
 			it('ignore Keycap Number Sign (U+0023 + U+20E3)', () => {
 				const tokens = parse('#⃣');
 				assert.deepStrictEqual(tokens, [
-					leaf('emoji', { emoji: '#⃣' })
+					leaf('emoji', {emoji: '#⃣'})
 				]);
 			});
 
 			it('ignore Keycap Number Sign (U+0023 + U+FE0F + U+20E3)', () => {
 				const tokens = parse('#️⃣');
 				assert.deepStrictEqual(tokens, [
-					leaf('emoji', { emoji: '#️⃣' })
+					leaf('emoji', {emoji: '#️⃣'})
 				]);
 			});
 		});
@@ -910,14 +910,14 @@ describe('MFM', () => {
 			it('simple', () => {
 				const tokens = parse('https://example.com');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://example.com' })
+					leaf('url', {url: 'https://example.com'})
 				]);
 			});
 
 			it('ignore trailing period', () => {
 				const tokens = parse('https://example.com.');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://example.com' }),
+					leaf('url', {url: 'https://example.com'}),
 					text('.')
 				]);
 			});
@@ -925,7 +925,7 @@ describe('MFM', () => {
 			it('ignore trailing periods', () => {
 				const tokens = parse('https://example.com...');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://example.com' }),
+					leaf('url', {url: 'https://example.com'}),
 					text('...')
 				]);
 			});
@@ -933,14 +933,14 @@ describe('MFM', () => {
 			it('with comma', () => {
 				const tokens = parse('https://example.com/foo?bar=a,b');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://example.com/foo?bar=a,b' })
+					leaf('url', {url: 'https://example.com/foo?bar=a,b'})
 				]);
 			});
 
 			it('ignore trailing comma', () => {
 				const tokens = parse('https://example.com/foo, bar');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://example.com/foo' }),
+					leaf('url', {url: 'https://example.com/foo'}),
 					text(', bar')
 				]);
 			});
@@ -948,7 +948,7 @@ describe('MFM', () => {
 			it('with brackets', () => {
 				const tokens = parse('https://example.com/foo(bar)');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://example.com/foo(bar)' })
+					leaf('url', {url: 'https://example.com/foo(bar)'})
 				]);
 			});
 
@@ -956,7 +956,7 @@ describe('MFM', () => {
 				const tokens = parse('(https://example.com/foo)');
 				assert.deepStrictEqual(tokens, [
 					text('('),
-					leaf('url', { url: 'https://example.com/foo' }),
+					leaf('url', {url: 'https://example.com/foo'}),
 					text(')')
 				]);
 			});
@@ -965,7 +965,7 @@ describe('MFM', () => {
 				const tokens = parse('foo [https://example.com/foo] bar');
 				assert.deepStrictEqual(tokens, [
 					text('foo ['),
-					leaf('url', { url: 'https://example.com/foo' }),
+					leaf('url', {url: 'https://example.com/foo'}),
 					text('] bar')
 				]);
 			});
@@ -974,7 +974,7 @@ describe('MFM', () => {
 				const tokens = parse('(foo https://example.com/foo)');
 				assert.deepStrictEqual(tokens, [
 					text('(foo '),
-					leaf('url', { url: 'https://example.com/foo' }),
+					leaf('url', {url: 'https://example.com/foo'}),
 					text(')')
 				]);
 			});
@@ -983,7 +983,7 @@ describe('MFM', () => {
 				const tokens = parse('(https://example.com/foo(bar))');
 				assert.deepStrictEqual(tokens, [
 					text('('),
-					leaf('url', { url: 'https://example.com/foo(bar)' }),
+					leaf('url', {url: 'https://example.com/foo(bar)'}),
 					text(')')
 				]);
 			});
@@ -998,7 +998,7 @@ describe('MFM', () => {
 			it('match non-ascii characters contained url with angle brackets', () => {
 				const tokens = parse('<https://大石泉すき.example.com>');
 				assert.deepStrictEqual(tokens, [
-					leaf('url', { url: 'https://大石泉すき.example.com' })
+					leaf('url', {url: 'https://大石泉すき.example.com'})
 				]);
 			});
 		});
@@ -1009,7 +1009,7 @@ describe('MFM', () => {
 				assert.deepStrictEqual(tokens, [
 					tree('link', [
 						text('foo')
-					], { url: 'https://example.com', silent: false })
+					], {url: 'https://example.com', silent: false})
 				]);
 			});
 
@@ -1018,7 +1018,7 @@ describe('MFM', () => {
 				assert.deepStrictEqual(tokens, [
 					tree('link', [
 						text('foo')
-					], { url: 'https://example.com', silent: true })
+					], {url: 'https://example.com', silent: true})
 				]);
 			});
 
@@ -1028,7 +1028,7 @@ describe('MFM', () => {
 					text('before'),
 					tree('link', [
 						text('foo')
-					], { url: 'https://example.com', silent: false }),
+					], {url: 'https://example.com', silent: false}),
 					text('after'),
 				]);
 			});
@@ -1038,7 +1038,7 @@ describe('MFM', () => {
 				assert.deepStrictEqual(tokens, [
 					tree('link', [
 						text('foo')
-					], { url: 'https://example.com/foo(bar)', silent: false })
+					], {url: 'https://example.com/foo(bar)', silent: false})
 				]);
 			});
 
@@ -1048,7 +1048,7 @@ describe('MFM', () => {
 					text('('),
 					tree('link', [
 						text('foo')
-					], { url: 'https://example.com/foo(bar)', silent: false }),
+					], {url: 'https://example.com/foo(bar)', silent: false}),
 					text(')')
 				]);
 			});
@@ -1057,19 +1057,19 @@ describe('MFM', () => {
 		it('emoji', () => {
 			const tokens1 = parse(':cat:');
 			assert.deepStrictEqual(tokens1, [
-				leaf('emoji', { name: 'cat' })
+				leaf('emoji', {name: 'cat'})
 			]);
 
 			const tokens2 = parse(':cat::cat::cat:');
 			assert.deepStrictEqual(tokens2, [
-				leaf('emoji', { name: 'cat' }),
-				leaf('emoji', { name: 'cat' }),
-				leaf('emoji', { name: 'cat' })
+				leaf('emoji', {name: 'cat'}),
+				leaf('emoji', {name: 'cat'}),
+				leaf('emoji', {name: 'cat'})
 			]);
 
 			const tokens3 = parse('🍎');
 			assert.deepStrictEqual(tokens3, [
-				leaf('emoji', { emoji: '🍎' })
+				leaf('emoji', {emoji: '🍎'})
 			]);
 		});
 
@@ -1077,14 +1077,14 @@ describe('MFM', () => {
 			it('simple', () => {
 				const tokens = parse('```\nvar x = "Strawberry Pasta";\n```');
 				assert.deepStrictEqual(tokens, [
-					leaf('blockCode', { code: 'var x = "Strawberry Pasta";', lang: null })
+					leaf('blockCode', {code: 'var x = "Strawberry Pasta";', lang: null})
 				]);
 			});
 
 			it('can specify language', () => {
 				const tokens = parse('``` json\n{ "x": 42 }\n```');
 				assert.deepStrictEqual(tokens, [
-					leaf('blockCode', { code: '{ "x": 42 }', lang: 'json' })
+					leaf('blockCode', {code: '{ "x": 42 }', lang: 'json'})
 				]);
 			});
 
@@ -1092,32 +1092,32 @@ describe('MFM', () => {
 				const tokens = parse('before```\nfoo\n```');
 				assert.deepStrictEqual(tokens, [
 					text('before'),
-					leaf('inlineCode', { code: '`' }),
+					leaf('inlineCode', {code: '`'}),
 					text('\nfoo\n'),
-					leaf('inlineCode', { code: '`' })
+					leaf('inlineCode', {code: '`'})
 				]);
 			});
 
 			it('series', () => {
 				const tokens = parse('```\nfoo\n```\n```\nbar\n```\n```\nbaz\n```');
 				assert.deepStrictEqual(tokens, [
-					leaf('blockCode', { code: 'foo', lang: null }),
-					leaf('blockCode', { code: 'bar', lang: null }),
-					leaf('blockCode', { code: 'baz', lang: null }),
+					leaf('blockCode', {code: 'foo', lang: null}),
+					leaf('blockCode', {code: 'bar', lang: null}),
+					leaf('blockCode', {code: 'baz', lang: null}),
 				]);
 			});
 
 			it('ignore internal marker', () => {
 				const tokens = parse('```\naaa```bbb\n```');
 				assert.deepStrictEqual(tokens, [
-					leaf('blockCode', { code: 'aaa```bbb', lang: null })
+					leaf('blockCode', {code: 'aaa```bbb', lang: null})
 				]);
 			});
 
 			it('trim after line break', () => {
 				const tokens = parse('```\nfoo\n```\nbar');
 				assert.deepStrictEqual(tokens, [
-					leaf('blockCode', { code: 'foo', lang: null }),
+					leaf('blockCode', {code: 'foo', lang: null}),
 					text('bar')
 				]);
 			});
@@ -1127,7 +1127,7 @@ describe('MFM', () => {
 			it('simple', () => {
 				const tokens = parse('`var x = "Strawberry Pasta";`');
 				assert.deepStrictEqual(tokens, [
-					leaf('inlineCode', { code: 'var x = "Strawberry Pasta";' })
+					leaf('inlineCode', {code: 'var x = "Strawberry Pasta";'})
 				]);
 			});
 
@@ -1151,7 +1151,7 @@ describe('MFM', () => {
 			const content = `\\(${fomula}\\)`;
 			const tokens = parse(content);
 			assert.deepStrictEqual(tokens, [
-				leaf('mathInline', { formula: fomula })
+				leaf('mathInline', {formula: fomula})
 			]);
 		});
 
@@ -1161,7 +1161,7 @@ describe('MFM', () => {
 				const content = `\\[\n${fomula}\n\\]`;
 				const tokens = parse(content);
 				assert.deepStrictEqual(tokens, [
-					leaf('mathBlock', { formula: fomula })
+					leaf('mathBlock', {formula: fomula})
 				]);
 			});
 		});
@@ -1169,22 +1169,22 @@ describe('MFM', () => {
 		it('search', () => {
 			const tokens1 = parse('a b c 検索');
 			assert.deepStrictEqual(tokens1, [
-				leaf('search', { content: 'a b c 検索', query: 'a b c' })
+				leaf('search', {content: 'a b c 検索', query: 'a b c'})
 			]);
 
 			const tokens2 = parse('a b c Search');
 			assert.deepStrictEqual(tokens2, [
-				leaf('search', { content: 'a b c Search', query: 'a b c' })
+				leaf('search', {content: 'a b c Search', query: 'a b c'})
 			]);
 
 			const tokens3 = parse('a b c search');
 			assert.deepStrictEqual(tokens3, [
-				leaf('search', { content: 'a b c search', query: 'a b c' })
+				leaf('search', {content: 'a b c search', query: 'a b c'})
 			]);
 
 			const tokens4 = parse('a b c SEARCH');
 			assert.deepStrictEqual(tokens4, [
-				leaf('search', { content: 'a b c SEARCH', query: 'a b c' })
+				leaf('search', {content: 'a b c SEARCH', query: 'a b c'})
 			]);
 		});
 
@@ -1348,7 +1348,7 @@ describe('MFM', () => {
 		it('emoji', () => {
 			const tokens = parsePlain(':foo:');
 			assert.deepStrictEqual(tokens, [
-				leaf('emoji', { name: 'foo' })
+				leaf('emoji', {name: 'foo'})
 			]);
 		});
 
@@ -1356,7 +1356,7 @@ describe('MFM', () => {
 			const tokens = parsePlain('foo:bar:baz');
 			assert.deepStrictEqual(tokens, [
 				text('foo'),
-				leaf('emoji', { name: 'bar' }),
+				leaf('emoji', {name: 'bar'}),
 				text('baz'),
 			]);
 		});
@@ -1389,18 +1389,18 @@ describe('MFM', () => {
 			tree('quote', [
 				text('foo')
 			], {}),
-			leaf('blockCode', { code: 'bar', lang: null })
+			leaf('blockCode', {code: 'bar', lang: null})
 		]);
 	});
 
 	it('quote between two code blocks', () => {
 		const tokens = parse('```\nbefore\n```\n> foo\n```\nafter\n```');
 		assert.deepStrictEqual(tokens, [
-			leaf('blockCode', { code: 'before', lang: null }),
+			leaf('blockCode', {code: 'before', lang: null}),
 			tree('quote', [
 				text('foo')
 			], {}),
-			leaf('blockCode', { code: 'after', lang: null })
+			leaf('blockCode', {code: 'after', lang: null})
 		]);
 	});
 
@@ -1495,5 +1495,85 @@ describe('MFM', () => {
 		it('ブロック数式', () => {
 			assert.deepStrictEqual(toString(parse('\\\[\nブロック数式\n\]\\')), '\\\[\nブロック数式\n\]\\');
 		});
+	});
+});
+
+describe('fromHtml', () => {
+	it('br', () => {
+		assert.deepStrictEqual(fromHtml('<p>abc<br><br/>d</p>'), 'abc\n\nd');
+	});
+
+	it('link with different text', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/b">c</a> d</p>'), 'a [c](https://example.com/b) d');
+	});
+
+	it('link with same text', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/b">https://example.com/b</a> d</p>'), 'a https://example.com/b d');
+	});
+
+	it('link with same text, but not encoded', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/ä">https://example.com/ä</a> d</p>'), 'a <https://example.com/ä> d');
+	});
+
+	it('link with no url', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="b">c</a> d</p>'), 'a [c](b) d');
+	});
+
+	it('link without href', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a>c</a> d</p>'), 'a c d');
+	});
+
+	it('mention', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/@user" class="u-url mention">@user</a> d</p>'), 'a @user@example.com d');
+	});
+
+	it('hashtag', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/tags/a">#a</a> d</p>', ['#a']), 'a #a d');
+	});
+});
+
+describe('fromHtml', () => {
+	it('br', () => {
+		assert.deepStrictEqual(fromHtml('<p>abc<br><br/>d</p>'), 'abc\n\nd');
+	});
+
+	it('link with different text', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/b">c</a> d</p>'), 'a [c](https://example.com/b) d');
+	});
+
+	it('link with different text, but not encoded', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/ä">c</a> d</p>'), 'a [c](<https://example.com/ä>) d');
+	});
+
+	it('link with same text', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/b">https://example.com/b</a> d</p>'), 'a https://example.com/b d');
+	});
+
+	it('link with same text, but not encoded', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/ä">https://example.com/ä</a> d</p>'), 'a <https://example.com/ä> d');
+	});
+
+	it('link with no url', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="b">c</a> d</p>'), 'a [c](b) d');
+	});
+
+	it('link without href', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a>c</a> d</p>'), 'a c d');
+	});
+
+	it('link without text', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/b"></a> d</p>'), 'a https://example.com/b d');
+	});
+
+	it('link without both', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a></a> d</p>'), 'a  d');
+	});
+
+	it('mention', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/@user" class="u-url mention">@user</a> d</p>'), 'a @user@example.com d');
+	});
+
+	it('hashtag', () => {
+		assert.deepStrictEqual(fromHtml('<p>a <a href="https://example.com/tags/a">#a</a> d</p>', ['#a']), 'a #a d');
 	});
 });

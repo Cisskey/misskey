@@ -10,6 +10,7 @@
 				:to="message.groupId ? `/my/messaging/group/${message.groupId}` : `/my/messaging/${getAcct(isMe(message) ? message.recipient : message.user)}`"
 				:data-index="i"
 				:key="message.id"
+				v-anim="i"
 			>
 				<div>
 					<MkAvatar class="avatar" :user="message.groupId ? message.user : isMe(message) ? message.recipient : message.user"/>
@@ -225,12 +226,14 @@ export default defineComponent({
 					align-items: center;
 					margin-bottom: 2px;
 					white-space: nowrap;
-					overflow: hidden;
+					overflow: hidden; // overflow: clip; をSafariが対応したら消す
+					overflow: clip;
 
 					> .name {
 						margin: 0;
 						padding: 0;
-						overflow: hidden;
+						overflow: hidden; // overflow: clip; をSafariが対応したら消す
+						overflow: clip;
 						text-overflow: ellipsis;
 						font-size: 1em;
 						font-weight: bold;
@@ -261,7 +264,8 @@ export default defineComponent({
 						display: block;
 						margin: 0 0 0 0;
 						padding: 0;
-						overflow: hidden;
+						overflow: hidden; // overflow: clip; をSafariが対応したら消す
+						overflow: clip;
 						overflow-wrap: break-word;
 						font-size: 1.1em;
 						color: var(--faceText);

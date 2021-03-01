@@ -453,6 +453,10 @@ export const meta = {
 				'ja-JP': 'ハイライトから除外するキーワード',
 			},
 		},
+
+		objectStorageS3ForcePathStyle: {
+			validator: $.optional.bool
+		},
 	}
 };
 
@@ -733,6 +737,10 @@ export default define(meta, async (ps, me) => {
 
 	if (Array.isArray(ps.featuredNgWords)) {
 		set.featuredNgWords = ps.featuredNgWords.filter(Boolean);
+	}
+
+	if (ps.objectStorageS3ForcePathStyle !== undefined) {
+		set.objectStorageS3ForcePathStyle = ps.objectStorageS3ForcePathStyle;
 	}
 
 	await getConnection().transaction(async transactionalEntityManager => {
