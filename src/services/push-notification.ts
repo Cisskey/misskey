@@ -6,7 +6,6 @@ import { PackedNotification } from '../models/repositories/notification';
 import { PackedMessagingMessage } from '../models/repositories/messaging-message';
 import { postWebhookJob } from '../queue';
 import { UserProfiles } from '../models';
-import { ensure } from '../prelude/ensure';
 
 export const notification = ['notification', 'unreadMessagingMessage'] as const;
 export type notificationType = typeof notification[number];
@@ -15,7 +14,7 @@ export type notificationBody = PackedNotification | PackedMessagingMessage;
 export default async function(userId: string, type: notificationType, body: notificationBody) {
 	const meta = await fetchMeta();
 
-	const profile = await UserProfiles.findOne({userId: userId}).then(ensure);
+	const profile = await UserProfiles.findOneOrFail({userId: userId});
 	if (meta.enableWebhookNotification && profile.enableWebhookNotification && profile.webhookUrl != null) {
 		postWebhookJob(userId, type, body);
 	}

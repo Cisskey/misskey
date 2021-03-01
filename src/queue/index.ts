@@ -16,7 +16,6 @@ import { getJobInfo } from './get-job-info';
 import { IActivity } from '../remote/activitypub/type';
 import { notificationType, notificationBody } from '../services/push-notification';
 import { UserProfiles } from '../models';
-import { ensure } from '../prelude/ensure';
 import { webhookType } from '../types';
 
 function initializeQueue(name: string, limitPerSec = -1, limitDuration?: number, groupKey?: string) {
@@ -240,7 +239,7 @@ export function createCleanRemoteFilesJob() {
 }
 
 export async function postWebhookJob(userId: string, type: notificationType, body: notificationBody) {
-	const profile = await UserProfiles.findOne({userId: userId}).then(ensure);
+	const profile = await UserProfiles.findOneOrFail({userId: userId});
 	const data = {
 		userId: userId,
 		type: type,
