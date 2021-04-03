@@ -12,6 +12,7 @@ import * as assert from 'assert';
 
 import {parse, parsePlain} from '../src/mfm/parse';
 import {toHtml} from '../src/mfm/to-html';
+import {fromHtml} from '../src/mfm/from-html';
 import {toString} from '../src/mfm/to-string';
 import {createTree as tree, createLeaf as leaf, MfmTree} from '../src/mfm/prelude';
 import {removeOrphanedBrackets} from '../src/mfm/language';
