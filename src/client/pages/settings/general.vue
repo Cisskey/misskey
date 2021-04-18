@@ -19,6 +19,7 @@
 		<template #label>{{ $ts.behavior }}</template>
 		<FormSwitch v-model:value="imageNewTab">{{ $ts.openImageInNewTab }}</FormSwitch>
 		<FormSwitch v-model:value="enableInfiniteScroll">{{ $ts.enableInfiniteScroll }}</FormSwitch>
+		<FormSwitch v-model:value="useReactionPickerForContextMenu">{{ $ts.useReactionPickerForContextMenu }}</FormSwitch>
 		<FormSwitch v-model:value="disablePagesScript">{{ $ts.disablePagesScript }}</FormSwitch>
 	</FormGroup>
 
@@ -101,6 +102,7 @@ import { langs } from '@/config';
 import { defaultStore } from '@/store';
 import { ColdDeviceStorage } from '@/store';
 import * as os from '@/os';
+import { unisonReload } from '@/scripts/unison-reload';
 
 export default defineComponent({
 	components: {
@@ -155,6 +157,7 @@ export default defineComponent({
 		timestampFormat: defaultStore.makeGetterSetter('timestampFormat'),
 		instanceTicker: defaultStore.makeGetterSetter('instanceTicker'),
 		enableInfiniteScroll: defaultStore.makeGetterSetter('enableInfiniteScroll'),
+		useReactionPickerForContextMenu: defaultStore.makeGetterSetter('useReactionPickerForContextMenu'),
 	},
 
 	watch: {
@@ -212,7 +215,7 @@ export default defineComponent({
 			});
 			if (canceled) return;
 
-			location.reload();
+			unisonReload();
 		}
 	}
 });

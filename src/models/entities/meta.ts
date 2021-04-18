@@ -409,4 +409,9 @@ export class Meta {
 		length: 256, array: true, default: '{}'
 	})
 	public featuredNgWords: string[];
+
+	@Column('boolean', {
+		default: true,
+	})
+	public objectStorageS3ForcePathStyle: boolean;
 }

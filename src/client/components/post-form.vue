@@ -9,7 +9,7 @@
 	<header>
 		<button v-if="!fixed" class="cancel _button" @click="cancel"><Fa :icon="faTimes"/></button>
 		<div>
-			<span class="text-count" :class="{ over: trimmedLength(buildText()) > max }">{{ max - trimmedLength(buildText()) }}</span>
+			<span class="text-count" :class="{ over: textLength > max }">{{ max - textLength }}</span>
 			<span class="local-only" v-if="localOnly"><Fa :icon="faBiohazard"/></span>
 			<button class="_button visibility" @click="setVisibility" ref="visibilityButton" v-tooltip="$ts.visibility" :disabled="channel != null">
 				<span v-if="visibility === 'public'"><Fa :icon="faGlobe"/></span>
@@ -35,7 +35,7 @@
 			</div>
 		</div>
 		<input v-show="useCw" ref="cw" class="cw" v-model="cw" :placeholder="$ts.annotation" @keydown="onKeydown">
-		<textarea v-model="text" class="text" :class="{ withCw: useCw }" ref="text" :disabled="posting" :placeholder="placeholder" @keydown="onKeydown" @paste="onPaste"></textarea>
+		<textarea v-model="text" class="text" :class="{ withCw: useCw }" ref="text" :disabled="posting" :placeholder="placeholder" @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd" />
 		<input v-show="useHashtag" ref="hashtag" class="hashtag" v-model="hashtag" :placeholder="$ts.hashtagPlaceholder" @keydown="onKeydown">
 		<XPostFormAttaches class="attaches" :files="files" @updated="updateFiles" @detach="detachFile" @changeSensitive="updateFileSensitive" @changeName="updateFileName"/>
 		<XPollEditor v-if="poll" :poll="poll" @destroyed="poll = null" @updated="onPollUpdate"/>
@@ -71,6 +71,8 @@ import { noteVisibilities } from '../../types';
 import * as os from '@/os';
 import { selectFile } from '@/scripts/select-file';
 import { notePostInterruptors, postFormActions } from '@/store';
+import { isMobile } from '@/scripts/is-mobile';
+import { throttle } from 'throttle-debounce';
 
 export default defineComponent({
 	components: {
@@ -147,6 +149,12 @@ export default defineComponent({
 			draghover: false,
 			quoteId: null,
 			recentHashtags: JSON.parse(localStorage.getItem('hashtags') || '[]'),
+			imeText: '',
+			typing: throttle(3000, () => {
+				if (this.channel) {
+					os.stream.send('typingOnChannel', { channel: this.channel.id });
+				}
+			}),
 			postFormActions,
 			faReply, faQuoteRight, faPaperPlane, faTimes, faUpload, faPollH, faGlobe, faHome, faUnlock, faEnvelope, faEyeSlash, faLaughSquint, faPlus, faPhotoVideo, faAt, faBiohazard, faPlug, faHashtag
 		};
@@ -195,11 +203,15 @@ export default defineComponent({
 					: this.$ts.note;
 		},
 
+		textLength(): number {
+			return length((this.buildText() + this.imeText).trim());
+		},
+
 		canPost(): boolean {
 			return !this.posting &&
 				this.uploading <= 0 &&
-				(1 <= this.text.length || 1 <= this.files.length || this.poll || this.renote) &&
-				(length(this.buildText()) <= this.max) &&
+				(1 <= this.textLength || 1 <= this.files.length || !!this.poll || !!this.renote) &&
+				(this.textLength <= this.max) &&
 				(!this.poll || this.poll.choices.length >= 2);
 		},
 
@@ -280,7 +292,7 @@ export default defineComponent({
 		}
 
 		// keep cw when reply
-		if (this.$store.keepCw && this.reply && this.reply.cw) {
+		if (this.$store.state.keepCw && this.reply && this.reply.cw) {
 			this.useCw = true;
 			this.cw = this.reply.cw;
 		}
@@ -359,10 +371,6 @@ export default defineComponent({
 					expiredAfter: null,
 				};
 			}
-		},
-
-		trimmedLength(text: string) {
-			return length(text.trim());
 		},
 
 		addTag(tag: string) {
@@ -453,11 +461,20 @@ export default defineComponent({
 			this.quoteId = null;
 		},
 
-		onKeydown(e) {
-			if ((e.which == 10 || e.which == 13) && (e.ctrlKey || e.metaKey) && this.canPost) this.post();
+		onKeydown(e: KeyboardEvent) {
 			if ((e.which === 10 || e.which === 13) && (e.ctrlKey || e.metaKey) && this.canPost) this.post();
 			if (e.which === 27) this.$emit('esc');
 			if (e.which === 27 && this.fixed) this.$refs.text.blur();
+			this.typing();
+		},
+
+		onCompositionUpdate(e: CompositionEvent) {
+			this.imeText = e.data;
+			this.typing();
+		},
+
+		onCompositionEnd(e: CompositionEvent) {
+			this.imeText = '';
 		},
 
 		async onPaste(e: ClipboardEvent) {
@@ -579,7 +596,7 @@ export default defineComponent({
 				localOnly: this.localOnly,
 				visibility: this.visibility,
 				visibleUserIds: this.visibility == 'specified' ? this.visibleUsers.map(u => u.id) : undefined,
-				viaMobile: os.isMobile
+				viaMobile: isMobile
 			};
 
 			// plugin
@@ -623,9 +640,7 @@ export default defineComponent({
 		},
 
 		async insertEmoji(ev) {
-			os.pickEmoji(ev.currentTarget || ev.target).then(emoji => {
-				insertTextAtCursor(this.$refs.text, emoji);
-			});
+			os.openEmojiPicker(ev.currentTarget || ev.target, {}, this.$refs.text);
 		},
 
 		showActions(ev) {

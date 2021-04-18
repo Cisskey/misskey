@@ -208,6 +208,7 @@ export default define(meta, async (ps, me) => {
 			response.objectStorageUseProxy = instance.objectStorageUseProxy;
 			response.objectStorageSetPublicRead = instance.objectStorageSetPublicRead;
 			response.featuredNgWords = instance.featuredNgWords;
+			response.objectStorageS3ForcePathStyle = instance.objectStorageS3ForcePathStyle;
 		}
 	}
 

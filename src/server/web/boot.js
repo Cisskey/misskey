@@ -11,14 +11,19 @@
 
 'use strict';
 
+window.onerror = (e) => {
+	document.documentElement.innerHTML = '問題が発生しました。';
+};
+
 // ブロックの中に入れないと、定義した変数がブラウザのグローバルスコープに登録されてしまい邪魔なので
 (async () => {
 	const v = localStorage.getItem('v') || VERSION;
 
 	//#region Detect language & fetch translations
-	if (localStorage.hasOwnProperty('locale')) {
-		// TODO: 非同期でlocaleの更新処理をする
-	} else {
+	const localeVersion = localStorage.getItem('localeVersion');
+	const localeOutdated = (localeVersion == null || localeVersion !== v);
+
+	if (!localStorage.hasOwnProperty('locale') || localeOutdated) {
 		const supportedLangs = LANGS;
 		let lang = localStorage.getItem('lang');
 		if (lang == null || !supportedLangs.includes(lang)) {
@@ -33,9 +38,9 @@
 		}
 
 		const res = await fetch(`/assets/locales/${lang}.${v}.json`);
-		const json = await res.json();
 		localStorage.setItem('lang', lang);
-		localStorage.setItem('locale', JSON.stringify(json));
+		localStorage.setItem('locale', await res.text());
+		localStorage.setItem('localeVersion', v);
 	}
 	//#endregion
 
@@ -50,14 +55,10 @@
 	script.setAttribute('src', `/assets/app.${v}.js${salt}`);
 	script.setAttribute('async', 'true');
 	script.setAttribute('defer', 'true');
-	head.appendChild(script);
+	script.addEventListener('error', async () => {
+		document.documentElement.innerHTML = '読み込みに失敗しました。';
 
-	// 3秒経ってもスクリプトがロードされない場合はバージョンが古くて
-	// 404になっているせいかもしれないので、バージョンを確認して古ければ更新する
-	//
-	// 読み込まれたスクリプトからこのタイマーを解除できるように、
-	// グローバルにタイマーIDを代入しておく
-	window.mkBootTimer = window.setTimeout(async () => {
+		// TODO: サーバーが落ちている場合などのエラーハンドリング
 		const res = await fetch('/api/meta', {
 			method: 'POST',
 			cache: 'no-cache'
@@ -73,7 +74,8 @@
 				'New version of Misskey available. The page will be reloaded.');
 			refresh();
 		}
-	}, 3000);
+	});
+	head.appendChild(script);
 	//#endregion
 
 	//#region Theme

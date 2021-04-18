@@ -1,7 +1,6 @@
 import $ from 'cafy';
 import define from '../../define';
 import { Notifications, UserProfiles, MessagingMessages } from '../../../../models';
-import { ensure } from '../../../../prelude/ensure';
 import { postWebhookJob } from '../../../../queue';
 import { fetchMeta } from '../../../../misc/fetch-meta';
 import { ApiError } from '../../../api/error';
@@ -56,13 +55,13 @@ export const meta = {
 export default define(meta, async (ps, user) => {
 	const instance = await fetchMeta();
 	if (!instance.enableWebhookNotification) throw new ApiError(meta.errors.instanceDisableWebhookNotification);
-	const profile = await UserProfiles.findOne({userId: user.id}).then(ensure);
+	const profile = await UserProfiles.findOneOrFail({userId: user.id});
 	if (profile.webhookUrl == null) throw new ApiError(meta.errors.emptyWebhookUrl);
 
 	let packed;
 	// テスト用の通知を作成するのは面倒なので直近1件の通知を送信する
 	if (ps.type === 'notification') {
-		const mostResent = await Notifications.findOne({
+		const mostResent = await Notifications.findOneOrFail({
 			where: {
 				notifieeId: user.id,
 				type: Not('app'),
@@ -70,20 +69,20 @@ export default define(meta, async (ps, user) => {
 			order: {
 				createdAt: 'DESC',
 			},
-		}).then(ensure)
+		})
 		.catch(() => {
 			throw new ApiError(meta.errors.emptyNotification);
 		});
 		packed = await Notifications.pack(mostResent);
 	} else {
-		const mostResent = await MessagingMessages.findOne({
+		const mostResent = await MessagingMessages.findOneOrFail({
 			where: {
 				recipientId: user.id,
 			},
 			order: {
 				createdAt: 'DESC',
 			},
-		}).then(ensure)
+		})
 		.catch(() => {
 			throw new ApiError(meta.errors.emptyMessage);
 		});
