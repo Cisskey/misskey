@@ -11,13 +11,13 @@ export function initialize<T>(name: string, limitPerSec = -1, limitDuration?: nu
 		},
 		prefix: config.redis.prefix ? `${config.redis.prefix}:queue` : 'queue',
 
-                // deliver, inbox (5/5s)との互換性のため
+		// deliver, inbox (5/5s)との互換性のため
 		limiter: limitPerSec > 0 ? {
 			max: limitPerSec * 5,
 			duration: 5000,
-                        max: limitDuration ? limitPerSec : limitPerSec * 5,
-                        duration: limitDuration || 5000,
-                        groupKey: groupKey,
+			max: limitDuration ? limitPerSec : limitPerSec * 5,
+			duration: limitDuration || 5000,
+			groupKey: groupKey,
 		} : undefined
 	});
 }
