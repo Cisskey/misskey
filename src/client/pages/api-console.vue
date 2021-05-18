@@ -1,37 +1,37 @@
 <template>
-<div>
-<section class="_section">
-	<MkInput v-model:value="endpoint" :datalist="endpoints" @update:value="onEndpointChange()">
-		<span>Endpoint</span>
-	</MkInput>
-	<MkTextarea v-model:value="body" code>
-		<span>Params (JSON or JSON5)</span>
-	</MkTextarea>
-	<MkSwitch v-model:value="withCredential">
-		With credential
-	</MkSwitch>
-	<MkButton primary full @click="send" :disabled="sending">
-		<template v-if="sending"><MkEllipsis/></template>
-		<template v-else><Fa :icon="faPaperPlane"/> Send</template>
-	</MkButton>
-</section>
-<section class="_section" v-if="res">
-	<MkTextarea v-model:value="res" code readonly tall>
-		<span>Response</span>
-	</MkTextarea>
-</section>
+<div class="_root">
+	<div class="_block" style="padding: 24px;">
+		<MkInput v-model:value="endpoint" :datalist="endpoints" @update:value="onEndpointChange()">
+			<span>Endpoint</span>
+		</MkInput>
+		<MkTextarea v-model:value="body" code>
+			<span>Params (JSON or JSON5)</span>
+		</MkTextarea>
+		<MkSwitch v-model:value="withCredential">
+			With credential
+		</MkSwitch>
+		<MkButton primary full @click="send" :disabled="sending">
+			<template v-if="sending"><MkEllipsis/></template>
+			<template v-else><i class="fas fa-paper-plane"></i> Send</template>
+		</MkButton>
+	</div>
+	<div v-if="res" class="_block" style="padding: 24px;">
+		<MkTextarea v-model:value="res" code readonly tall>
+			<span>Response</span>
+		</MkTextarea>
+	</div>
 </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faTerminal, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import * as JSON5 from 'json5';
-import MkButton from '@/components/ui/button.vue';
-import MkInput from '@/components/ui/input.vue';
-import MkTextarea from '@/components/ui/textarea.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import * as os from '@/os';
+import MkButton from '@client/components/ui/button.vue';
+import MkInput from '@client/components/ui/input.vue';
+import MkTextarea from '@client/components/ui/textarea.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -40,9 +40,9 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: 'API console',
-				icon: faTerminal
+				icon: 'fas fa-terminal'
 			},
 
 			endpoint: '',
@@ -52,7 +52,6 @@ export default defineComponent({
 			endpoints: [],
 			withCredential: true,
 
-			faPaperPlane
 		};
 	},
 

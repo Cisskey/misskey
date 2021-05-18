@@ -1,7 +1,7 @@
 <template>
 <div class="_panel vjnjpkug">
 	<div class="banner" :style="user.bannerUrl ? `background-image: url(${user.bannerUrl})` : ''"></div>
-	<MkAvatar class="avatar" :user="user" :disable-preview="true"/>
+	<MkAvatar class="avatar" :user="user" :disable-preview="true" :show-indicator="true"/>
 	<div class="title">
 		<MkA class="name" :to="userPage(user)"><MkUserName :user="user" :nowrap="false"/></MkA>
 		<p class="username"><MkAcct :user="user"/></p>
@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import parseAcct from '../../misc/acct/parse';
+import parseAcct from '@/misc/acct/parse';
 import MkFollowButton from './follow-button.vue';
 import { userPage } from '../filters/user';
 
@@ -104,20 +104,19 @@ export default defineComponent({
 	> .description {
 		padding: 16px;
 		font-size: 0.8em;
-		border-top: solid 1px var(--divider);
+		border-top: solid 0.5px var(--divider);
 
 		> .mfm {
 			display: -webkit-box;
 			-webkit-line-clamp: 3;
 			-webkit-box-orient: vertical;  
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 		}
 	}
 
 	> .status {
 		padding: 10px 16px;
-		border-top: solid 1px var(--divider);
+		border-top: solid 0.5px var(--divider);
 
 		> div {
 			display: inline-block;

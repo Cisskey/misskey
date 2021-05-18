@@ -1,9 +1,9 @@
 <template>
 <XContainer :removable="removable" @remove="() => $emit('remove')" :error="error" :warn="warn" :draggable="draggable">
-	<template #header><Fa v-if="icon" :icon="icon"/> <template v-if="title">{{ title }} <span class="turmquns" v-if="typeText">({{ typeText }})</span></template><template v-else-if="typeText">{{ typeText }}</template></template>
+	<template #header><i v-if="icon" :class="icon"></i> <template v-if="title">{{ title }} <span class="turmquns" v-if="typeText">({{ typeText }})</span></template><template v-else-if="typeText">{{ typeText }}</template></template>
 	<template #func>
 		<button @click="changeType()" class="_button">
-			<Fa :icon="faPencilAlt"/>
+			<i class="fas fa-pencil-alt"></i>
 		</button>
 	</template>
 
@@ -57,14 +57,13 @@
 
 <script lang="ts">
 import { defineAsyncComponent, defineComponent } from 'vue';
-import { faPencilAlt, faPlug } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuid } from 'uuid';
 import XContainer from './page-editor.container.vue';
-import MkTextarea from '@/components/ui/textarea.vue';
-import { blockDefs } from '@/scripts/hpml/index';
-import * as os from '@/os';
-import { isLiteralValue } from '@/scripts/hpml/expr';
-import { funcDefs } from '@/scripts/hpml/lib';
+import MkTextarea from '@client/components/ui/textarea.vue';
+import { blockDefs } from '@client/scripts/hpml/index';
+import * as os from '@client/os';
+import { isLiteralValue } from '@client/scripts/hpml/expr';
+import { funcDefs } from '@client/scripts/hpml/lib';
 
 export default defineComponent({
 	components: {
@@ -109,14 +108,13 @@ export default defineComponent({
 			error: null,
 			warn: null,
 			slots: '',
-			faPencilAlt
 		};
 	},
 
 	computed: {
 		icon(): any {
 			if (this.value.type === null) return null;
-			if (this.value.type.startsWith('fn:')) return faPlug;
+			if (this.value.type.startsWith('fn:')) return 'fas fa-plug';
 			return blockDefs.find(x => x.type === this.value.type).icon;
 		},
 		typeText(): any {

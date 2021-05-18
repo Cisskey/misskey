@@ -34,7 +34,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import define from './define';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 const widget = define({
 	name: 'calendar',
@@ -171,8 +171,7 @@ export default defineComponent({
 
 			> .meter {
 				width: 100%;
-				overflow: hidden; // overflow: clip; をSafariが対応したら消す
-				overflow: clip;
+				overflow: hidden;
 				background: var(--X11);
 				border-radius: 8px;
 

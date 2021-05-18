@@ -10,7 +10,7 @@
 					</button>
 				</template>
 				<template #footer>
-					<button class="_button add" @click="chooseEmoji"><Fa :icon="faPlus"/></button>
+					<button class="_button add" @click="chooseEmoji"><i class="fas fa-plus"></i></button>
 				</template>
 			</XDraggable>
 		</div>
@@ -29,22 +29,21 @@
 		<option :value="2">{{ $ts.medium }}</option>
 		<option :value="3">{{ $ts.large }}</option>
 	</FormRadios>
-	<FormButton @click="preview"><Fa :icon="faEye"/> {{ $ts.preview }}</FormButton>
-	<FormButton danger @click="setDefault"><Fa :icon="faUndo"/> {{ $ts.default }}</FormButton>
+	<FormButton @click="preview"><i class="fas fa-eye"></i> {{ $ts.preview }}</FormButton>
+	<FormButton danger @click="setDefault"><i class="fas fa-undo"></i> {{ $ts.default }}</FormButton>
 </FormBase>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faLaugh, faSave, faEye } from '@fortawesome/free-regular-svg-icons';
-import { faUndo, faPlus } from '@fortawesome/free-solid-svg-icons';
 import XDraggable from 'vuedraggable';
-import FormInput from '@/components/form/input.vue';
-import FormRadios from '@/components/form/radios.vue';
-import FormBase from '@/components/form/base.vue';
-import FormButton from '@/components/form/button.vue';
-import * as os from '@/os';
-import { defaultStore } from '@/store';
+import FormInput from '@client/components/form/input.vue';
+import FormRadios from '@client/components/form/radios.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormButton from '@client/components/form/button.vue';
+import * as os from '@client/os';
+import { defaultStore } from '@client/store';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -59,16 +58,15 @@ export default defineComponent({
 	
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.reaction,
-				icon: faLaugh,
+				icon: 'fas fa-laugh',
 				action: {
-					icon: faEye,
+					icon: 'fas fa-eye',
 					handler: this.preview
 				}
 			},
 			reactions: JSON.parse(JSON.stringify(this.$store.state.reactions)),
-			faLaugh, faSave, faEye, faUndo, faPlus
 		}
 	},
 
@@ -87,7 +85,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {
@@ -105,7 +103,7 @@ export default defineComponent({
 		},
 
 		preview(ev) {
-			os.popup(import('@/components/emoji-picker-dialog.vue'), {
+			os.popup(import('@client/components/emoji-picker-dialog.vue'), {
 				asReactionPicker: true,
 				src: ev.currentTarget || ev.target,
 			}, {}, 'closed');

@@ -1,6 +1,6 @@
 <template>
 <XContainer @remove="() => $emit('remove')" :draggable="true">
-	<template #header><Fa :icon="faStickyNote"/> {{ $ts._pages.blocks.note }}</template>
+	<template #header><i class="fas fa-sticky-note"></i> {{ $ts._pages.blocks.note }}</template>
 
 	<section style="padding: 0 16px 0 16px;">
 		<MkInput v-model:value="id">
@@ -17,13 +17,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faStickyNote } from '@fortawesome/free-solid-svg-icons';
 import XContainer from '../page-editor.container.vue';
-import MkInput from '@/components/ui/input.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import XNote from '@/components/note.vue';
-import XNoteDetailed from '@/components/note-detailed.vue';
-import * as os from '@/os';
+import MkInput from '@client/components/ui/input.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import XNote from '@client/components/note.vue';
+import XNoteDetailed from '@client/components/note-detailed.vue';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -40,7 +39,6 @@ export default defineComponent({
 		return {
 			id: this.value.note,
 			note: null,
-			faStickyNote
 		};
 	},
 

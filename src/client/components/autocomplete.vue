@@ -29,12 +29,12 @@
 
 <script lang="ts">
 import { defineComponent, markRaw } from 'vue';
-import { emojilist } from '../../misc/emojilist';
-import contains from '@/scripts/contains';
-import { twemojiSvgBase } from '../../misc/twemoji-base';
-import { getStaticImageUrl } from '@/scripts/get-static-image-url';
-import { acct } from '@/filters/user';
-import * as os from '@/os';
+import { emojilist } from '@/misc/emojilist';
+import contains from '@client/scripts/contains';
+import { twemojiSvgBase } from '@/misc/twemoji-base';
+import { getStaticImageUrl } from '@client/scripts/get-static-image-url';
+import { acct } from '@client/filters/user';
+import * as os from '@client/os';
 
 type EmojiDef = {
 	emoji: string;
@@ -397,8 +397,7 @@ export default defineComponent({
 	z-index: 65535;
 	max-width: 100%;
 	margin-top: calc(1em + 8px);
-	overflow: hidden; // overflow: clip; をSafariが対応したら消す
-	overflow: clip;
+	overflow: hidden;
 	transition: top 0.1s ease, left 0.1s ease;
 
 	> ol {
@@ -415,8 +414,7 @@ export default defineComponent({
 			align-items: center;
 			padding: 4px 12px;
 			white-space: nowrap;
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 			font-size: 0.9em;
 			cursor: default;
 
@@ -425,8 +423,7 @@ export default defineComponent({
 			}
 
 			* {
-				overflow: hidden; // overflow: clip; をSafariが対応したら消す
-				overflow: clip;
+				overflow: hidden;
 				text-overflow: ellipsis;
 			}
 

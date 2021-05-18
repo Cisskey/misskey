@@ -4,28 +4,28 @@
 		<FormTextarea v-model:value="installThemeCode">
 			<span>{{ $ts._theme.code }}</span>
 		</FormTextarea>
-		<FormButton @click="() => preview(installThemeCode)" :disabled="installThemeCode == null" inline><Fa :icon="faEye"/> {{ $ts.preview }}</FormButton>
+		<FormButton @click="() => preview(installThemeCode)" :disabled="installThemeCode == null" inline><i class="fas fa-eye"></i> {{ $ts.preview }}</FormButton>
 	</FormGroup>
 
-	<FormButton @click="() => install(installThemeCode)" :disabled="installThemeCode == null" primary inline><Fa :icon="faCheck"/> {{ $ts.install }}</FormButton>
+	<FormButton @click="() => install(installThemeCode)" :disabled="installThemeCode == null" primary inline><i class="fas fa-check"></i> {{ $ts.install }}</FormButton>
 </FormBase>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import * as JSON5 from 'json5';
-import FormTextarea from '@/components/form/textarea.vue';
-import FormSelect from '@/components/form/select.vue';
-import FormRadios from '@/components/form/radios.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import FormLink from '@/components/form/link.vue';
-import FormButton from '@/components/form/button.vue';
-import { applyTheme, validateTheme } from '@/scripts/theme';
-import * as os from '@/os';
-import { ColdDeviceStorage } from '@/store';
-import { addTheme, getThemes } from '@/theme-store';
+import FormTextarea from '@client/components/form/textarea.vue';
+import FormSelect from '@client/components/form/select.vue';
+import FormRadios from '@client/components/form/radios.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import FormLink from '@client/components/form/link.vue';
+import FormButton from '@client/components/form/button.vue';
+import { applyTheme, validateTheme } from '@client/scripts/theme';
+import * as os from '@client/os';
+import { ColdDeviceStorage } from '@client/store';
+import { addTheme, getThemes } from '@client/theme-store';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -42,17 +42,16 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts._theme.install,
-				icon: faDownload
+				icon: 'fas fa-download'
 			},
 			installThemeCode: null,
-			faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt, faEye
 		}
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {

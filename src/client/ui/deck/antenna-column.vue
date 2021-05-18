@@ -1,7 +1,7 @@
 <template>
 <XColumn :func="{ handler: setAntenna, title: $ts.selectAntenna }" :column="column" :is-stacked="isStacked">
 	<template #header>
-		<Fa :icon="faSatellite"/><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i class="fas fa-satellite"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<XTimeline v-if="column.antennaId" ref="timeline" src="antenna" :antenna="column.antennaId" @after="() => $emit('loaded')"/>
@@ -10,10 +10,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faSatellite, faCog } from '@fortawesome/free-solid-svg-icons';
 import XColumn from './column.vue';
-import XTimeline from '@/components/timeline.vue';
-import * as os from '@/os';
+import XTimeline from '@client/components/timeline.vue';
+import * as os from '@client/os';
 import { updateColumn } from './deck-store';
 
 export default defineComponent({
@@ -35,7 +34,6 @@ export default defineComponent({
 
 	data() {
 		return {
-			faSatellite
 		};
 	},
 

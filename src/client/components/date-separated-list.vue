@@ -1,7 +1,6 @@
 <script lang="ts">
 import { defineComponent, h, TransitionGroup } from 'vue';
-import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import MkAd from '@client/components/global/ad.vue';
 
 export default defineComponent({
 	props: {
@@ -18,17 +17,25 @@ export default defineComponent({
 			type: Boolean,
 			required: false,
 			default: false
-		}
+		},
+		noGap: {
+			type: Boolean,
+			required: false,
+			default: false
+		},
+		ad: {
+			type: Boolean,
+			required: false,
+			default: false
+		},
 	},
 
 	methods: {
 		focus() {
 			this.$slots.default[0].elm.focus();
-		}
-	},
+		},
 
-	render() {
-		const getDateText = (time: string) => {
+		getDateText(time: string) {
 			const date = new Date(time).getDate();
 			const month = new Date(time).getMonth() + 1;
 			return this.$t('monthAndDay', {
@@ -36,15 +43,19 @@ export default defineComponent({
 				day: date.toString()
 			});
 		}
+	},
+
+	render() {
+		if (this.items.length === 0) return;
 
 		return h(this.$store.state.animation ? TransitionGroup : 'div', this.$store.state.animation ? {
-			class: 'sqadhkmv _list_',
+			class: 'sqadhkmv' + (this.noGap ? ' noGap _block' : ''),
 			name: 'list',
 			tag: 'div',
 			'data-direction': this.direction,
 			'data-reversed': this.reversed ? 'true' : 'false',
 		} : {
-			class: 'sqadhkmv _list_',
+			class: 'sqadhkmv' + (this.noGap ? ' noGap _block' : ''),
 		}, this.items.map((item, i) => {
 			const el = this.$slots.default({
 				item: item
@@ -53,11 +64,7 @@ export default defineComponent({
 
 			if (
 				i != this.items.length - 1 &&
-				new Date(item.createdAt).getDate() != new Date(this.items[i + 1].createdAt).getDate() &&
-				!item._prId_ &&
-				!this.items[i + 1]._prId_ &&
-				!item._featuredId_ &&
-				!this.items[i + 1]._featuredId_
+				new Date(item.createdAt).getDate() != new Date(this.items[i + 1].createdAt).getDate()
 			) {
 				const separator = h('div', {
 					class: 'separator',
@@ -66,24 +73,30 @@ export default defineComponent({
 					class: 'date'
 				}, [
 					h('span', [
-						h(FontAwesomeIcon, {
-							class: 'icon',
-							icon: faAngleUp,
+						h('i', {
+							class: 'fas fa-angle-up icon',
 						}),
-						getDateText(item.createdAt)
+						this.getDateText(item.createdAt)
 					]),
 					h('span', [
-						getDateText(this.items[i + 1].createdAt),
-						h(FontAwesomeIcon, {
-							class: 'icon',
-							icon: faAngleDown,
+						this.getDateText(this.items[i + 1].createdAt),
+						h('i', {
+							class: 'fas fa-angle-down icon',
 						})
 					])
 				]));
 
 				return [el, separator];
 			} else {
-				return el;
+				if (this.ad && item._shouldInsertAd_) {
+					return [h(MkAd, {
+						class: 'a', // advertiseの意(ブロッカー対策)
+						key: item.id + ':ad',
+						prefer: ['horizontal', 'horizontal-big'],
+					}), el];
+				} else {
+					return el;
+				}
 			}
 		}));
 	},
@@ -92,6 +105,10 @@ export default defineComponent({
 
 <style lang="scss">
 .sqadhkmv {
+	> *:empty {
+		display: none;
+	}
+
 	> *:not(:last-child) {
 		margin-bottom: var(--margin);
 	}
@@ -117,11 +134,7 @@ export default defineComponent({
 			transform: translateY(-64px);
 		}
 	}
-}
-</style>
 
-<style lang="scss">
-.sqadhkmv {
 	> .separator {
 		text-align: center;
 
@@ -151,6 +164,19 @@ export default defineComponent({
 						margin-left: 8px;
 					}
 				}
+			}
+		}
+	}
+
+	&.noGap {
+		> * {
+			margin: 0 !important;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+
+			&:not(:last-child) {
+				border-bottom: solid 0.5px var(--divider);
 			}
 		}
 	}

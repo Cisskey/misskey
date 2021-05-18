@@ -1,6 +1,6 @@
 <template>
 <MkContainer :show-header="props.showHeader">
-	<template #header><Fa :icon="faStickyNote"/>{{ $ts._widgets.memo }}</template>
+	<template #header><i class="fas fa-sticky-note"></i>{{ $ts._widgets.memo }}</template>
 
 	<div class="otgbylcu">
 		<textarea v-model="text" :placeholder="$ts.placeholder" @input="onChange"></textarea>
@@ -11,10 +11,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faStickyNote } from '@fortawesome/free-solid-svg-icons';
-import MkContainer from '@/components/ui/container.vue';
+import MkContainer from '@client/components/ui/container.vue';
 import define from './define';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 const widget = define({
 	name: 'memo',
@@ -37,7 +36,6 @@ export default defineComponent({
 			text: null,
 			changed: false,
 			timeoutId: null,
-			faStickyNote
 		};
 	},
 
@@ -77,7 +75,7 @@ export default defineComponent({
 		color: var(--fg);
 		background: transparent;
 		border: none;
-		border-bottom: solid 1px var(--divider);
+		border-bottom: solid 0.5px var(--divider);
 		border-radius: 0;
 		box-sizing: border-box;
 		font: inherit;

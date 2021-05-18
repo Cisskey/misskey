@@ -49,7 +49,12 @@ export default define(meta, async (ps, user) => {
 		.where('note.userHost IS NULL')
 		.andWhere(`note.score > 0`)
 		.andWhere(`note.createdAt > :date`, { date: new Date(Date.now() - day) })
-		.andWhere(`note.visibility = 'public'`);
+		.andWhere(`note.visibility = 'public'`)
+		.innerJoinAndSelect('note.user', 'user')
+		.leftJoinAndSelect('note.reply', 'reply')
+		.leftJoinAndSelect('note.renote', 'renote')
+		.leftJoinAndSelect('reply.user', 'replyUser')
+		.leftJoinAndSelect('renote.user', 'renoteUser');
 
 	const meta = await fetchMeta();
 	const featuredNgWords = meta.featuredNgWords;

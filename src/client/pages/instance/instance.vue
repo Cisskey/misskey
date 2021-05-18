@@ -106,11 +106,11 @@
 			<MkSwitch :value="isBlocked" class="switch" @update:value="changeBlock">{{ $ts.blockThisInstance }}</MkSwitch>
 			<details>
 				<summary>{{ $ts.deleteAllFiles }}</summary>
-				<MkButton @click="deleteAllFiles()" style="margin: 0.5em 0 0.5em 0;"><Fa :icon="faTrashAlt"/> {{ $ts.deleteAllFiles }}</MkButton>
+				<MkButton @click="deleteAllFiles()" style="margin: 0.5em 0 0.5em 0;"><i class="fas fa-trash-alt"></i> {{ $ts.deleteAllFiles }}</MkButton>
 			</details>
 			<details>
 				<summary>{{ $ts.removeAllFollowing }}</summary>
-				<MkButton @click="removeAllFollowing()" style="margin: 0.5em 0 0.5em 0;"><Fa :icon="faMinusCircle"/> {{ $ts.removeAllFollowing }}</MkButton>
+				<MkButton @click="removeAllFollowing()" style="margin: 0.5em 0 0.5em 0;"><i class="fas fa-minus-circle"></i> {{ $ts.removeAllFollowing }}</MkButton>
 				<MkInfo warn>{{ $t('removeAllFollowingDescription', { host: instance.host }) }}</MkInfo>
 			</details>
 		</div>
@@ -123,18 +123,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, markRaw } from 'vue';
 import Chart from 'chart.js';
-import { faTimes, faCrosshairs, faCloudDownloadAlt, faCloudUploadAlt, faUsers, faPencilAlt, faFileImage, faDatabase, faTrafficLight, faLongArrowAltUp, faLongArrowAltDown, faMinusCircle, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import XModalWindow from '@/components/ui/modal-window.vue';
-import MkUsersDialog from '@/components/users-dialog.vue';
-import MkSelect from '@/components/ui/select.vue';
-import MkButton from '@/components/ui/button.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import MkInfo from '@/components/ui/info.vue';
+import XModalWindow from '@client/components/ui/modal-window.vue';
+import MkUsersDialog from '@client/components/users-dialog.vue';
+import MkSelect from '@client/components/ui/select.vue';
+import MkButton from '@client/components/ui/button.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import MkInfo from '@client/components/ui/info.vue';
 import bytes from '../../filters/bytes';
 import number from '../../filters/number';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 const chartLimit = 90;
 const sum = (...arr) => arr.reduce((r, a) => r.map((b, i) => a[i] + b));
@@ -174,7 +173,6 @@ export default defineComponent({
 			chartInstance: null,
 			chartSrc: 'requests',
 			chartSpan: 'hour',
-			faTimes, faCrosshairs, faCloudDownloadAlt, faCloudUploadAlt, faUsers, faPencilAlt, faFileImage, faDatabase, faTrafficLight, faLongArrowAltUp, faLongArrowAltDown, faMinusCircle, faTrashAlt
 		};
 	},
 
@@ -282,7 +280,7 @@ export default defineComponent({
 			}
 
 			Chart.defaults.global.defaultFontColor = getComputedStyle(document.documentElement).getPropertyValue('--fg');
-			this.chartInstance = new Chart(this.canvas, {
+			this.chartInstance = markRaw(new Chart(this.canvas, {
 				type: 'line',
 				data: {
 					labels: new Array(chartLimit).fill(0).map((_, i) => this.getDate(i).toLocaleString()).slice().reverse(),
@@ -333,7 +331,7 @@ export default defineComponent({
 						mode: 'index',
 					}
 				}
-			});
+			}));
 		},
 
 		getDate(ago: number) {
@@ -500,12 +498,12 @@ export default defineComponent({
 		}
 
 		&:not(:first-child) {
-			border-top: solid 1px var(--divider);
+			border-top: solid 0.5px var(--divider);
 		}
 	}
 
 	> .chart {
-		border-top: solid 1px var(--divider);
+		border-top: solid 0.5px var(--divider);
 		padding: 16px 0 12px 0;
 
 		> .header {

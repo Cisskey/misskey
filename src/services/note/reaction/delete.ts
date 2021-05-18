@@ -3,13 +3,13 @@ import { renderLike } from '../../../remote/activitypub/renderer/like';
 import renderUndo from '../../../remote/activitypub/renderer/undo';
 import { renderActivity } from '../../../remote/activitypub/renderer';
 import DeliverManager from '../../../remote/activitypub/deliver-manager';
-import { IdentifiableError } from '../../../misc/identifiable-error';
+import { IdentifiableError } from '@/misc/identifiable-error';
 import { User, IRemoteUser } from '../../../models/entities/user';
 import { Note } from '../../../models/entities/note';
 import { NoteReactions, Users, Notes } from '../../../models';
-import { convertLegacyReaction, decodeReaction } from '../../../misc/reaction-lib';
+import { convertLegacyReaction, decodeReaction } from '@/misc/reaction-lib';
 
-export default async (user: User, note: Note, reaction?: string) => {
+export default async (user: { id: User['id']; host: User['host']; }, note: Note, reaction?: string) => {
 	// if already unreacted
 	const existReactions = await NoteReactions.find({
 		noteId: note.id,

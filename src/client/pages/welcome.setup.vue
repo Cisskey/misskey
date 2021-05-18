@@ -10,7 +10,7 @@
 		</MkInput>
 		<MkInput v-model:value="password" type="password">
 			<span>{{ $ts.password }}</span>
-			<template #prefix><Fa :icon="faLock"/></template>
+			<template #prefix><i class="fas fa-lock"></i></template>
 		</MkInput>
 		<footer>
 			<MkButton primary type="submit" :disabled="submitting">{{ submitting ? $ts.processing : $ts.done }}<MkEllipsis v-if="submitting"/></MkButton>
@@ -21,12 +21,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
-import MkButton from '@/components/ui/button.vue';
-import MkInput from '@/components/ui/input.vue';
-import { host } from '@/config';
-import * as os from '@/os';
-import { login } from '@/account';
+import MkButton from '@client/components/ui/button.vue';
+import MkInput from '@client/components/ui/input.vue';
+import { host } from '@client/config';
+import * as os from '@client/os';
+import { login } from '@client/account';
 
 export default defineComponent({
 	components: {
@@ -40,7 +39,6 @@ export default defineComponent({
 			password: '',
 			submitting: false,
 			host,
-			faLock
 		}
 	},
 
@@ -71,8 +69,9 @@ export default defineComponent({
 .mk-setup {
 	border-radius: var(--radius);
 	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-	overflow: hidden; // overflow: clip; をSafariが対応したら消す
-	overflow: clip;
+	overflow: hidden;
+	max-width: 500px;
+	margin: 32px auto;
 
 	> h1 {
 		margin: 0;

@@ -1,50 +1,48 @@
 <template>
-<div class="_section">
-	<div class="mk-messaging _content" v-size="{ max: [400] }">
-		<MkButton @click="start" primary class="start"><Fa :icon="faPlus"/> {{ $ts.startMessaging }}</MkButton>
+<div class="yweeujhr _root" v-size="{ max: [400] }">
+	<MkButton @click="start" primary class="start"><i class="fas fa-plus"></i> {{ $ts.startMessaging }}</MkButton>
 
-		<div class="history" v-if="messages.length > 0">
-			<MkA v-for="(message, i) in messages"
-				class="message _panel"
-				:class="{ isMe: isMe(message), isRead: message.groupId ? message.reads.includes($i.id) : message.isRead }"
-				:to="message.groupId ? `/my/messaging/group/${message.groupId}` : `/my/messaging/${getAcct(isMe(message) ? message.recipient : message.user)}`"
-				:data-index="i"
-				:key="message.id"
-				v-anim="i"
-			>
-				<div>
-					<MkAvatar class="avatar" :user="message.groupId ? message.user : isMe(message) ? message.recipient : message.user"/>
-					<header v-if="message.groupId">
-						<span class="name">{{ message.group.name }}</span>
-						<MkTime :time="message.createdAt" class="time"/>
-					</header>
-					<header v-else>
-						<span class="name"><MkUserName :user="isMe(message) ? message.recipient : message.user"/></span>
-						<span class="username">@{{ acct(isMe(message) ? message.recipient : message.user) }}</span>
-						<MkTime :time="message.createdAt" class="time"/>
-					</header>
-					<div class="body">
-						<p class="text"><span class="me" v-if="isMe(message)">{{ $ts.you }}:</span>{{ message.text }}</p>
-					</div>
+	<div class="history" v-if="messages.length > 0">
+		<MkA v-for="(message, i) in messages"
+			class="message _block"
+			:class="{ isMe: isMe(message), isRead: message.groupId ? message.reads.includes($i.id) : message.isRead }"
+			:to="message.groupId ? `/my/messaging/group/${message.groupId}` : `/my/messaging/${getAcct(isMe(message) ? message.recipient : message.user)}`"
+			:data-index="i"
+			:key="message.id"
+			v-anim="i"
+		>
+			<div>
+				<MkAvatar class="avatar" :user="message.groupId ? message.user : isMe(message) ? message.recipient : message.user" :show-indicator="true"/>
+				<header v-if="message.groupId">
+					<span class="name">{{ message.group.name }}</span>
+					<MkTime :time="message.createdAt" class="time"/>
+				</header>
+				<header v-else>
+					<span class="name"><MkUserName :user="isMe(message) ? message.recipient : message.user"/></span>
+					<span class="username">@{{ acct(isMe(message) ? message.recipient : message.user) }}</span>
+					<MkTime :time="message.createdAt" class="time"/>
+				</header>
+				<div class="body">
+					<p class="text"><span class="me" v-if="isMe(message)">{{ $ts.you }}:</span>{{ message.text }}</p>
 				</div>
-			</MkA>
-		</div>
-		<div class="_fullinfo" v-if="!fetching && messages.length == 0">
-			<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
-			<div>{{ $ts.noHistory }}</div>
-		</div>
-		<MkLoading v-if="fetching"/>
+			</div>
+		</MkA>
 	</div>
+	<div class="_fullinfo" v-if="!fetching && messages.length == 0">
+		<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+		<div>{{ $ts.noHistory }}</div>
+	</div>
+	<MkLoading v-if="fetching"/>
 </div>
 </template>
 
 <script lang="ts">
 import { defineAsyncComponent, defineComponent } from 'vue';
-import { faUser, faUsers, faComments, faPlus } from '@fortawesome/free-solid-svg-icons';
-import getAcct from '../../../misc/acct/render';
-import MkButton from '@/components/ui/button.vue';
+import getAcct from '@/misc/acct/render';
+import MkButton from '@client/components/ui/button.vue';
 import { acct } from '../../filters/user';
-import * as os from '@/os';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -53,15 +51,14 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.messaging,
-				icon: faComments
+				icon: 'fas fa-comments'
 			},
 			fetching: true,
 			moreFetching: false,
 			messages: [],
 			connection: null,
-			faUser, faUsers, faComments, faPlus
 		};
 	},
 
@@ -121,11 +118,11 @@ export default defineComponent({
 		start(ev) {
 			os.modalMenu([{
 				text: this.$ts.messagingWithUser,
-				icon: faUser,
+				icon: 'fas fa-user',
 				action: () => { this.startUser() }
 			}, {
 				text: this.$ts.messagingWithGroup,
-				icon: faUsers,
+				icon: 'fas fa-users',
 				action: () => { this.startGroup() }
 			}], ev.currentTarget || ev.target);
 		},
@@ -167,10 +164,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.mk-messaging {
+.yweeujhr {
 
 	> .start {
-		margin: 0 auto var(--margin) auto;
+		margin: var(--margin) auto var(--margin) auto;
 	}
 
 	> .history {
@@ -200,7 +197,7 @@ export default defineComponent({
 
 			&:not(.isMe):not(.isRead) {
 				> div {
-					background-image: url("/assets/unread.svg");
+					background-image: url("/static-assets/client/unread.svg");
 					background-repeat: no-repeat;
 					background-position: 0 center;
 				}
@@ -226,14 +223,12 @@ export default defineComponent({
 					align-items: center;
 					margin-bottom: 2px;
 					white-space: nowrap;
-					overflow: hidden; // overflow: clip; をSafariが対応したら消す
-					overflow: clip;
+					overflow: hidden;
 
 					> .name {
 						margin: 0;
 						padding: 0;
-						overflow: hidden; // overflow: clip; をSafariが対応したら消す
-						overflow: clip;
+						overflow: hidden;
 						text-overflow: ellipsis;
 						font-size: 1em;
 						font-weight: bold;
@@ -264,8 +259,7 @@ export default defineComponent({
 						display: block;
 						margin: 0 0 0 0;
 						padding: 0;
-						overflow: hidden; // overflow: clip; をSafariが対応したら消す
-						overflow: clip;
+						overflow: hidden;
 						overflow-wrap: break-word;
 						font-size: 1.1em;
 						color: var(--faceText);

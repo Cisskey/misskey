@@ -14,7 +14,7 @@
 			<slot></slot>
 		</select>
 		<div class="suffix">
-			<Fa :icon="faChevronDown"/>
+			<i class="fas fa-chevron-down"></i>
 		</div>
 	</div>
 	<div class="_formCaption"><slot name="caption"></slot></div>
@@ -23,7 +23,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import './form.scss';
 
 export default defineComponent({
@@ -47,7 +46,6 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			faChevronDown,
 		};
 	},
 	computed: {
@@ -97,7 +95,7 @@ export default defineComponent({
 			font: inherit;
 			font-weight: normal;
 			font-size: 1em;
-			height: 52px;
+			height: 48px;
 			background: none;
 			border: none;
 			border-radius: 0;

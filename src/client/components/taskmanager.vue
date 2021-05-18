@@ -1,10 +1,10 @@
 <template>
 <XWindow ref="window" :initial-width="650" :initial-height="420" :can-resize="true" @closed="$emit('closed')">
 	<template #header>
-		<Fa :icon="faTerminal" style="margin-right: 0.5em;"/>Task Manager
+		<i class="fas fa-terminal" style="margin-right: 0.5em;"></i>Task Manager
 	</template>
 	<div class="qljqmnzj _monospace">
-		<MkTab v-model:value="tab" style="border-bottom: solid 1px var(--divider);">
+		<MkTab v-model:value="tab" style="border-bottom: solid 0.5px var(--divider);">
 			<option value="windows">Windows</option>
 			<option value="stream">Stream</option>
 			<option value="streamPool">Stream (Pool)</option>
@@ -78,12 +78,11 @@
 
 <script lang="ts">
 import { defineComponent, markRaw, onBeforeUnmount, ref, shallowRef } from 'vue';
-import { faTerminal } from '@fortawesome/free-solid-svg-icons';
-import XWindow from '@/components/ui/window.vue';
-import MkTab from '@/components/tab.vue';
-import MkButton from '@/components/ui/button.vue';
-import follow from '@/directives/follow-append';
-import * as os from '@/os';
+import XWindow from '@client/components/ui/window.vue';
+import MkTab from '@client/components/tab.vue';
+import MkButton from '@client/components/ui/button.vue';
+import follow from '@client/directives/follow-append';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -139,7 +138,6 @@ export default defineComponent({
 			pools,
 			killPopup,
 			showReq,
-			faTerminal,
 		};
 	},
 });
@@ -215,7 +213,7 @@ export default defineComponent({
 		width: 100%;
 		padding: 8px 16px;
 		box-sizing: border-box;
-		border-top: solid 1px var(--divider);
+		border-top: solid 0.5px var(--divider);
 		font-size: 0.9em;
 
 		> div {

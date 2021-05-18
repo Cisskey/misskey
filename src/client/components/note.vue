@@ -1,6 +1,6 @@
 <template>
 <div
-	class="tkcbzcuz _panel"
+	class="tkcbzcuz"
 	v-if="!muted"
 	v-show="!isDeleted"
 	:tabindex="!isDeleted ? '-1' : null"
@@ -9,12 +9,12 @@
 	v-size="{ max: [500, 450, 350, 300] }"
 >
 	<XSub :note="appearNote.reply" class="reply-to" v-if="appearNote.reply"/>
-	<div class="info" v-if="pinned"><Fa :icon="faThumbtack"/> {{ $ts.pinnedNote }}</div>
-	<div class="info" v-if="appearNote._prId_"><Fa :icon="faBullhorn"/> {{ $ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ $ts.hideThisNote }} <Fa :icon="faTimes"/></button></div>
-	<div class="info" v-if="appearNote._featuredId_"><Fa :icon="faBolt"/> {{ $ts.featured }}</div>
+	<div class="info" v-if="pinned"><i class="fas fa-thumbtack"></i> {{ $ts.pinnedNote }}</div>
+	<div class="info" v-if="appearNote._prId_"><i class="fas fa-bullhorn"></i> {{ $ts.promotion }}<button class="_textButton hide" @click="readPromo()">{{ $ts.hideThisNote }} <i class="fas fa-times"></i></button></div>
+	<div class="info" v-if="appearNote._featuredId_"><i class="fas fa-bolt"></i> {{ $ts.featured }}</div>
 	<div class="renote" v-if="isRenote">
 		<MkAvatar class="avatar" :user="note.user"/>
-		<Fa :icon="faRetweet"/>
+		<i class="fas fa-retweet"></i>
 		<I18n :src="$ts.renotedBy" tag="span">
 			<template #user>
 				<MkA class="name" :to="userPage(note.user)" v-user-preview="note.userId">
@@ -24,15 +24,15 @@
 		</I18n>
 		<div class="info">
 			<button class="_button time" @click="showRenoteMenu()" ref="renoteTime">
-				<Fa class="dropdownIcon" v-if="isMyRenote" :icon="faEllipsisH"/>
+				<i v-if="isMyRenote" class="fas fa-ellipsis-h dropdownIcon"></i>
 				<MkTime :time="note.createdAt"/>
 			</button>
 			<span class="visibility" v-if="note.visibility !== 'public'">
-				<Fa v-if="note.visibility === 'home'" :icon="faHome"/>
-				<Fa v-if="note.visibility === 'followers'" :icon="faUnlock"/>
-				<Fa v-if="note.visibility === 'specified'" :icon="faEnvelope"/>
+				<i v-if="note.visibility === 'home'" class="fas fa-home"></i>
+				<i v-else-if="note.visibility === 'followers'" class="fas fa-unlock"></i>
+				<i v-else-if="note.visibility === 'specified'" class="fas fa-envelope"></i>
 			</span>
-			<span class="localOnly" v-if="note.localOnly"><Fa :icon="faBiohazard"/></span>
+			<span class="localOnly" v-if="note.localOnly"><i class="fas fa-biohazard"></i></span>
 		</div>
 	</div>
 	<article class="article" @contextmenu.stop="onContextmenu">
@@ -48,7 +48,7 @@
 				<div class="content" :class="{ collapsed }" v-show="appearNote.cw == null || showContent">
 					<div class="text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ $ts.private }})</span>
-						<MkA class="reply" v-if="appearNote.replyId" :to="`/notes/${appearNote.replyId}`"><Fa :icon="faReply"/></MkA>
+						<MkA class="reply" v-if="appearNote.replyId" :to="`/notes/${appearNote.replyId}`"><i class="fas fa-reply"></i></MkA>
 						<Mfm v-if="appearNote.text" :text="appearNote.text" :author="appearNote.user" :i="$i" :custom-emojis="appearNote.emojis"/>
 						<a class="rp" v-if="appearNote.renote != null">RN:</a>
 					</div>
@@ -62,32 +62,32 @@
 						<span>{{ $ts.showMore }}</span>
 					</button>
 				</div>
-				<MkA v-if="appearNote.channel && !inChannel" class="channel" :to="`/channels/${appearNote.channel.id}`"><Fa :icon="faSatelliteDish"/> {{ appearNote.channel.name }}</MkA>
+				<MkA v-if="appearNote.channel && !inChannel" class="channel" :to="`/channels/${appearNote.channel.id}`"><i class="fas fa-satellite-dish"></i> {{ appearNote.channel.name }}</MkA>
 			</div>
 			<footer class="footer">
 				<XReactionsViewer :note="appearNote" ref="reactionsViewer"/>
 				<button @click="reply()" class="button _button">
-					<template v-if="appearNote.reply"><Fa :icon="faReplyAll"/></template>
-					<template v-else><Fa :icon="faReply"/></template>
+					<template v-if="appearNote.reply"><i class="fas fa-reply-all"></i></template>
+					<template v-else><i class="fas fa-reply"></i></template>
 					<p class="count" v-if="appearNote.repliesCount > 0">{{ appearNote.repliesCount }}</p>
 				</button>
 				<button v-if="canRenote" @click="renote()" class="button _button" ref="renoteButton">
-					<Fa :icon="faRetweet"/><p class="count" v-if="appearNote.renoteCount > 0">{{ appearNote.renoteCount }}</p>
+					<i class="fas fa-retweet"></i><p class="count" v-if="appearNote.renoteCount > 0">{{ appearNote.renoteCount }}</p>
 				</button>
 				<button v-else class="button _button">
-					<Fa :icon="faBan"/>
+					<i class="fas fa-ban"></i>
 				</button>
 				<button class="button _button" @click="react()" ref="reactButton">
-					<Fa :icon="faPlus"/>
+					<i class="fas fa-plus"></i>
 				</button>
 				<button class="button _button" @click="menu()" ref="menuButton">
-					<Fa :icon="faEllipsisH"/>
+					<i class="fas fa-ellipsis-h"></i>
 				</button>
 			</footer>
 		</div>
 	</article>
 </div>
-<div v-else class="_panel muted" @click="muted = false">
+<div v-else class="muted" @click="muted = false">
 	<I18n :src="$ts.userSaysSomething" tag="small">
 		<template #name>
 			<MkA class="name" :to="userPage(appearNote.user)" v-user-preview="appearNote.userId">
@@ -99,11 +99,9 @@
 </template>
 
 <script lang="ts">
-import { computed, defineAsyncComponent, defineComponent, markRaw, ref } from 'vue';
-import { faSatelliteDish, faBolt, faTimes, faBullhorn, faStar, faLink, faExternalLinkSquareAlt, faPlus, faMinus, faRetweet, faReply, faReplyAll, faEllipsisH, faHome, faUnlock, faEnvelope, faThumbtack, faBan, faQuoteRight, faInfoCircle, faBiohazard, faPlug, faExclamationCircle, faPaperclip } from '@fortawesome/free-solid-svg-icons';
-import { faCopy, faTrashAlt, faEdit, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { parse } from '../../mfm/parse';
-import { sum, unique } from '../../prelude/array';
+import { defineAsyncComponent, defineComponent, markRaw } from 'vue';
+import * as mfm from 'mfm-js';
+import { sum } from '../../prelude/array';
 import XSub from './note.sub.vue';
 import XNoteHeader from './note-header.vue';
 import XNotePreview from './note-preview.vue';
@@ -111,22 +109,16 @@ import XReactionsViewer from './reactions-viewer.vue';
 import XMediaList from './media-list.vue';
 import XCwButton from './cw-button.vue';
 import XPoll from './poll.vue';
-import { pleaseLogin } from '@/scripts/please-login';
-import { focusPrev, focusNext } from '@/scripts/focus';
-import { url } from '@/config';
-import copyToClipboard from '@/scripts/copy-to-clipboard';
-import { checkWordMute } from '@/scripts/check-word-mute';
-import { userPage } from '@/filters/user';
-import * as os from '@/os';
-import { noteActions, noteViewInterruptors } from '@/store';
-
-function markRawAll(...xs) {
-	for (const x of xs) {
-		markRaw(x);
-	}
-}
-
-markRawAll(faEdit, faBolt, faTimes, faBullhorn, faPlus, faMinus, faRetweet, faReply, faReplyAll, faEllipsisH, faHome, faUnlock, faEnvelope, faThumbtack, faBan, faBiohazard, faPlug, faSatelliteDish);
+import { pleaseLogin } from '@client/scripts/please-login';
+import { focusPrev, focusNext } from '@client/scripts/focus';
+import { url } from '@client/config';
+import copyToClipboard from '@client/scripts/copy-to-clipboard';
+import { checkWordMute } from '@client/scripts/check-word-mute';
+import { userPage } from '@client/filters/user';
+import * as os from '@client/os';
+import { noteActions, noteViewInterruptors } from '@client/store';
+import { reactionPicker } from '@client/scripts/reaction-picker';
+import { extractUrlFromMfm } from '@/misc/extract-url-from-mfm';
 
 export default defineComponent({
 	components: {
@@ -137,8 +129,8 @@ export default defineComponent({
 		XMediaList,
 		XCwButton,
 		XPoll,
-		MkUrlPreview: defineAsyncComponent(() => import('@/components/url-preview.vue')),
-		MkInstanceTicker: defineAsyncComponent(() => import('@/components/instance-ticker.vue')),
+		MkUrlPreview: defineAsyncComponent(() => import('@client/components/url-preview.vue')),
+		MkInstanceTicker: defineAsyncComponent(() => import('@client/components/instance-ticker.vue')),
 	},
 
 	inject: {
@@ -169,7 +161,6 @@ export default defineComponent({
 			collapsed: false,
 			isDeleted: false,
 			muted: false,
-			faEdit, faBolt, faTimes, faBullhorn, faPlus, faMinus, faRetweet, faReply, faReplyAll, faEllipsisH, faHome, faUnlock, faEnvelope, faThumbtack, faBan, faBiohazard, faPlug, faSatelliteDish
 		};
 	},
 
@@ -234,21 +225,7 @@ export default defineComponent({
 
 		urls(): string[] {
 			if (this.appearNote.text) {
-				const ast = parse(this.appearNote.text);
-				// TODO: 再帰的にURL要素がないか調べる
-				const urls = unique(ast
-					.filter(t => ((t.node.type == 'url' || t.node.type == 'link') && t.node.props.url && !t.node.props.silent))
-					.map(t => t.node.props.url));
-
-				// unique without hash
-				// [ http://a/#1, http://a/#2, http://b/#3 ] => [ http://a/#1, http://b/#3 ]
-				const removeHash = x => x.replace(/#[^#]*$/, '');
-
-				return urls.reduce((array, url) => {
-					const removed = removeHash(url);
-					if (!array.map(x => removeHash(x)).includes(removed)) array.push(url);
-					return array;
-				}, []);
+				return extractUrlFromMfm(mfm.parse(this.appearNote.text));
 			} else {
 				return null;
 			}
@@ -327,7 +304,8 @@ export default defineComponent({
 
 		capture(withHandler = false) {
 			if (this.$i) {
-				this.connection.send(document.body.contains(this.$el) ? 'sn' : 's', { id: this.appearNote.id });
+				// TODO: このノートがストリーミング経由で流れてきた場合のみ sr する
+				this.connection.send(document.body.contains(this.$el) ? 'sr' : 's', { id: this.appearNote.id });
 				if (withHandler) this.connection.on('noteUpdated', this.onStreamNoteUpdated);
 			}
 		},
@@ -462,7 +440,7 @@ export default defineComponent({
 			this.blur();
 			os.modalMenu([{
 				text: this.$ts.renote,
-				icon: faRetweet,
+				icon: 'fas fa-retweet',
 				action: () => {
 					os.api('notes/create', {
 						renoteId: this.appearNote.id
@@ -470,7 +448,7 @@ export default defineComponent({
 				}
 			}, {
 				text: this.$ts.quote,
-				icon: faQuoteRight,
+				icon: 'fas fa-quote-right',
 				action: () => {
 					os.post({
 						renote: this.appearNote,
@@ -507,7 +485,7 @@ export default defineComponent({
 		react(viaKeyboard = false) {
 			pleaseLogin();
 			this.blur();
-			os.pickReaction(this.$refs.reactButton, reaction => {
+			reactionPicker.show(this.$refs.reactButton, reaction => {
 				os.api('notes/reactions/create', {
 					noteId: this.appearNote.id,
 					reaction: reaction
@@ -598,57 +576,62 @@ export default defineComponent({
 				});
 
 				menu = [{
-					icon: faCopy,
+					icon: 'fas fa-copy',
 					text: this.$ts.copyContent,
 					action: this.copyContent
 				}, {
-					icon: faLink,
+					icon: 'fas fa-link',
 					text: this.$ts.copyLink,
 					action: this.copyLink
 				}, (this.appearNote.url || this.appearNote.uri) ? {
-					icon: faExternalLinkSquareAlt,
+					icon: 'fas fa-external-link-square-alt',
 					text: this.$ts.showOnRemote,
 					action: () => {
 						window.open(this.appearNote.url || this.appearNote.uri, '_blank');
 					}
 				} : undefined,
+				{
+					icon: 'fas fa-share-alt',
+					text: this.$ts.share,
+					action: this.share
+				},
 				null,
 				statePromise.then(state => state.isFavorited ? {
-					icon: faStar,
+					icon: 'fas fa-star',
 					text: this.$ts.unfavorite,
 					action: () => this.toggleFavorite(false)
 				} : {
-					icon: faStar,
+					icon: 'fas fa-star',
 					text: this.$ts.favorite,
 					action: () => this.toggleFavorite(true)
 				}),
 				{
-					icon: faPaperclip,
+					icon: 'fas fa-paperclip',
 					text: this.$ts.clip,
 					action: () => this.clip()
 				},
 				(this.appearNote.userId != this.$i.id) ? statePromise.then(state => state.isWatching ? {
-					icon: faEyeSlash,
+					icon: 'fas fa-eye-slash',
 					text: this.$ts.unwatch,
 					action: () => this.toggleWatch(false)
 				} : {
-					icon: faEye,
+					icon: 'fas fa-eye',
 					text: this.$ts.watch,
 					action: () => this.toggleWatch(true)
 				}) : undefined,
 				this.appearNote.userId == this.$i.id ? (this.$i.pinnedNoteIds || []).includes(this.appearNote.id) ? {
-					icon: faThumbtack,
+					icon: 'fas fa-thumbtack',
 					text: this.$ts.unpin,
 					action: () => this.togglePin(false)
 				} : {
-					icon: faThumbtack,
+					icon: 'fas fa-thumbtack',
 					text: this.$ts.pin,
 					action: () => this.togglePin(true)
 				} : undefined,
 				...(this.$i.isModerator || this.$i.isAdmin ? [
 					null,
 					{
-						icon: faBullhorn,
+						icon: 'fas fa-bullhorn',
 						text: this.$ts.promote,
 						action: this.promote
 					}]
@@ -657,11 +640,11 @@ export default defineComponent({
 				...(this.appearNote.userId != this.$i.id ? [
 					null,
 					{
-						icon: faExclamationCircle,
+						icon: 'fas fa-exclamation-circle',
 						text: this.$ts.reportAbuse,
 						action: () => {
 							const u = `${url}/notes/${this.appearNote.id}`;
-							os.popup(import('@/components/abuse-report-window.vue'), {
+							os.popup(import('@client/components/abuse-report-window.vue'), {
 								user: this.appearNote.user,
 								initialComment: `Note: ${u}\n-----\n`
 							}, {}, 'closed');
@@ -672,12 +655,12 @@ export default defineComponent({
 				...(this.appearNote.userId == this.$i.id || this.$i.isModerator || this.$i.isAdmin ? [
 					null,
 					this.appearNote.userId == this.$i.id ? {
-						icon: faEdit,
+						icon: 'fas fa-edit',
 						text: this.$ts.deleteAndEdit,
 						action: this.delEdit
 					} : undefined,
 					{
-						icon: faTrashAlt,
+						icon: 'fas fa-trash-alt',
 						text: this.$ts.delete,
 						danger: true,
 						action: this.del
@@ -687,15 +670,15 @@ export default defineComponent({
 				.filter(x => x !== undefined);
 			} else {
 				menu = [{
-					icon: faCopy,
+					icon: 'fas fa-copy',
 					text: this.$ts.copyContent,
 					action: this.copyContent
 				}, {
-					icon: faLink,
+					icon: 'fas fa-link',
 					text: this.$ts.copyLink,
 					action: this.copyLink
 				}, (this.appearNote.url || this.appearNote.uri) ? {
-					icon: faExternalLinkSquareAlt,
+					icon: 'fas fa-external-link-square-alt',
 					text: this.$ts.showOnRemote,
 					action: () => {
 						window.open(this.appearNote.url || this.appearNote.uri, '_blank');
@@ -706,7 +689,7 @@ export default defineComponent({
 
 			if (noteActions.length > 0) {
 				menu = menu.concat([null, ...noteActions.map(action => ({
-					icon: faPlug,
+					icon: 'fas fa-plug',
 					text: action.title,
 					action: () => {
 						action.handler(this.appearNote);
@@ -745,7 +728,7 @@ export default defineComponent({
 			if (!this.isMyRenote) return;
 			os.modalMenu([{
 				text: this.$ts.unrenote,
-				icon: faTrashAlt,
+				icon: 'fas fa-trash-alt',
 				danger: true,
 				action: () => {
 					os.api('notes/delete', {
@@ -788,7 +771,7 @@ export default defineComponent({
 		async clip() {
 			const clips = await os.api('clips/list');
 			os.modalMenu([{
-				icon: faPlus,
+				icon: 'fas fa-plus',
 				text: this.$ts.createNew,
 				action: async () => {
 					const { canceled, result } = await os.form(this.$ts.createNewClip, {
@@ -837,6 +820,14 @@ export default defineComponent({
 			});
 		},
 
+		share() {
+			navigator.share({
+				title: this.$t('noteOf', { user: this.appearNote.user.name }),
+				text: this.appearNote.text,
+				url: `${url}/notes/${this.appearNote.id}`
+			});
+		},
+
 		focus() {
 			this.$el.focus();
 		},
@@ -862,7 +853,6 @@ export default defineComponent({
 .tkcbzcuz {
 	position: relative;
 	transition: box-shadow 0.1s ease;
-	overflow: hidden; // overflow: clip; をSafariが対応したら消す
 	overflow: clip;
 	contain: content;
 
@@ -909,7 +899,7 @@ export default defineComponent({
 		white-space: pre;
 		color: #d28a3f;
 
-		> [data-icon] {
+		> i {
 			margin-right: 4px;
 		}
 
@@ -945,13 +935,12 @@ export default defineComponent({
 			border-radius: 6px;
 		}
 
-		> [data-icon] {
+		> i {
 			margin-right: 4px;
 		}
 
 		> span {
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 			flex-shrink: 1;
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -995,11 +984,12 @@ export default defineComponent({
 		> .avatar {
 			flex-shrink: 0;
 			display: block;
-			//position: sticky;
-			//top: 72px;
 			margin: 0 14px 8px 0;
 			width: 58px;
 			height: 58px;
+			position: sticky;
+			top: calc(22px + var(--stickyTop, 0px));
+			left: 0;
 		}
 
 		> .main {
@@ -1023,8 +1013,7 @@ export default defineComponent({
 					&.collapsed {
 						position: relative;
 						max-height: 9em;
-						overflow: hidden; // overflow: clip; をSafariが対応したら消す
-						overflow: clip;
+						overflow: hidden;
 
 						> .fade {
 							display: block;
@@ -1121,7 +1110,7 @@ export default defineComponent({
 	}
 
 	> .reply {
-		border-top: solid 1px var(--divider);
+		border-top: solid 0.5px var(--divider);
 	}
 
 	&.max-width_500px {
@@ -1144,6 +1133,7 @@ export default defineComponent({
 				margin: 0 10px 8px 0;
 				width: 50px;
 				height: 50px;
+				top: calc(14px + var(--stickyTop, 0px));
 			}
 		}
 	}

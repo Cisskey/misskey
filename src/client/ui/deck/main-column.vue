@@ -4,7 +4,7 @@
 		<XHeader :info="pageInfo"/>
 	</template>
 
-	<router-view v-slot="{ Component }">
+	<router-view v-slot="{ Component }" class="_flat_">
 		<transition>
 			<keep-alive :include="['timeline']">
 				<component :is="Component" :ref="changePage" @contextmenu.stop="onContextmenu"/>
@@ -16,12 +16,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faWindowMaximize } from '@fortawesome/free-solid-svg-icons';
 import XColumn from './column.vue';
-import XNotes from '@/components/notes.vue';
-import XHeader from '@/ui/_common_/header.vue';
-import { deckStore } from '@/ui/deck/deck-store';
-import * as os from '@/os';
+import XNotes from '@client/components/notes.vue';
+import XHeader from '@client/ui/_common_/header.vue';
+import { deckStore } from '@client/ui/deck/deck-store';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -51,8 +51,8 @@ export default defineComponent({
 	methods: {
 		changePage(page) {
 			if (page == null) return;
-			if (page.INFO) {
-				this.pageInfo = page.INFO;
+			if (page[symbols.PAGE_INFO]) {
+				this.pageInfo = page[symbols.PAGE_INFO];
 			}
 		},
 
@@ -64,14 +64,14 @@ export default defineComponent({
 				}
 			};
 			if (isLink(e.target)) return;
-			if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) || e.target.attributes['contenteditable']) return;
+			if (['INPUT', 'TEXTAREA', 'IMG', 'VIDEO', 'CANVAS'].includes(e.target.tagName) || e.target.attributes['contenteditable']) return;
 			if (window.getSelection().toString() !== '') return;
 			const path = this.$route.path;
 			os.contextMenu([{
 				type: 'label',
 				text: path,
 			}, {
-				icon: faWindowMaximize,
+				icon: 'fas fa-window-maximize',
 				text: this.$ts.openInWindow,
 				action: () => {
 					os.pageWindow(path);
