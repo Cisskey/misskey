@@ -1,6 +1,6 @@
 <template>
 <FormBase>
-	<MkInfo warn>{{ $ts._plugin.installWarn }}</MkInfo>
+	<FormInfo warn>{{ $ts._plugin.installWarn }}</FormInfo>
 
 	<FormGroup>
 		<FormTextarea v-model:value="code" tall>
@@ -8,27 +8,27 @@
 		</FormTextarea>
 	</FormGroup>
 
-	<FormButton @click="install" :disabled="code == null" primary inline><Fa :icon="faCheck"/> {{ $ts.install }}</FormButton>
+	<FormButton @click="install" :disabled="code == null" primary inline><i class="fas fa-check"></i> {{ $ts.install }}</FormButton>
 </FormBase>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import { AiScript, parse } from '@syuilo/aiscript';
 import { serialize } from '@syuilo/aiscript/built/serializer';
 import { v4 as uuid } from 'uuid';
-import FormTextarea from '@/components/form/textarea.vue';
-import FormSelect from '@/components/form/select.vue';
-import FormRadios from '@/components/form/radios.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import FormLink from '@/components/form/link.vue';
-import FormButton from '@/components/form/button.vue';
-import MkInfo from '@/components/ui/info.vue';
-import * as os from '@/os';
-import { ColdDeviceStorage } from '@/store';
-import { unisonReload } from '@/scripts/unison-reload';
+import FormTextarea from '@client/components/form/textarea.vue';
+import FormSelect from '@client/components/form/select.vue';
+import FormRadios from '@client/components/form/radios.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import FormLink from '@client/components/form/link.vue';
+import FormButton from '@client/components/form/button.vue';
+import FormInfo from '@client/components/form/info.vue';
+import * as os from '@client/os';
+import { ColdDeviceStorage } from '@client/store';
+import { unisonReload } from '@client/scripts/unison-reload';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -39,24 +39,23 @@ export default defineComponent({
 		FormGroup,
 		FormLink,
 		FormButton,
-		MkInfo,
+		FormInfo,
 	},
 
 	emits: ['info'],
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts._plugin.install,
-				icon: faDownload
+				icon: 'fas fa-download'
 			},
 			code: null,
-			faPalette, faDownload, faFolderOpen, faCheck, faTrashAlt, faEye
 		}
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {
@@ -108,7 +107,7 @@ export default defineComponent({
 			}
 
 			const token = permissions == null || permissions.length === 0 ? null : await new Promise((res, rej) => {
-				os.popup(import('@/components/token-generate-window.vue'), {
+				os.popup(import('@client/components/token-generate-window.vue'), {
 					title: this.$ts.tokenRequested,
 					information: this.$ts.pluginTokenRequestedDescription,
 					initialName: name,

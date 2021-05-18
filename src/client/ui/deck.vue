@@ -22,8 +22,8 @@
 		/>
 	</template>
 
-	<button v-if="$i" class="nav _button" @click="showNav()"><Fa :icon="faBars"/><i v-if="navIndicated"><Fa :icon="faCircle"/></i></button>
-	<button v-if="$i" class="post _buttonPrimary" @click="post()"><Fa :icon="faPencilAlt"/></button>
+	<button v-if="$i" class="nav _button" @click="showNav()"><i class="fas fa-bars"></i><span v-if="navIndicated" class="indicator"><i class="fas fa-circle"></i></span></button>
+	<button v-if="$i" class="post _buttonPrimary" @click="post()"><i class="fas fa-pencil-alt"></i></button>
 
 	<XCommon/>
 </div>
@@ -31,15 +31,13 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faPlus, faPencilAlt, faChevronLeft, faBars, faCircle } from '@fortawesome/free-solid-svg-icons';
-import {  } from '@fortawesome/free-regular-svg-icons';
 import { v4 as uuid } from 'uuid';
-import { host } from '@/config';
-import DeckColumnCore from '@/ui/deck/column-core.vue';
-import XSidebar from '@/components/sidebar.vue';
-import { getScrollContainer } from '@/scripts/scroll';
-import * as os from '@/os';
-import { sidebarDef } from '@/sidebar';
+import { host } from '@client/config';
+import DeckColumnCore from '@client/ui/deck/column-core.vue';
+import XSidebar from '@client/ui/_common_/sidebar.vue';
+import { getScrollContainer } from '@client/scripts/scroll';
+import * as os from '@client/os';
+import { sidebarDef } from '@client/sidebar';
 import XCommon from './_common_/common.vue';
 import { deckStore, addColumn, loadDeck } from './deck/deck-store';
 
@@ -64,7 +62,6 @@ export default defineComponent({
 			host: host,
 			menuDef: sidebarDef,
 			wallpaper: localStorage.getItem('wallpaper') != null,
-			faPlus, faPencilAlt, faChevronLeft, faBars, faCircle
 		};
 	},
 
@@ -220,7 +217,7 @@ export default defineComponent({
 			background: var(--X2);
 		}
 
-		> i {
+		> .indicator {
 			position: absolute;
 			top: 0;
 			left: 0;

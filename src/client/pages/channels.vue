@@ -2,29 +2,29 @@
 <div>
 	<div class="_section" style="padding: 0;" v-if="$i">
 		<MkTab class="_content" v-model:value="tab">
-			<option value="featured"><Fa :icon="faFireAlt"/> {{ $ts._channel.featured }}</option>
-			<option value="following"><Fa :icon="faHeart"/> {{ $ts._channel.following }}</option>
-			<option value="owned"><Fa :icon="faEdit"/> {{ $ts._channel.owned }}</option>
+			<option value="featured"><i class="fas fa-fire-alt"></i> {{ $ts._channel.featured }}</option>
+			<option value="following"><i class="fas fa-heart"></i> {{ $ts._channel.following }}</option>
+			<option value="owned"><i class="fas fa-edit"></i> {{ $ts._channel.owned }}</option>
 		</MkTab>
 	</div>
 
 	<div class="_section">
 		<div class="_content grwlizim featured" v-if="tab === 'featured'">
 			<MkPagination :pagination="featuredPagination" #default="{items}">
-				<MkChannelPreview v-for="channel in items" class="_vMargin" :channel="channel" :key="channel.id"/>
+				<MkChannelPreview v-for="channel in items" class="_gap" :channel="channel" :key="channel.id"/>
 			</MkPagination>
 		</div>
 
 		<div class="_content grwlizim following" v-if="tab === 'following'">
 			<MkPagination :pagination="followingPagination" #default="{items}">
-				<MkChannelPreview v-for="channel in items" class="_vMargin" :channel="channel" :key="channel.id"/>
+				<MkChannelPreview v-for="channel in items" class="_gap" :channel="channel" :key="channel.id"/>
 			</MkPagination>
 		</div>
 
 		<div class="_content grwlizim owned" v-if="tab === 'owned'">
-			<MkButton class="new" @click="create()"><Fa :icon="faPlus"/></MkButton>
+			<MkButton class="new" @click="create()"><i class="fas fa-plus"></i></MkButton>
 			<MkPagination :pagination="ownedPagination" #default="{items}">
-				<MkChannelPreview v-for="channel in items" class="_vMargin" :channel="channel" :key="channel.id"/>
+				<MkChannelPreview v-for="channel in items" class="_gap" :channel="channel" :key="channel.id"/>
 			</MkPagination>
 		</div>
 	</div>
@@ -33,12 +33,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faSatelliteDish, faPlus, faEdit, faFireAlt } from '@fortawesome/free-solid-svg-icons';
-import { faHeart } from '@fortawesome/free-regular-svg-icons';
-import MkChannelPreview from '@/components/channel-preview.vue';
-import MkPagination from '@/components/ui/pagination.vue';
-import MkButton from '@/components/ui/button.vue';
-import MkTab from '@/components/tab.vue';
+import MkChannelPreview from '@client/components/channel-preview.vue';
+import MkPagination from '@client/components/ui/pagination.vue';
+import MkButton from '@client/components/ui/button.vue';
+import MkTab from '@client/components/tab.vue';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -46,11 +45,11 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.channel,
-				icon: faSatelliteDish,
+				icon: 'fas fa-satellite-dish',
 				action: {
-					icon: faPlus,
+					icon: 'fas fa-plus',
 					handler: this.create
 				}
 			},
@@ -68,7 +67,6 @@ export default defineComponent({
 				endpoint: 'channels/owned',
 				limit: 5,
 			},
-			faSatelliteDish, faPlus, faEdit, faHeart, faFireAlt
 		};
 	},
 	methods: {

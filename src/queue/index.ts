@@ -1,8 +1,6 @@
-import * as Queue from 'bull';
 import * as httpSignature from 'http-signature';
 
-import config from '../config';
-import { ILocalUser } from '../models/entities/user';
+import config from '@/config';
 import { program } from '../argv';
 
 import processDeliver from './processors/deliver';
@@ -13,43 +11,9 @@ import processWebhook from './processors/webhook';
 import { queueLogger } from './logger';
 import { DriveFile } from '../models/entities/drive-file';
 import { getJobInfo } from './get-job-info';
-import { IActivity } from '../remote/activitypub/type';
-import { notificationType, notificationBody } from '../services/push-notification';
-import { UserProfiles } from '../models';
-import { webhookType } from '../types';
-
-function initializeQueue(name: string, limitPerSec = -1, limitDuration?: number, groupKey?: string) {
-	return new Queue(name, {
-		redis: {
-			port: config.redis.port,
-			host: config.redis.host,
-			password: config.redis.pass,
-			db: config.redis.db || 0,
-		},
-		prefix: config.redis.prefix ? `${config.redis.prefix}:queue` : 'queue',
-		// deliver, inbox (5/5s)との互換性のため
-		limiter: limitPerSec > 0 ? {
-			max: limitDuration ? limitPerSec : limitPerSec * 5,
-			duration: limitDuration || 5000,
-			groupKey: groupKey,
-		} : undefined
-	});
-}
-
-export type InboxJobData = {
-	activity: IActivity,
-	/** HTTP-Signature */
-	signature: httpSignature.IParsedSignature
-};
-
-export type PostWebhookJobData = {
-	userId: string,
-	type: notificationType,
-	body: notificationBody,
-	url: string,
-	jsonType: webhookType,
-	secret: string | null,
-};
+import { dbQueue, deliverQueue, inboxQueue, objectStorageQueue, webhookQueue } from './queues';
+import { ThinUser } from './types';
+import { IActivity } from '@/remote/activitypub/type';
 
 function renderError(e: Error): any {
 	return {
@@ -58,12 +22,6 @@ function renderError(e: Error): any {
 		name: e?.name
 	};
 }
-
-export const deliverQueue = initializeQueue('deliver', config.deliverJobPerSec || 128);
-export const inboxQueue = initializeQueue('inbox', config.inboxJobPerSec || 16);
-export const dbQueue = initializeQueue('db');
-export const objectStorageQueue = initializeQueue('objectStorage');
-export const webhookQueue = initializeQueue('webhook', config.webhookJobPerSec || 1, 1000, 'userId');
 
 const deliverLogger = queueLogger.createSubLogger('deliver');
 const inboxLogger = queueLogger.createSubLogger('inbox');
@@ -111,8 +69,9 @@ webhookQueue
 	.on('error', (job: any, err: Error) => webhookLogger.error(`error ${err}`, { job, e: renderError(err) }))
 	.on('stalled', (job) => webhookLogger.warn(`stalled ${getJobInfo(job)} userId=${job.data.userId || 'none'}`));
 
-export function deliver(user: ILocalUser, content: any, to: any) {
+export function deliver(user: ThinUser, content: unknown, to: string | null) {
 	if (content == null) return null;
+	if (to == null) return null;
 
 	const data = {
 		user,
@@ -131,7 +90,7 @@ export function deliver(user: ILocalUser, content: any, to: any) {
 	});
 }
 
-export function inbox(activity: any, signature: httpSignature.IParsedSignature) {
+export function inbox(activity: IActivity, signature: httpSignature.IParsedSignature) {
 	const data = {
 		activity: activity,
 		signature
@@ -148,7 +107,7 @@ export function inbox(activity: any, signature: httpSignature.IParsedSignature) 
 	});
 }
 
-export function createDeleteDriveFilesJob(user: ILocalUser) {
+export function createDeleteDriveFilesJob(user: ThinUser) {
 	return dbQueue.add('deleteDriveFiles', {
 		user: user
 	}, {
@@ -157,7 +116,7 @@ export function createDeleteDriveFilesJob(user: ILocalUser) {
 	});
 }
 
-export function createExportNotesJob(user: ILocalUser) {
+export function createExportNotesJob(user: ThinUser) {
 	return dbQueue.add('exportNotes', {
 		user: user
 	}, {
@@ -166,7 +125,7 @@ export function createExportNotesJob(user: ILocalUser) {
 	});
 }
 
-export function createExportFollowingJob(user: ILocalUser) {
+export function createExportFollowingJob(user: ThinUser) {
 	return dbQueue.add('exportFollowing', {
 		user: user
 	}, {
@@ -175,7 +134,7 @@ export function createExportFollowingJob(user: ILocalUser) {
 	});
 }
 
-export function createExportMuteJob(user: ILocalUser) {
+export function createExportMuteJob(user: ThinUser) {
 	return dbQueue.add('exportMute', {
 		user: user
 	}, {
@@ -184,7 +143,7 @@ export function createExportMuteJob(user: ILocalUser) {
 	});
 }
 
-export function createExportBlockingJob(user: ILocalUser) {
+export function createExportBlockingJob(user: ThinUser) {
 	return dbQueue.add('exportBlocking', {
 		user: user
 	}, {
@@ -193,7 +152,7 @@ export function createExportBlockingJob(user: ILocalUser) {
 	});
 }
 
-export function createExportUserListsJob(user: ILocalUser) {
+export function createExportUserListsJob(user: ThinUser) {
 	return dbQueue.add('exportUserLists', {
 		user: user
 	}, {
@@ -202,7 +161,7 @@ export function createExportUserListsJob(user: ILocalUser) {
 	});
 }
 
-export function createImportFollowingJob(user: ILocalUser, fileId: DriveFile['id']) {
+export function createImportFollowingJob(user: ThinUser, fileId: DriveFile['id']) {
 	return dbQueue.add('importFollowing', {
 		user: user,
 		fileId: fileId
@@ -212,7 +171,7 @@ export function createImportFollowingJob(user: ILocalUser, fileId: DriveFile['id
 	});
 }
 
-export function createImportUserListsJob(user: ILocalUser, fileId: DriveFile['id']) {
+export function createImportUserListsJob(user: ThinUser, fileId: DriveFile['id']) {
 	return dbQueue.add('importUserLists', {
 		user: user,
 		fileId: fileId

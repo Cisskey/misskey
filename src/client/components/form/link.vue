@@ -5,15 +5,15 @@
 		<span class="text"><slot></slot></span>
 		<span class="right">
 			<span class="text"><slot name="suffix"></slot></span>
-			<Fa :icon="faExternalLinkAlt" class="icon"/>
+			<i class="fas fa-external-link-alt icon"></i>
 		</span>
 	</a>
-	<MkA class="main _button _formPanel _formClickable" :class="{ active }" :to="to" v-else>
+	<MkA class="main _button _formPanel _formClickable" :class="{ active }" :to="to" :behavior="behavior" v-else>
 		<span class="icon"><slot name="icon"></slot></span>
 		<span class="text"><slot></slot></span>
 		<span class="right">
 			<span class="text"><slot name="suffix"></slot></span>
-			<Fa :icon="faChevronRight" class="icon"/>
+			<i class="fas fa-chevron-right icon"></i>
 		</span>
 	</MkA>
 </div>
@@ -21,7 +21,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faChevronRight, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import './form.scss';
 
 export default defineComponent({
@@ -38,10 +37,13 @@ export default defineComponent({
 			type: Boolean,
 			required: false
 		},
+		behavior: {
+			type: String,
+			required: false,
+		},
 	},
 	data() {
 		return {
-			faChevronRight, faExternalLinkAlt
 		};
 	}
 });
@@ -62,6 +64,7 @@ export default defineComponent({
 
 		&.active {
 			color: var(--accent);
+			background: var(--panelHighlight);
 		}
 
 		> .icon {
@@ -83,8 +86,7 @@ export default defineComponent({
 		> .text {
 			white-space: nowrap;
 			text-overflow: ellipsis;
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 			padding-right: 12px;
 		}
 

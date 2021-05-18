@@ -35,6 +35,7 @@
 						class="_button"
 						@click="chosen(emoji, $event)"
 						tabindex="0"
+						:key="emoji"
 					>
 						<MkEmoji :emoji="emoji" :normal="true"/>
 					</button>
@@ -42,7 +43,7 @@
 			</section>
 
 			<section>
-				<header class="_acrylic"><Fa :icon="faClock" fixed-width/> {{ $ts.recentUsed }}</header>
+				<header class="_acrylic"><i class="far fa-clock fa-fw"></i> {{ $ts.recentUsed }}</header>
 				<div>
 					<button v-for="emoji in $store.state.recentlyUsedEmojis"
 						class="_button"
@@ -62,31 +63,25 @@
 			<header class="_acrylic">{{ $ts.emoji }}</header>
 			<XSection v-for="category in categories" :emojis="emojilist.filter(e => e.category === category).map(e => e.char)">{{ category }}</XSection>
 		</div>
-		<div>
-			<header class="_acrylic">{{ $ts.tags }}</header>
-			<XSection v-for="tag in emojiTags" :emojis="customEmojis.filter(e => e.aliases.includes(tag)).map(e => ':' + e.name + ':')">{{ tag }}</XSection>
-		</div>
 	</div>
 	<div class="tabs">
-		<button class="_button tab" :class="{ active: tab === 'index' }" @click="tab = 'index'"><Fa :icon="faAsterisk" fixed-width/></button>
-		<button class="_button tab" :class="{ active: tab === 'custom' }" @click="tab = 'custom'"><Fa :icon="faLaugh" fixed-width/></button>
-		<button class="_button tab" :class="{ active: tab === 'unicode' }" @click="tab = 'unicode'"><Fa :icon="faLeaf" fixed-width/></button>
-		<button class="_button tab" :class="{ active: tab === 'tags' }" @click="tab = 'tags'"><Fa :icon="faHashtag" fixed-width/></button>
+		<button class="_button tab" :class="{ active: tab === 'index' }" @click="tab = 'index'"><i class="fas fa-asterisk fa-fw"></i></button>
+		<button class="_button tab" :class="{ active: tab === 'custom' }" @click="tab = 'custom'"><i class="fas fa-laugh fa-fw"></i></button>
+		<button class="_button tab" :class="{ active: tab === 'unicode' }" @click="tab = 'unicode'"><i class="fas fa-leaf fa-fw"></i></button>
+		<button class="_button tab" :class="{ active: tab === 'tags' }" @click="tab = 'tags'"><i class="fas fa-hashtag fa-fw"></i></button>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, markRaw } from 'vue';
-import { emojilist } from '../../misc/emojilist';
-import { getStaticImageUrl } from '@/scripts/get-static-image-url';
-import { faAsterisk, faLeaf, faUtensils, faFutbol, faCity, faDice, faGlobe, faClock, faUser, faChevronDown, faShapes, faBicycle, faHashtag } from '@fortawesome/free-solid-svg-icons';
-import { faHeart, faFlag, faLaugh } from '@fortawesome/free-regular-svg-icons';
-import Particle from '@/components/particle.vue';
-import * as os from '@/os';
-import { isDeviceTouch } from '@/scripts/is-device-touch';
-import { isMobile } from '@/scripts/is-mobile';
-import { emojiCategories, emojiTags } from '@/instance';
+import { emojilist } from '@/misc/emojilist';
+import { getStaticImageUrl } from '@client/scripts/get-static-image-url';
+import Particle from '@client/components/particle.vue';
+import * as os from '@client/os';
+import { isDeviceTouch } from '@client/scripts/is-device-touch';
+import { isMobile } from '@client/scripts/is-mobile';
+import { emojiCategories } from '@client/instance';
 import XSection from './emoji-picker.section.vue';
 
 export default defineComponent({
@@ -110,19 +105,17 @@ export default defineComponent({
 		return {
 			emojilist: markRaw(emojilist),
 			getStaticImageUrl,
-			pinned: this.$store.state.reactions,
+			pinned: this.$store.reactiveState.reactions,
 			width: this.asReactionPicker ? this.$store.state.reactionPickerWidth : 3,
 			height: this.asReactionPicker ? this.$store.state.reactionPickerHeight : 2,
 			big: this.asReactionPicker ? isDeviceTouch : false,
 			customEmojiCategories: emojiCategories,
-			emojiTags,
 			customEmojis: this.$instance.emojis,
 			q: null,
 			searchResultCustom: [],
 			searchResultUnicode: [],
 			tab: 'index',
 			categories: ['face', 'people', 'animals_and_nature', 'food_and_drink', 'activity', 'travel_and_places', 'objects', 'symbols', 'flags'],
-			faGlobe, faClock, faChevronDown, faAsterisk, faLaugh, faUtensils, faLeaf, faShapes, faBicycle, faHashtag,
 		};
 	},
 
@@ -284,6 +277,7 @@ export default defineComponent({
 
 		reset() {
 			this.$refs.emojis.scrollTop = 0;
+			this.q = '';
 		},
 
 		getKey(emoji: any) {
@@ -406,7 +400,7 @@ export default defineComponent({
 		> .tab {
 			flex: 1;
 			height: 38px;
-			border-top: solid 1px var(--divider);
+			border-top: solid 0.5px var(--divider);
 
 			&.active {
 				border-top: solid 1px var(--accent);
@@ -429,7 +423,7 @@ export default defineComponent({
 		> div {
 			&:not(.index) {
 				padding: 4px 0 8px 0;
-				border-top: solid 1px var(--divider);
+				border-top: solid 0.5px var(--divider);
 			}
 
 			> header {
@@ -496,7 +490,7 @@ export default defineComponent({
 			}
 
 			&.result {
-				border-bottom: solid 1px var(--divider);
+				border-bottom: solid 0.5px var(--divider);
 
 				&:empty {
 					display: none;

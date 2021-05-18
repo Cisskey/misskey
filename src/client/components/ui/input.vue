@@ -5,7 +5,7 @@
 		<span class="label" ref="labelEl"><slot></slot></span>
 		<span class="title" ref="title">
 			<slot name="title"></slot>
-			<span class="warning" v-if="invalid"><Fa :icon="faExclamationCircle"/>{{ $refs.input.validationMessage }}</span>
+			<span class="warning" v-if="invalid"><i class="fas fa-exclamation-circle"></i>{{ $refs.input.validationMessage }}</span>
 		</span>
 		<div class="prefix" ref="prefixEl"><slot name="prefix"></slot></div>
 		<input v-if="debounce" ref="inputEl"
@@ -56,8 +56,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, nextTick, ref, watch, computed, toRefs } from 'vue';
 import debounce from 'v-debounce';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 export default defineComponent({
 	directives: {
@@ -205,7 +204,6 @@ export default defineComponent({
 			focus,
 			onInput,
 			onKeydown,
-			faExclamationCircle,
 		};
 	},
 });
@@ -298,8 +296,7 @@ export default defineComponent({
 			transform: scale(.75);
 			white-space: nowrap;
 			width: 133%;
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 			text-overflow: ellipsis;
 
 			> .warning {
@@ -355,8 +352,7 @@ export default defineComponent({
 				display: inline-block;
 				min-width: 16px;
 				max-width: 150px;
-				overflow: hidden; // overflow: clip; をSafariが対応したら消す
-				overflow: clip;
+				overflow: hidden;
 				white-space: nowrap;
 				text-overflow: ellipsis;
 			}

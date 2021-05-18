@@ -1,6 +1,6 @@
 <template>
 <XContainer @remove="() => $emit('remove')" :draggable="true">
-	<template #header><Fa :icon="faBolt"/> {{ $ts._pages.blocks.button }}</template>
+	<template #header><i class="fas fa-bolt"></i> {{ $ts._pages.blocks.button }}</template>
 
 	<section class="xfhsjczc">
 		<MkInput v-model:value="value.text"><span>{{ $ts._pages.blocks._button.text }}</span></MkInput>
@@ -39,12 +39,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faBolt } from '@fortawesome/free-solid-svg-icons';
 import XContainer from '../page-editor.container.vue';
-import MkSelect from '@/components/ui/select.vue';
-import MkInput from '@/components/ui/input.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import * as os from '@/os';
+import MkSelect from '@client/components/ui/select.vue';
+import MkInput from '@client/components/ui/input.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -62,7 +61,6 @@ export default defineComponent({
 
 	data() {
 		return {
-			faBolt
 		};
 	},
 

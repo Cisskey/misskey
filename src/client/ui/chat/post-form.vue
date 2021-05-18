@@ -6,15 +6,15 @@
 	@drop.stop="onDrop"
 >
 	<div class="form">
-		<div class="with-quote" v-if="quoteId"><Fa icon="quote-left"/> {{ $ts.quoteAttached }}<button @click="quoteId = null"><Fa icon="times"/></button></div>
+		<div class="with-quote" v-if="quoteId"><i class="fas fa-quote-left"></i> {{ $ts.quoteAttached }}<button @click="quoteId = null"><i class="fas fa-times"></i></button></div>
 		<div v-if="visibility === 'specified'" class="to-specified">
 			<span style="margin-right: 8px;">{{ $ts.recipient }}</span>
 			<div class="visibleUsers">
 				<span v-for="u in visibleUsers" :key="u.id">
 					<MkAcct :user="u"/>
-					<button class="_button" @click="removeVisibleUser(u)"><Fa :icon="faTimes"/></button>
+					<button class="_button" @click="removeVisibleUser(u)"><i class="fas fa-times"></i></button>
 				</span>
-				<button @click="addVisibleUser" class="_buttonPrimary"><Fa :icon="faPlus" fixed-width/></button>
+				<button @click="addVisibleUser" class="_buttonPrimary"><i class="fas fa-plus fa-fw"></i></button>
 			</div>
 		</div>
 		<input v-show="useCw" ref="cw" class="cw" v-model="cw" :placeholder="$ts.annotation" @keydown="onKeydown">
@@ -23,23 +23,23 @@
 		<XPollEditor v-if="poll" :poll="poll" @destroyed="poll = null" @updated="onPollUpdate"/>
 		<footer>
 			<div class="left">
-				<button class="_button" @click="chooseFileFrom" v-tooltip="$ts.attachFile"><Fa :icon="faPhotoVideo"/></button>
-				<button class="_button" @click="togglePoll" :class="{ active: poll }" v-tooltip="$ts.poll"><Fa :icon="faPollH"/></button>
-				<button class="_button" @click="useCw = !useCw" :class="{ active: useCw }" v-tooltip="$ts.useCw"><Fa :icon="faEyeSlash"/></button>
-				<button class="_button" @click="insertMention" v-tooltip="$ts.mention"><Fa :icon="faAt"/></button>
-				<button class="_button" @click="insertEmoji" v-tooltip="$ts.emoji"><Fa :icon="faLaughSquint"/></button>
-				<button class="_button" @click="showActions" v-tooltip="$ts.plugin" v-if="postFormActions.length > 0"><Fa :icon="faPlug"/></button>
+				<button class="_button" @click="chooseFileFrom" v-tooltip="$ts.attachFile"><i class="fas fa-photo-video"></i></button>
+				<button class="_button" @click="togglePoll" :class="{ active: poll }" v-tooltip="$ts.poll"><i class="fas fa-poll-h"></i></button>
+				<button class="_button" @click="useCw = !useCw" :class="{ active: useCw }" v-tooltip="$ts.useCw"><i class="fas fa-eye-slash"></i></button>
+				<button class="_button" @click="insertMention" v-tooltip="$ts.mention"><i class="fas fa-at"></i></button>
+				<button class="_button" @click="insertEmoji" v-tooltip="$ts.emoji"><i class="fas fa-laugh-squint"></i></button>
+				<button class="_button" @click="showActions" v-tooltip="$ts.plugin" v-if="postFormActions.length > 0"><i class="fas fa-plug"></i></button>
 			</div>
 			<div class="right">
 				<span class="text-count" :class="{ over: textLength > max }">{{ max - textLength }}</span>
-				<span class="local-only" v-if="localOnly"><Fa :icon="faBiohazard"/></span>
+				<span class="local-only" v-if="localOnly"><i class="fas fa-biohazard"></i></span>
 				<button class="_button visibility" @click="setVisibility" ref="visibilityButton" v-tooltip="$ts.visibility" :disabled="channel != null">
-					<span v-if="visibility === 'public'"><Fa :icon="faGlobe"/></span>
-					<span v-if="visibility === 'home'"><Fa :icon="faHome"/></span>
-					<span v-if="visibility === 'followers'"><Fa :icon="faUnlock"/></span>
-					<span v-if="visibility === 'specified'"><Fa :icon="faEnvelope"/></span>
+					<span v-if="visibility === 'public'"><i class="fas fa-globe"></i></span>
+					<span v-if="visibility === 'home'"><i class="fas fa-home"></i></span>
+					<span v-if="visibility === 'followers'"><i class="fas fa-unlock"></i></span>
+					<span v-if="visibility === 'specified'"><i class="fas fa-envelope"></i></span>
 				</button>
-				<button class="submit _buttonPrimary" :disabled="!canPost" @click="post">{{ submitText }}<Fa :icon="reply ? faReply : renote ? faQuoteRight : faPaperPlane"/></button>
+				<button class="submit _buttonPrimary" :disabled="!canPost" @click="post">{{ submitText }}<i :class="reply ? 'fas fa-reply' : renote ? 'fas fa-quote-right' : 'fas fa-paper-plane'"></i></button>
 			</div>
 		</footer>
 	</div>
@@ -48,29 +48,27 @@
 
 <script lang="ts">
 import { defineComponent, defineAsyncComponent } from 'vue';
-import { faReply, faQuoteRight, faPaperPlane, faTimes, faUpload, faPollH, faGlobe, faHome, faUnlock, faEnvelope, faPlus, faPhotoVideo, faAt, faBiohazard, faPlug } from '@fortawesome/free-solid-svg-icons';
-import { faEyeSlash, faLaughSquint } from '@fortawesome/free-regular-svg-icons';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { length } from 'stringz';
-import { toASCII } from 'punycode';
-import { parse } from '../../../mfm/parse';
-import { host, url } from '@/config';
+import { toASCII } from 'punycode/';
+import * as mfm from 'mfm-js';
+import { host, url } from '@client/config';
 import { erase, unique } from '../../../prelude/array';
-import extractMentions from '../../../misc/extract-mentions';
-import getAcct from '../../../misc/acct/render';
-import { formatTimeString } from '../../../misc/format-time-string';
-import { Autocomplete } from '@/scripts/autocomplete';
+import { extractMentions } from '@/misc/extract-mentions';
+import getAcct from '@/misc/acct/render';
+import { formatTimeString } from '@/misc/format-time-string';
+import { Autocomplete } from '@client/scripts/autocomplete';
 import { noteVisibilities } from '../../../types';
-import * as os from '@/os';
-import { selectFile } from '@/scripts/select-file';
-import { notePostInterruptors, postFormActions } from '@/store';
-import { isMobile } from '@/scripts/is-mobile';
+import * as os from '@client/os';
+import { selectFile } from '@client/scripts/select-file';
+import { notePostInterruptors, postFormActions } from '@client/store';
+import { isMobile } from '@client/scripts/is-mobile';
 import { throttle } from 'throttle-debounce';
 
 export default defineComponent({
 	components: {
-		XPostFormAttaches: defineAsyncComponent(() => import('@/components/post-form-attaches.vue')),
-		XPollEditor: defineAsyncComponent(() => import('@/components/poll-editor.vue'))
+		XPostFormAttaches: defineAsyncComponent(() => import('@client/components/post-form-attaches.vue')),
+		XPollEditor: defineAsyncComponent(() => import('@client/components/poll-editor.vue'))
 	},
 
 	props: {
@@ -138,7 +136,6 @@ export default defineComponent({
 				}
 			}),
 			postFormActions,
-			faReply, faQuoteRight, faPaperPlane, faTimes, faUpload, faPollH, faGlobe, faHome, faUnlock, faEnvelope, faEyeSlash, faLaughSquint, faPlus, faPhotoVideo, faAt, faBiohazard, faPlug
 		};
 	},
 
@@ -216,7 +213,7 @@ export default defineComponent({
 		}
 
 		if (this.reply && this.reply.text != null) {
-			const ast = parse(this.reply.text);
+			const ast = mfm.parse(this.reply.text);
 
 			for (const x of extractMentions(ast)) {
 				const mention = x.host ? `@${x.username}@${toASCII(x.host)}` : `@${x.username}`;
@@ -387,7 +384,7 @@ export default defineComponent({
 				return;
 			}
 
-			os.popup(import('@/components/visibility-picker.vue'), {
+			os.popup(import('@client/components/visibility-picker.vue'), {
 				currentVisibility: this.visibility,
 				currentLocalOnly: this.localOnly,
 				src: this.$refs.visibilityButton
@@ -567,7 +564,7 @@ export default defineComponent({
 					this.deleteDraft();
 					this.$emit('posted');
 					if (this.text && this.text != '') {
-						const hashtags = parse(this.text).filter(x => x.node.type === 'hashtag').map(x => x.node.props.hashtag);
+						const hashtags = mfm.parse(this.text).filter(x => x.type === 'hashtag').map(x => x.props.hashtag);
 						const history = JSON.parse(localStorage.getItem('hashtags') || '[]') as string[];
 						localStorage.setItem('hashtags', JSON.stringify(unique(hashtags.concat(history))));
 					}
@@ -615,7 +612,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .pxiwixjf {
 	position: relative;
-	border: solid 1px var(--divider);
+	border: solid 0.5px var(--divider);
 	border-radius: 8px;
 
 	> .form {
@@ -696,7 +693,7 @@ export default defineComponent({
 		> .cw {
 			z-index: 1;
 			padding-bottom: 8px;
-			border-bottom: solid 1px var(--divider);
+			border-bottom: solid 0.5px var(--divider);
 		}
 
 		> .text {
@@ -767,7 +764,7 @@ export default defineComponent({
 						opacity: 0.7;
 					}
 
-					> [data-icon] {
+					> i {
 						margin-left: 6px;
 					}
 				}

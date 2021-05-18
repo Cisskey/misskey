@@ -1,14 +1,12 @@
 <template>
-<div class="mk-modal" v-hotkey.global="keymap" :style="{ pointerEvents: (manualShowing != null ? manualShowing : showing) ? 'auto' : 'none', '--transformOrigin': transformOrigin }">
-	<transition :name="$store.state.animation ? 'modal-bg' : ''" appear>
-		<div class="bg _modalBg" v-if="manualShowing != null ? manualShowing : showing" @click="onBgClick"></div>
-	</transition>
-	<div class="content" :class="{ popup, fixed, top: position === 'top' }" @click.self="onBgClick" ref="content">
-		<transition :name="$store.state.animation ? popup ? 'modal-popup-content' : 'modal-content' : ''" appear @after-leave="$emit('closed')" @enter="$emit('opening')" @after-enter="childRendered">
-			<slot v-if="manualShowing != null ? true : showing" v-bind:showing="manualShowing"></slot>
-		</transition>
+<transition :name="$store.state.animation ? popup ? 'modal-popup' : 'modal' : ''" :duration="$store.state.animation ? popup ? 500 : 300 : 0" appear @after-leave="onClosed" @enter="$emit('opening')" @after-enter="childRendered">
+	<div v-show="manualShowing != null ? manualShowing : showing" class="qzhlnise" :class="{ front }" v-hotkey.global="keymap" :style="{ pointerEvents: (manualShowing != null ? manualShowing : showing) ? 'auto' : 'none', '--transformOrigin': transformOrigin }">
+		<div class="bg _modalBg" @click="onBgClick" @contextmenu.prevent.stop="() => {}"></div>
+		<div class="content" :class="{ popup, fixed, top: position === 'top' }" @click.self="onBgClick" ref="content">
+			<slot></slot>
+		</div>
 	</div>
-</div>
+</transition>
 </template>
 
 <script lang="ts">
@@ -43,6 +41,11 @@ export default defineComponent({
 		},
 		position: {
 			required: false
+		},
+		front: {
+			type: Boolean,
+			required: false,
+			default: false,
 		}
 	},
 	emits: ['opening', 'click', 'esc', 'close', 'closed'],
@@ -84,6 +87,8 @@ export default defineComponent({
 			if (!this.popup) return;
 
 			const popover = this.$refs.content as any;
+
+			if (popover == null) return;
 
 			const rect = this.src.getBoundingClientRect();
 			
@@ -163,45 +168,68 @@ export default defineComponent({
 		onBgClick() {
 			if (this.contentClicking) return;
 			this.$emit('click');
+		},
+
+		onClosed() {
+			this.$emit('closed');
 		}
 	}
 });
 </script>
 
-<style>
-.modal-popup-content-enter-active, .modal-popup-content-leave-active,
-.modal-content-enter-from, .modal-content-leave-to {
-  transform-origin: var(--transformOrigin);
+<style lang="scss">
+.modal-popup-enter-active, .modal-popup-leave-active,
+.modal-enter-from, .modal-leave-to {
+	> .content {
+		transform-origin: var(--transformOrigin);
+	}
 }
 </style>
 
 <style lang="scss" scoped>
-.modal-bg-enter-active, .modal-bg-leave-active {
-	transition: opacity 0.3s !important;
+.modal-enter-active, .modal-leave-active {
+	> .bg {
+		transition: opacity 0.3s !important;
+	}
+
+	> .content {
+		transition: opacity 0.3s, transform 0.3s !important;
+	}
 }
-.modal-bg-enter-from, .modal-bg-leave-to {
-	opacity: 0;
+.modal-enter-from, .modal-leave-to {
+	> .bg {
+		opacity: 0;
+	}
+
+	> .content {
+		pointer-events: none;
+		opacity: 0;
+		transform: scale(0.9);
+	}
 }
 
-.modal-content-enter-active, .modal-content-leave-active {
-	transition: opacity 0.3s, transform 0.3s !important;
+.modal-popup-enter-active, .modal-popup-leave-active {
+	> .bg {
+		transition: opacity 0.3s !important;
+	}
+
+	> .content {
+		transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	}
 }
-.modal-content-enter-from, .modal-content-leave-to {
-	pointer-events: none;
-	opacity: 0;
-	transform: scale(0.9);
+.modal-popup-enter-from, .modal-popup-leave-to {
+	> .bg {
+		opacity: 0;
+	}
+
+	> .content {
+		pointer-events: none;
+		opacity: 0;
+		transform: scale(0.9);
+	}
 }
 
-.modal-popup-content-enter-active, .modal-popup-content-leave-active {
-	transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-.modal-popup-content-enter-from, .modal-popup-content-leave-to {
-	pointer-events: none;
-	opacity: 0;
-	transform: scale(0.9);
-}
-
-.mk-modal {
+.qzhlnise {
 	> .bg {
 		z-index: 10000;
 	}
@@ -227,12 +255,12 @@ export default defineComponent({
 			mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 16px, rgba(0,0,0,1) calc(100% - 16px), rgba(0,0,0,0) 100%);
 		}
 
-		> * {
+		> ::v-deep(*) {
 			margin: auto;
 		}
 
 		&.top {
-			> * {
+			> ::v-deep(*) {
 				margin-top: 0;
 			}
 		}
@@ -244,6 +272,20 @@ export default defineComponent({
 
 		&.fixed {
 			position: fixed;
+		}
+	}
+
+	&.front {
+		> .bg {
+			z-index: 20000;
+		}
+
+		> .content:not(.popup) {
+			z-index: 20000;
+		}
+
+		> .content.popup {
+			z-index: 20000;
 		}
 	}
 }

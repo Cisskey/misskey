@@ -22,8 +22,8 @@
 		</div>
 		<div class="_formItem">
 			<div class="_formPanel" style="padding: 16px;">
-				<MkButton @click="config(plugin)" inline v-if="plugin.config"><Fa :icon="faCog"/> {{ $ts.settings }}</MkButton>
-				<MkButton @click="uninstall(plugin)" inline danger><Fa :icon="faTrashAlt"/> {{ $ts.uninstall }}</MkButton>
+				<MkButton @click="config(plugin)" inline v-if="plugin.config"><i class="fas fa-cog"></i> {{ $ts.settings }}</MkButton>
+				<MkButton @click="uninstall(plugin)" inline danger><i class="fas fa-trash-alt"></i> {{ $ts.uninstall }}</MkButton>
 			</div>
 		</div>
 	</FormGroup>
@@ -32,23 +32,21 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faPlug, faSave, faTrashAlt, faFolderOpen, faDownload, faCog } from '@fortawesome/free-solid-svg-icons';
-import MkButton from '@/components/ui/button.vue';
-import MkTextarea from '@/components/ui/textarea.vue';
-import MkSelect from '@/components/ui/select.vue';
-import MkInfo from '@/components/ui/info.vue';
-import FormSwitch from '@/components/form/switch.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import * as os from '@/os';
-import { ColdDeviceStorage } from '@/store';
+import MkButton from '@client/components/ui/button.vue';
+import MkTextarea from '@client/components/ui/textarea.vue';
+import MkSelect from '@client/components/ui/select.vue';
+import FormSwitch from '@client/components/form/switch.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import * as os from '@client/os';
+import { ColdDeviceStorage } from '@client/store';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
 		MkButton,
 		MkTextarea,
 		MkSelect,
-		MkInfo,
 		FormSwitch,
 		FormBase,
 		FormGroup,
@@ -58,17 +56,16 @@ export default defineComponent({
 	
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts._plugin.manage,
-				icon: faPlug
+				icon: 'fas fa-plug'
 			},
 			plugins: ColdDeviceStorage.get('plugins'),
-			faPlug, faSave, faTrashAlt, faFolderOpen, faDownload, faCog
 		}
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {

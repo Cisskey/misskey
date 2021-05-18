@@ -27,7 +27,7 @@
 	<FormButton :center="false" @click="chooseUploadFolder()" primary>
 		{{ $ts.uploadFolder }}
 		<template #suffix>{{ uploadFolder ? uploadFolder.name : '-' }}</template>
-		<template #suffixIcon><Fa :icon="faFolderOpen"/></template>
+		<template #suffixIcon><i class="fas fa-folder-open"></i></template>
 	</FormButton>
 </FormBase>
 </template>
@@ -36,14 +36,13 @@
 import { defineComponent } from 'vue';
 import * as tinycolor from 'tinycolor2';
 import ApexCharts from 'apexcharts';
-import { faCloud, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
-import { faClock, faEyeSlash, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
-import FormButton from '@/components/form/button.vue';
-import FormGroup from '@/components/form/group.vue';
-import FormKeyValueView from '@/components/form/key-value-view.vue';
-import FormBase from '@/components/form/base.vue';
-import * as os from '@/os';
-import bytes from '@/filters/bytes';
+import FormButton from '@client/components/form/button.vue';
+import FormGroup from '@client/components/form/group.vue';
+import FormKeyValueView from '@client/components/form/key-value-view.vue';
+import FormBase from '@client/components/form/base.vue';
+import * as os from '@client/os';
+import bytes from '@client/filters/bytes';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -57,15 +56,14 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.drive,
-				icon: faCloud
+				icon: 'fas fa-cloud'
 			},
 			fetching: true,
 			usage: null,
 			capacity: null,
 			uploadFolder: null,
-			faCloud, faClock, faEyeSlash, faFolderOpen, faTrashAlt
 		}
 	},
 
@@ -100,7 +98,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {
@@ -230,8 +228,7 @@ export default defineComponent({
 			$size: 12px;
 			background: rgba(0, 0, 0, 0.1);
 			border-radius: ($size / 2);
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 
 			> div {
 				height: $size;

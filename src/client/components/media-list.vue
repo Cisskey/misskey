@@ -17,7 +17,7 @@ import { defineComponent } from 'vue';
 import XBanner from './media-banner.vue';
 import XImage from './media-image.vue';
 import XVideo from './media-video.vue';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -105,8 +105,7 @@ export default defineComponent({
 			grid-gap: 4px;
 
 			> * {
-				overflow: hidden; // overflow: clip; をSafariが対応したら消す
-				overflow: clip;
+				overflow: hidden;
 				border-radius: 6px;
 			}
 

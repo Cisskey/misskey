@@ -2,10 +2,10 @@
 <MkA :to="`/channels/${channel.id}`" class="eftoefju _panel" tabindex="-1">
 	<div class="banner" :style="bannerStyle">
 		<div class="fade"></div>
-		<div class="name"><Fa :icon="faSatelliteDish"/> {{ channel.name }}</div>
+		<div class="name"><i class="fas fa-satellite-dish"></i> {{ channel.name }}</div>
 		<div class="status">
 			<div>
-				<Fa :icon="faUsers" fixed-width/>
+				<i class="fas fa-users fa-fw"></i>
 				<I18n :src="$ts._channel.usersCount" tag="span" style="margin-left: 4px;">
 					<template #n>
 						<b>{{ channel.usersCount }}</b>
@@ -13,7 +13,7 @@
 				</I18n>
 			</div>
 			<div>
-				<Fa :icon="faPencilAlt" fixed-width/>
+				<i class="fas fa-pencil-alt fa-fw"></i>
 				<I18n :src="$ts._channel.notesCount" tag="span" style="margin-left: 4px;">
 					<template #n>
 						<b>{{ channel.notesCount }}</b>
@@ -35,7 +35,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faSatelliteDish, faUsers, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 
 export default defineComponent({
 	props: {
@@ -57,7 +56,6 @@ export default defineComponent({
 
 	data() {
 		return {
-			faSatelliteDish, faUsers, faPencilAlt,
 		};
 	},
 });
@@ -66,8 +64,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .eftoefju {
 	display: block;
-	overflow: hidden; // overflow: clip; をSafariが対応したら消す
-	overflow: clip;
+	overflow: hidden;
 	width: 100%;
 
 	&:hover {
@@ -124,7 +121,7 @@ export default defineComponent({
 
 	> footer {
 		padding: 12px 16px;
-		border-top: solid 1px var(--divider);
+		border-top: solid 0.5px var(--divider);
 
 		> span {
 			opacity: 0.7;

@@ -29,24 +29,23 @@
 				</I18n>
 			</div>
 		</div>
-		<img src="/assets/misskey.svg" class="misskey"/>
+		<img src="/static-assets/client/misskey.svg" class="misskey"/>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faEllipsisH, faInfoCircle, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
-import { toUnicode } from 'punycode';
-import XSigninDialog from '@/components/signin-dialog.vue';
-import XSignupDialog from '@/components/signup-dialog.vue';
-import MkButton from '@/components/ui/button.vue';
-import XNote from '@/components/note.vue';
-import MkFeaturedPhotos from '@/components/featured-photos.vue';
+import { toUnicode } from 'punycode/';
+import XSigninDialog from '@client/components/signin-dialog.vue';
+import XSignupDialog from '@client/components/signup-dialog.vue';
+import MkButton from '@client/components/ui/button.vue';
+import XNote from '@client/components/note.vue';
+import MkFeaturedPhotos from '@client/components/featured-photos.vue';
 import XTimeline from './welcome.timeline.vue';
-import { host, instanceName } from '@/config';
-import * as os from '@/os';
-import number from '@/filters/number';
+import { host, instanceName } from '@client/config';
+import * as os from '@client/os';
+import number from '@client/filters/number';
 
 export default defineComponent({
 	components: {
@@ -64,7 +63,6 @@ export default defineComponent({
 			stats: null,
 			tags: [],
 			onlineUsersCount: null,
-			faEllipsisH
 		};
 	},
 
@@ -105,19 +103,19 @@ export default defineComponent({
 		showMenu(ev) {
 			os.modalMenu([{
 				text: this.$t('aboutX', { x: instanceName }),
-				icon: faInfoCircle,
+				icon: 'fas fa-info-circle',
 				action: () => {
 					os.pageWindow('/about');
 				}
 			}, {
 				text: this.$ts.aboutMisskey,
-				icon: faInfoCircle,
+				icon: 'fas fa-info-circle',
 				action: () => {
 					os.pageWindow('/about-misskey');
 				}
 			}, null, {
 				text: this.$ts.help,
-				icon: faQuestionCircle,
+				icon: 'fas fa-question-circle',
 				action: () => {
 					os.pageWindow('/docs');
 				}
@@ -151,8 +149,7 @@ export default defineComponent({
 			margin: auto;
 			width: 500px;
 			height: calc(100% - 128px);
-			overflow: hidden; // overflow: clip; をSafariが対応したら消す
-			overflow: clip;
+			overflow: hidden;
 			-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
 			mask-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 128px, rgba(0,0,0,1) calc(100% - 128px), rgba(0,0,0,0) 100%);
 		}

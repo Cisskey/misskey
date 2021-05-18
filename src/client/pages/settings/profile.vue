@@ -19,12 +19,12 @@
 
 	<FormInput v-model:value="location" manual-save>
 		<span>{{ $ts.location }}</span>
-		<template #prefix><Fa :icon="faMapMarkerAlt"/></template>
+		<template #prefix><i class="fas fa-map-marker-alt"></i></template>
 	</FormInput>
 
 	<FormInput v-model:value="birthday" type="date" manual-save>
 		<span>{{ $ts.birthday }}</span>
-		<template #prefix><Fa :icon="faBirthdayCake"/></template>
+		<template #prefix><i class="fas fa-birthday-cake"></i></template>
 	</FormInput>
 
 	<FormSelect v-model:value="lang">
@@ -47,18 +47,17 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faUnlockAlt, faCogs, faUser, faMapMarkerAlt, faBirthdayCake } from '@fortawesome/free-solid-svg-icons';
-import { faSave } from '@fortawesome/free-regular-svg-icons';
-import FormButton from '@/components/form/button.vue';
-import FormInput from '@/components/form/input.vue';
-import FormTextarea from '@/components/form/textarea.vue';
-import FormSwitch from '@/components/form/switch.vue';
-import FormSelect from '@/components/form/select.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import { host, langs } from '@/config';
-import { selectFile } from '@/scripts/select-file';
-import * as os from '@/os';
+import FormButton from '@client/components/form/button.vue';
+import FormInput from '@client/components/form/input.vue';
+import FormTextarea from '@client/components/form/textarea.vue';
+import FormSwitch from '@client/components/form/switch.vue';
+import FormSelect from '@client/components/form/select.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import { host, langs } from '@client/config';
+import { selectFile } from '@client/scripts/select-file';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -75,9 +74,9 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.profile,
-				icon: faUser
+				icon: 'fas fa-user'
 			},
 			host,
 			langs,
@@ -100,7 +99,6 @@ export default defineComponent({
 			isCat: false,
 			alwaysMarkNsfw: false,
 			saving: false,
-			faSave, faUnlockAlt, faCogs, faUser, faMapMarkerAlt, faBirthdayCake
 		}
 	},
 
@@ -136,7 +134,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {

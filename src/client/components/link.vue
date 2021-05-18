@@ -5,16 +5,15 @@
 	:title="url"
 >
 	<slot></slot>
-	<Fa :icon="faExternalLinkSquareAlt" v-if="target === '_blank'" class="icon"/>
+	<i v-if="target === '_blank'" class="fas fa-external-link-square-alt icon"></i>
 </component>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faExternalLinkSquareAlt } from '@fortawesome/free-solid-svg-icons';
-import { url as local } from '@/config';
-import { isDeviceTouch } from '@/scripts/is-device-touch';
-import * as os from '@/os';
+import { url as local } from '@client/config';
+import { isDeviceTouch } from '@client/scripts/is-device-touch';
+import * as os from '@client/os';
 
 export default defineComponent({
 	props: {
@@ -38,7 +37,6 @@ export default defineComponent({
 			hideTimer: null,
 			checkTimer: null,
 			close: null,
-			faExternalLinkSquareAlt
 		};
 	},
 	methods: {
@@ -46,7 +44,7 @@ export default defineComponent({
 			if (!document.body.contains(this.$el)) return;
 			if (this.close) return;
 
-			const { dispose } = await os.popup(import('@/components/url-preview-popup.vue'), {
+			const { dispose } = await os.popup(import('@client/components/url-preview-popup.vue'), {
 				url: this.url,
 				source: this.$el
 			});

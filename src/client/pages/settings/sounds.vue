@@ -1,7 +1,7 @@
 <template>
 <FormBase>
 	<FormRange v-model:value="masterVolume" :min="0" :max="1" :step="0.05">
-		<template #label><Fa :icon="volumeIcon" :key="volumeIcon"/> {{ $ts.masterVolume }}</template>
+		<template #label><i class="fas fa-volume-icon"></i> {{ $ts.masterVolume }}</template>
 	</FormRange>
 
 	<FormGroup>
@@ -9,25 +9,25 @@
 		<FormButton v-for="type in Object.keys(sounds)" :key="type" :center="false" @click="edit(type)">
 			{{ $t('_sfx.' + type) }}
 			<template #suffix>{{ sounds[type].type || $ts.none }}</template>
-			<template #suffixIcon><Fa :icon="faChevronDown"/></template>
+			<template #suffixIcon><i class="fas fa-chevron-down"></i></template>
 		</FormButton>
 	</FormGroup>
 
-	<FormButton @click="reset()" danger><Fa :icon="faRedo"/> {{ $ts.default }}</FormButton>
+	<FormButton @click="reset()" danger><i class="fas fa-redo"></i> {{ $ts.default }}</FormButton>
 </FormBase>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faMusic, faPlay, faVolumeUp, faVolumeMute, faChevronDown, faRedo } from '@fortawesome/free-solid-svg-icons';
-import FormRange from '@/components/form/range.vue';
-import FormSelect from '@/components/form/select.vue';
-import FormBase from '@/components/form/base.vue';
-import FormButton from '@/components/form/button.vue';
-import FormGroup from '@/components/form/group.vue';
-import * as os from '@/os';
-import { ColdDeviceStorage } from '@/store';
-import { playFile } from '@/scripts/sound';
+import FormRange from '@client/components/form/range.vue';
+import FormSelect from '@client/components/form/select.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormButton from '@client/components/form/button.vue';
+import FormGroup from '@client/components/form/group.vue';
+import * as os from '@client/os';
+import { ColdDeviceStorage } from '@client/store';
+import { playFile } from '@client/scripts/sound';
+import * as symbols from '@client/symbols';
 
 const soundsTypes = [
 	null,
@@ -68,12 +68,11 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.sounds,
-				icon: faMusic
+				icon: 'fas fa-music'
 			},
 			sounds: {},
-			faMusic, faPlay, faVolumeUp, faVolumeMute, faChevronDown, faRedo,
 		}
 	},
 
@@ -83,7 +82,7 @@ export default defineComponent({
 			set(value) { ColdDeviceStorage.set('sound_masterVolume', value); }
 		},
 		volumeIcon() {
-			return this.masterVolume === 0 ? faVolumeMute : faVolumeUp;
+			return this.masterVolume === 0 ? 'fas fa-volume-mute' : 'fas fa-volume-up';
 		}
 	},
 
@@ -100,7 +99,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {
