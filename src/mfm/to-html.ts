@@ -15,7 +15,7 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 	const doc = window.document;
 
 	function appendChildren(children: MfmForest, targetElement: any): void {
-		for (const child of children.map(t => handlers[t.node.type](t))) targetElement.appendChild(child);
+		for (const child of children.map(t => handlers[t.type](t))) targetElement.appendChild(child);
 	}
 
 	const handlers: { [key: string]: (token: MfmTree) => any } = {
