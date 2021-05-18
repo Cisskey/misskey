@@ -136,8 +136,7 @@ export default defineComponent({
 				disableLocalTimeline: !this.enableLocalTimeline,
 				disableGlobalTimeline: !this.enableGlobalTimeline,
 				enableWebhookNotification: this.enableWebhookNotification,
-				featuredNgWords: this.featuredNgWords ? this.featuredNgWor
-ds.trim().split('\n').map(x => x.trim()) : [],
+				featuredNgWords: this.featuredNgWords ? this.featuredNgWords.trim().split('\n').map(x => x.trim()) : [],
 			}).then(() => {
 				fetchInstance();
 			});

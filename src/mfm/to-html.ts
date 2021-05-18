@@ -1,12 +1,12 @@
 import { JSDOM } from 'jsdom';
-import * as mfm from 'mfm-js';
-import config from '@/config';
+import config from '../config';
 import { intersperse } from '../prelude/array';
+import { MfmForest, MfmTree } from './prelude';
 import { IMentionedRemoteUsers } from '../models/entities/note';
 import { wellKnownServices } from '../well-known-services';
 
-export function toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMentionedRemoteUsers = []) {
-	if (nodes == null) {
+export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentionedRemoteUsers = []) {
+	if (tokens == null) {
 		return null;
 	}
 
@@ -14,16 +14,14 @@ export function toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMenti
 
 	const doc = window.document;
 
-	function appendChildren(children: mfm.MfmNode[], targetElement: any): void {
-		if (children) {
-			for (const child of children.map(x => (handlers as any)[x.type](x))) targetElement.appendChild(child);
-		}
+	function appendChildren(children: MfmForest, targetElement: any): void {
+		for (const child of children.map(t => handlers[t.node.type](t))) targetElement.appendChild(child);
 	}
 
-	const handlers: { [K in mfm.MfmNode['type']]: (node: mfm.NodeType<K>) => any } = {
-		bold(node) {
+	const handlers: { [key: string]: (token: MfmTree) => any } = {
+		bold(token) {
 			const el = doc.createElement('b');
-			appendChildren(node.children, el);
+			appendChildren(token.children, el);
 			return el;
 		},
 
@@ -33,21 +31,21 @@ export function toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMenti
 			return el;
 		},
 
-		small(node) {
+		small(token) {
 			const el = doc.createElement('small');
-			appendChildren(node.children, el);
+			appendChildren(token.children, el);
 			return el;
 		},
 
-		strike(node) {
+		strike(token) {
 			const el = doc.createElement('del');
-			appendChildren(node.children, el);
+			appendChildren(token.children, el);
 			return el;
 		},
 
-		italic(node) {
+		italic(token) {
 			const el = doc.createElement('i');
-			appendChildren(node.children, el);
+			appendChildren(token.children, el);
 			return el;
 		},
 
@@ -99,70 +97,60 @@ export function toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMenti
 			return el;
 		},
 
-		fn(node) {
-			const el = doc.createElement('i');
-			appendChildren(node.children, el);
-			return el;
-		},
-
-		blockCode(node) {
+		blockCode(token) {
 			const pre = doc.createElement('pre');
 			const inner = doc.createElement('code');
-			inner.textContent = node.props.code;
+			inner.textContent = token.node.props.code;
 			pre.appendChild(inner);
 			return pre;
 		},
 
-		center(node) {
+		center(token) {
 			const el = doc.createElement('div');
-			appendChildren(node.children, el);
+			appendChildren(token.children, el);
 			return el;
 		},
 
-		emojiCode(node) {
-			return doc.createTextNode(`\u200B:${node.props.name}:\u200B`);
+		emoji(token) {
+			return doc.createTextNode(token.node.props.emoji ? token.node.props.emoji : `\u200B:${token.node.props.name}:\u200B`);
 		},
 
-		unicodeEmoji(node) {
-			return doc.createTextNode(node.props.emoji);
-		},
-
-		hashtag(node) {
+		hashtag(token) {
 			const a = doc.createElement('a');
-			a.href = `${config.url}/tags/${node.props.hashtag}`;
-			a.textContent = `#${node.props.hashtag}`;
+			a.href = `${config.url}/tags/${token.node.props.hashtag}`;
+			a.textContent = `#${token.node.props.hashtag}`;
 			a.setAttribute('rel', 'tag');
 			return a;
 		},
 
-		inlineCode(node) {
+		inlineCode(token) {
 			const el = doc.createElement('code');
-			el.textContent = node.props.code;
+			el.textContent = token.node.props.code;
 			return el;
 		},
 
-		mathInline(node) {
+		mathInline(token) {
 			const el = doc.createElement('code');
-			el.textContent = node.props.formula;
+			el.textContent = token.node.props.formula;
 			return el;
 		},
 
-		mathBlock(node) {
+		mathBlock(token) {
 			const el = doc.createElement('code');
-			el.textContent = node.props.formula;
+			el.textContent = token.node.props.formula;
 			return el;
 		},
 
-		link(node) {
+		link(token) {
 			const a = doc.createElement('a');
-			a.href = node.props.url;
-			appendChildren(node.children, a);
+			a.href = token.node.props.url;
+			appendChildren(token.children, a);
 			return a;
 		},
 
-		mention(node) {
+		mention(token) {
 			const a = doc.createElement('a');
-			const { username, host, acct } = node.props;
+			const { username, host, acct } = token.node.props;
 			const wellKnown = wellKnownServices.find(x => x[0] === host);
 			if (wellKnown) {
 				a.href = wellKnown[1](username);
@@ -175,9 +163,9 @@ export function toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMenti
 			return a;
 		},
 
-		quote(node) {
+		quote(token) {
 			const el = doc.createElement('blockquote');
-			appendChildren(node.children, el);
+			appendChildren(token.children, el);
 			return el;
 		},
 
@@ -187,33 +175,33 @@ export function toHtml(nodes: mfm.MfmNode[] | null, mentionedRemoteUsers: IMenti
 			return el;
 		},
 
-		text(node) {
+		text(token) {
 			const el = doc.createElement('span');
-			const nodes = node.props.text.split(/\r\n|\r|\n/).map(x => doc.createTextNode(x));
+			const nodes = (token.node.props.text as string).split(/\r\n|\r|\n/).map(x => doc.createTextNode(x) as Node);
 
-			for (const x of intersperse<FIXME | 'br'>('br', nodes)) {
+			for (const x of intersperse<Node | 'br'>('br', nodes)) {
 				el.appendChild(x === 'br' ? doc.createElement('br') : x);
 			}
 
 			return el;
 		},
 
-		url(node) {
+		url(token) {
 			const a = doc.createElement('a');
-			a.href = node.props.url;
-			a.textContent = node.props.url;
+			a.href = token.node.props.url;
+			a.textContent = token.node.props.url;
 			return a;
 		},
 
-		search(node) {
+		search(token) {
 			const a = doc.createElement('a');
-			a.href = `https://www.google.com/search?q=${node.props.query}`;
-			a.textContent = node.props.content;
+			a.href = `https://www.google.com/search?q=${token.node.props.query}`;
+			a.textContent = token.node.props.content;
 			return a;
 		}
 	};
 
-	appendChildren(nodes, doc.body);
+	appendChildren(tokens, doc.body);
 
 	return `<p>${doc.body.innerHTML}</p>`;
 }

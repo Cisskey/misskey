@@ -22,7 +22,7 @@ export default async (user: { id: User['id']; host: User['host']; }, note: Note,
 	const existReactions = await NoteReactions.find({
 		noteId: note.id,
 		userId: user.id,
-	};
+	});
 
 	const record: NoteReaction = {
 		id: genId(),

@@ -1,9 +1,7 @@
 import * as parse5 from 'parse5';
 import treeAdapter = require('parse5/lib/tree-adapters/default');
 import { URL } from 'url';
-
-const urlRegex     = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+/;
-const urlRegexFull = /^https?:\/\/[\w\/:%#@$&?!()\[\]~.,=+\-]+$/;
+import { urlRegex, urlRegexFull } from './prelude';
 
 export function fromHtml(html: string, hashtagNames?: string[]): string {
 	const dom = parse5.parseFragment(html);

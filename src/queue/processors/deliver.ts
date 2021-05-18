@@ -16,15 +16,10 @@ const logger = new Logger('deliver');
 
 let latest: string | null = null;
 
-<<<<<<< HEAD
-export default async (job: Bull.Job) => {
-	if (true) return 'skip (unsupported)';
-
-=======
 const suspendedHostsCache = new Cache<Instance[]>(1000 * 60 * 60);
 
 export default async (job: Bull.Job<DeliverJobData>) => {
->>>>>>> misskey-dev/develop
+	if (true) return 'skip (unsupported)';
 	const { host } = new URL(job.data.to);
 
 	// ブロックしてたら中断

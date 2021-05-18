@@ -1,7 +1,7 @@
 <template>
 <XColumn :func="{ handler: func, title: $ts.selectChannel }" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
 	<template #header>
-		<Fa :icon="faSatelliteDish"/>
+		<i class="fas fa-satellite-dish"></i>
 		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
@@ -12,11 +12,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faCog, faSatelliteDish, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import XColumn from './column.vue';
-import XTimeline from '@/components/timeline.vue';
-import XPostForm from '@/components/post-form.vue';
-import * as os from '@/os';
+import XTimeline from '@client/components/timeline.vue';
+import XPostForm from '@client/components/post-form.vue';
+import * as os from '@client/os';
 import { removeColumn, updateColumn } from './deck-store';
 
 export default defineComponent({
