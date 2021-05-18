@@ -100,7 +100,7 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 		blockCode(token) {
 			const pre = doc.createElement('pre');
 			const inner = doc.createElement('code');
-			inner.textContent = token.node.props.code;
+			inner.textContent = token.props.code;
 			pre.appendChild(inner);
 			return pre;
 		},
@@ -112,45 +112,45 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 		},
 
 		emoji(token) {
-			return doc.createTextNode(token.node.props.emoji ? token.node.props.emoji : `\u200B:${token.node.props.name}:\u200B`);
+			return doc.createTextNode(token.props.emoji ? token.props.emoji : `\u200B:${token.props.name}:\u200B`);
 		},
 
 		hashtag(token) {
 			const a = doc.createElement('a');
-			a.href = `${config.url}/tags/${token.node.props.hashtag}`;
-			a.textContent = `#${token.node.props.hashtag}`;
+			a.href = `${config.url}/tags/${token.props.hashtag}`;
+			a.textContent = `#${token.props.hashtag}`;
 			a.setAttribute('rel', 'tag');
 			return a;
 		},
 
 		inlineCode(token) {
 			const el = doc.createElement('code');
-			el.textContent = token.node.props.code;
+			el.textContent = token.props.code;
 			return el;
 		},
 
 		mathInline(token) {
 			const el = doc.createElement('code');
-			el.textContent = token.node.props.formula;
+			el.textContent = token.props.formula;
 			return el;
 		},
 
 		mathBlock(token) {
 			const el = doc.createElement('code');
-			el.textContent = token.node.props.formula;
+			el.textContent = token.props.formula;
 			return el;
 		},
 
 		link(token) {
 			const a = doc.createElement('a');
-			a.href = token.node.props.url;
+			a.href = token.props.url;
 			appendChildren(token.children, a);
 			return a;
 		},
 
 		mention(token) {
 			const a = doc.createElement('a');
-			const { username, host, acct } = token.node.props;
+			const { username, host, acct } = token.props;
 			const wellKnown = wellKnownServices.find(x => x[0] === host);
 			if (wellKnown) {
 				a.href = wellKnown[1](username);
@@ -177,7 +177,7 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 
 		text(token) {
 			const el = doc.createElement('span');
-			const nodes = (token.node.props.text as string).split(/\r\n|\r|\n/).map(x => doc.createTextNode(x) as Node);
+			const nodes = (token.props.text as string).split(/\r\n|\r|\n/).map(x => doc.createTextNode(x) as Node);
 
 			for (const x of intersperse<Node | 'br'>('br', nodes)) {
 				el.appendChild(x === 'br' ? doc.createElement('br') : x);
@@ -188,15 +188,15 @@ export function toHtml(tokens: MfmForest | null, mentionedRemoteUsers: IMentione
 
 		url(token) {
 			const a = doc.createElement('a');
-			a.href = token.node.props.url;
-			a.textContent = token.node.props.url;
+			a.href = token.props.url;
+			a.textContent = token.props.url;
 			return a;
 		},
 
 		search(token) {
 			const a = doc.createElement('a');
-			a.href = `https://www.google.com/search?q=${token.node.props.query}`;
-			a.textContent = token.node.props.content;
+			a.href = `https://www.google.com/search?q=${token.props.query}`;
+			a.textContent = token.props.content;
 			return a;
 		}
 	};
