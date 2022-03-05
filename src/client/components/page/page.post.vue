@@ -78,7 +78,7 @@ export default defineComponent({
 			os.apiWithDialog('notes/create', {
 				text: this.text === '' ? null : this.text,
 				fileIds: file ? [file.id] : undefined,
-				channelId: this.value.channelId ? this.value.channelId : undefined,
+				channelId: this.block.channelId ? this.block.channelId : undefined,
 			}).then(() => {
 				this.posted = true;
 			});
