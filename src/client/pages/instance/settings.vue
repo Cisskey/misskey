@@ -40,7 +40,7 @@
 
 		<FormSwitch v-model:value="enableLocalTimeline">{{ $ts.enableLocalTimeline }}</FormSwitch>
 		<FormSwitch v-model:value="enableGlobalTimeline">{{ $ts.enableGlobalTimeline }}</FormSwitch>
-		<FormSwitch v-model:value="enableWebhookNotification">{{ $ts.enableWebhookNotification }}</FormSwitch>
+		<FormSwitch v-model:value="enableWebhookNotification">{{ $ts._webhookNotification.enable }}</FormSwitch>
 
 		<FormTextarea v-model:value="featuredNgWords">
 			<span>{{ $ts.featuredNgWordDescription }}</span>
