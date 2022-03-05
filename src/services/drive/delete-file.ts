@@ -128,7 +128,7 @@ export async function deleteObjectStorageFile(key: string) {
 
 	await s3.deleteObject({
 		Bucket: meta.objectStorageBucket!,
-		Key: key
+		Key: meta.objectStoragePrefix + key
 	}).promise();
 }
 
