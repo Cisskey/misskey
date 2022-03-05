@@ -9,6 +9,7 @@ import processDb from './processors/db';
 import procesObjectStorage from './processors/object-storage';
 import processWebhook from './processors/webhook';
 import { queueLogger } from './logger';
+import { UserProfiles } from '../models';
 import { DriveFile } from '../models/entities/drive-file';
 import { getJobInfo } from './get-job-info';
 import { dbQueue, deliverQueue, inboxQueue, objectStorageQueue, webhookQueue } from './queues';
