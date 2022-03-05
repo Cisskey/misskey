@@ -23,6 +23,9 @@
 	<MkA v-if="$i.isAdmin || $i.isModerator" class="item" active-class="active" to="/instance" :behavior="settingsWindowed ? 'modalWindow' : null" v-click-anime>
 		<i class="fas fa-server fa-fw"></i><span class="text">{{ $ts.instance }}</span>
 	</MkA>
+	<MkA class="item" active-class="active" to="/instance/emojis">
+		<i class="fas fa-laugh fa-fw"></i><span class="text">{{ $ts.customEmojis }}</span>
+	</MkA>
 	<button class="item _button" @click="more" v-click-anime>
 		<i class="fas fa-ellipsis-h fa-fw"></i><span class="text">{{ $ts.more }}</span>
 		<span v-if="otherNavItemIndicated" class="indicator"><i class="fas fa-circle"></i></span>
