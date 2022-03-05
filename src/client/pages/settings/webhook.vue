@@ -37,6 +37,7 @@ import MkInfo from '@client/components/ui/info.vue';
 import MkSelect from '@client/components/ui/select.vue';
 import * as os from '@client/os';
 import { webhookTypes } from '../../../types';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -51,9 +52,9 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.webhookNotification,
-				icon: faLink
+				icon: 'fas fa-link'
 			},
 			enableWebhook: this.$i.enableWebhookNotification,
 			url: this.$i.webhookUrl,
@@ -61,7 +62,6 @@ export default defineComponent({
 			types: webhookTypes,
 			type: this.$i.webhookType || 'slack',
 			secret: this.$i.webhookSecret,
-			faSave, faLink,
 		}
 	},
 
@@ -93,7 +93,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {
