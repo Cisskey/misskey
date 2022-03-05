@@ -1,13 +1,11 @@
-import { faAt, faListUl, faEye, faEyeSlash, faBan, faPencilAlt, faComments, faUsers, faMicrophoneSlash, faPlug, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-import { faSnowflake, faEnvelope } from '@fortawesome/free-regular-svg-icons';
-import { i18n } from '@/i18n';
-import copyToClipboard from '@/scripts/copy-to-clipboard';
-import { host } from '@/config';
-import getAcct from '../../misc/acct/render';
-import * as os from '@/os';
-import { userActions } from '@/store';
-import { router } from '@/router';
-import { $i } from '@/account';
+import { i18n } from '@client/i18n';
+import copyToClipboard from '@client/scripts/copy-to-clipboard';
+import { host } from '@client/config';
+import getAcct from '@/misc/acct/render';
+import * as os from '@client/os';
+import { userActions } from '@client/store';
+import { router } from '@client/router';
+import { $i } from '@client/account';
 
 export function getUserMenu(user) {
 	const meId = $i ? $i.id : null;
@@ -104,7 +102,7 @@ export function getUserMenu(user) {
 	}
 
 	function reportAbuse() {
-		os.popup(import('@/components/abuse-report-window.vue'), {
+		os.popup(import('@client/components/abuse-report-window.vue'), {
 			user: user,
 		}, {}, 'closed');
 	}
@@ -121,56 +119,62 @@ export function getUserMenu(user) {
 	}
 
 	let menu = [{
-		icon: faAt,
+		icon: 'fas fa-at',
 		text: i18n.locale.copyUsername,
 		action: () => {
 			copyToClipboard(`@${user.username}@${user.host || host}`);
 		}
 	}, {
-		icon: faEnvelope,
+		icon: 'fas fa-info-circle',
+		text: i18n.locale.info,
+		action: () => {
+			os.pageWindow(`/user-info/${user.id}`);
+		}
+	}, {
+		icon: 'fas fa-envelope',
 		text: i18n.locale.sendMessage,
 		action: () => {
 			os.post({ specified: user });
 		}
 	}, meId != user.id ? {
 		type: 'link',
-		icon: faComments,
+		icon: 'fas fa-comments',
 		text: i18n.locale.startMessaging,
 		to: '/my/messaging/' + getAcct(user),
 	} : undefined, null, {
-		icon: faListUl,
+		icon: 'fas fa-list-ul',
 		text: i18n.locale.addToList,
 		action: pushList
 	}, meId != user.id ? {
-		icon: faUsers,
+		icon: 'fas fa-users',
 		text: i18n.locale.inviteToGroup,
 		action: inviteGroup
 	} : undefined] as any;
 
 	if ($i && meId != user.id) {
 		menu = menu.concat([null, {
-			icon: user.isMuted ? faEye : faEyeSlash,
+			icon: user.isMuted ? 'fas fa-eye' : 'fas fa-eye-slash',
 			text: user.isMuted ? i18n.locale.unmute : i18n.locale.mute,
 			action: toggleMute
 		}, {
-			icon: faBan,
+			icon: 'fas fa-ban',
 			text: user.isBlocking ? i18n.locale.unblock : i18n.locale.block,
 			action: toggleBlock
 		}]);
 
 		menu = menu.concat([null, {
-			icon: faExclamationCircle,
+			icon: 'fas fa-exclamation-circle',
 			text: i18n.locale.reportAbuse,
 			action: reportAbuse
 		}]);
 
 		if ($i && ($i.isAdmin || $i.isModerator)) {
 			menu = menu.concat([null, {
-				icon: faMicrophoneSlash,
+				icon: 'fas fa-microphone-slash',
 				text: user.isSilenced ? i18n.locale.unsilence : i18n.locale.silence,
 				action: toggleSilence
 			}, {
-				icon: faSnowflake,
+				icon: 'fas fa-snowflake',
 				text: user.isSuspended ? i18n.locale.unsuspend : i18n.locale.suspend,
 				action: toggleSuspend
 			}]);
@@ -179,7 +183,7 @@ export function getUserMenu(user) {
 
 	if ($i && meId === user.id) {
 		menu = menu.concat([null, {
-			icon: faPencilAlt,
+			icon: 'fas fa-pencil-alt',
 			text: i18n.locale.editProfile,
 			action: () => {
 				router.push('/settings/profile');
@@ -189,7 +193,7 @@ export function getUserMenu(user) {
 
 	if (userActions.length > 0) {
 		menu = menu.concat([null, ...userActions.map(action => ({
-			icon: faPlug,
+			icon: 'fas fa-plug',
 			text: action.title,
 			action: () => {
 				action.handler(user);

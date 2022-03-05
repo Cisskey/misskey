@@ -73,7 +73,7 @@ export default define(meta, async (ps, user) => {
 		.catch(() => {
 			throw new ApiError(meta.errors.emptyNotification);
 		});
-		packed = await Notifications.pack(mostResent);
+		packed = await Notifications.pack(mostResent, {});
 	} else {
 		const mostResent = await MessagingMessages.findOneOrFail({
 			where: {

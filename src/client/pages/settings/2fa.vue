@@ -1,6 +1,6 @@
 <template>
 <section class="_card">
-	<div class="_title"><Fa :icon="faLock"/> {{ $ts.twoStepAuthentication }}</div>
+	<div class="_title"><i class="fas fa-lock"></i> {{ $ts.twoStepAuthentication }}</div>
 	<div class="_content">
 		<MkButton v-if="!data && !$i.twoFactorEnabled" @click="register">{{ $ts._2fa.registerDevice }}</MkButton>
 		<template v-if="$i.twoFactorEnabled">
@@ -28,7 +28,7 @@
 				<ol v-if="registration && !registration.error">
 					<li v-if="registration.stage >= 0">
 						{{ $ts.tapSecurityKey }}
-						<Fa icon="spinner" pulse fixed-width v-if="registration.saving && registration.stage == 0" />
+						<i v-if="registration.saving && registration.stage == 0" class="fas fa-spinner fa-pulse fa-fw"></i>
 					</li>
 					<li v-if="registration.stage >= 1">
 						<MkForm :disabled="registration.stage != 1 || registration.saving">
@@ -36,7 +36,7 @@
 								<span>{{ $ts.securityKeyName }}</span>
 							</MkInput>
 							<MkButton @click="registerKey" :disabled="keyName.length == 0">{{ $ts.registerSecurityKey }}</MkButton>
-							<Fa icon="spinner" pulse fixed-width v-if="registration.saving && registration.stage == 1" />
+							<i v-if="registration.saving && registration.stage == 1" class="fas fa-spinner fa-pulse fa-fw"></i>
 						</MkForm>
 					</li>
 				</ol>
@@ -68,17 +68,17 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
-import { hostname } from '@/config';
-import { byteify, hexify, stringify } from '@/scripts/2fa';
-import MkButton from '@/components/ui/button.vue';
-import MkInfo from '@/components/ui/info.vue';
-import MkInput from '@/components/ui/input.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import FormButton from '@/components/form/button.vue';
-import * as os from '@/os';
+import { hostname } from '@client/config';
+import { byteify, hexify, stringify } from '@client/scripts/2fa';
+import MkButton from '@client/components/ui/button.vue';
+import MkInfo from '@client/components/ui/info.vue';
+import MkInput from '@client/components/ui/input.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import FormButton from '@client/components/form/button.vue';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -90,9 +90,9 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.twoStepAuthentication,
-				icon: faLock
+				icon: 'fas fa-lock'
 			},
 			data: null,
 			supportsCredentials: !!navigator.credentials,
@@ -100,7 +100,6 @@ export default defineComponent({
 			registration: null,
 			keyName: '',
 			token: null,
-			faLock
 		};
 	},
 

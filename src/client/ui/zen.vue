@@ -23,11 +23,10 @@
 
 <script lang="ts">
 import { defineComponent, defineAsyncComponent } from 'vue';
-import { faLayerGroup, faBars, faHome, faCircle } from '@fortawesome/free-solid-svg-icons';
-import { faBell } from '@fortawesome/free-regular-svg-icons';
-import { host } from '@/config';
+import { host } from '@client/config';
 import XHeader from './_common_/header.vue';
 import XCommon from './_common_/common.vue';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -39,7 +38,6 @@ export default defineComponent({
 		return {
 			host: host,
 			pageInfo: null,
-			faLayerGroup, faBars, faBell, faHome, faCircle,
 		};
 	},
 
@@ -50,8 +48,8 @@ export default defineComponent({
 	methods: {
 		changePage(page) {
 			if (page == null) return;
-			if (page.INFO) {
-				this.pageInfo = page.INFO;
+			if (page[symbols.PAGE_INFO]) {
+				this.pageInfo = page[symbols.PAGE_INFO];
 			}
 		},
 
@@ -94,7 +92,7 @@ export default defineComponent({
 			-webkit-backdrop-filter: blur(32px);
 			backdrop-filter: blur(32px);
 			background-color: var(--header);
-			border-bottom: solid 1px var(--divider);
+			border-bottom: solid 0.5px var(--divider);
 		}
 
 		> main {

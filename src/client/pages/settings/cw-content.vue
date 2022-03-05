@@ -9,7 +9,7 @@
 			</MkTextarea>
 		</div>
 		<div class="_footer" v-if="!autoShowCwContentAll">
-			<MkButton inline @click="save()" primary :disabled="!changed"><Fa :icon="faSave"/> {{ $t('save') }}</MkButton>
+			<MkButton inline @click="save()" primary :disabled="!changed"><i class="fas fa-save"></i> {{ $t('save') }}</MkButton>
 		</div>
 	</div>
 </section>
@@ -17,12 +17,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faSave } from '@fortawesome/free-solid-svg-icons';
-import { faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import MkSwitch from '@/components/ui/switch.vue';
-import MkButton from '@/components/ui/button.vue';
-import MkTextarea from '@/components/ui/textarea.vue';
-import { defaultStore } from '@/store';
+import MkSwitch from '@client/components/ui/switch.vue';
+import MkButton from '@client/components/ui/button.vue';
+import MkTextarea from '@client/components/ui/textarea.vue';
+import { defaultStore } from '@client/store';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -35,15 +34,12 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
-				header: [{
-					title: this.$t('autoShowCwContent'),
-					icon: faEyeSlash
-				}]
+			[symbols.PAGE_INFO]: {
+				title: this.$ts.autoShowCwContent,
+				icon: 'fas fa-eye-slash'
 			},
 			items: (this.$store.state.showCwWords as string[]).join('\n'),
 			changed: false,
-			faEyeSlash, faSave,
 		}
 	},
 
@@ -71,7 +67,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {

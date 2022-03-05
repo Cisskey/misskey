@@ -4,13 +4,13 @@
 		<div class="body _popup _shadow _narrow_" @mousedown="onBodyMousedown" @keydown="onKeydown">
 			<div class="header" :class="{ mini }" @contextmenu.prevent.stop="onContextmenu">
 				<slot v-if="closeRight" name="buttons"><button class="_button" style="pointer-events: none;"></button></slot>
-				<button v-else class="_button" @click="close()"><Fa :icon="faTimes"/></button>
+				<button v-else class="_button" @click="close()"><i class="fas fa-times"></i></button>
 
 				<span class="title" @mousedown.prevent="onHeaderMousedown" @touchstart.prevent="onHeaderMousedown">
 					<slot name="header"></slot>
 				</span>
 
-				<button v-if="closeRight" class="_button" @click="close()"><Fa :icon="faTimes"/></button>
+				<button v-if="closeRight" class="_button" @click="close()"><i class="fas fa-times"></i></button>
 				<slot v-else name="buttons"><button class="_button" style="pointer-events: none;"></button></slot>
 			</div>
 			<div class="body" v-if="padding">
@@ -38,9 +38,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faTimes, faCheck } from '@fortawesome/free-solid-svg-icons';
-import contains from '@/scripts/contains';
-import * as os from '@/os';
+import contains from '@client/scripts/contains';
+import * as os from '@client/os';
 
 const minHeight = 50;
 const minWidth = 250;
@@ -114,7 +113,6 @@ export default defineComponent({
 		return {
 			showing: true,
 			id: Math.random().toString(), // TODO: UUIDとかにする
-			faTimes
 		};
 	},
 
@@ -395,15 +393,14 @@ export default defineComponent({
 	position: fixed;
 	top: 0;
 	left: 0;
-	z-index: 5000;
+	z-index: 10000; // mk-modalのと同じでなければならない
 
 	&.front {
 		z-index: 11000; // front指定の時は、mk-modalのよりも大きくなければならない
 	}
 
 	> .body {
-		overflow: hidden; // overflow: clip; をSafariが対応したら消す
-		overflow: clip;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		contain: content;
@@ -438,8 +435,7 @@ export default defineComponent({
 				position: relative;
 				line-height: var(--height);
 				white-space: nowrap;
-				overflow: hidden; // overflow: clip; をSafariが対応したら消す
-				overflow: clip;
+				overflow: hidden;
 				text-overflow: ellipsis;
 				text-align: center;
 				cursor: move;

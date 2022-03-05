@@ -22,7 +22,7 @@
 		</div>
 		<div class="_footer">
 			<MkButton @click="test()" inline :disabled="!url">{{ $t('_webhookNotification.test') }}</MkButton>
-			<MkButton @click="save(true)" primary inline :disabled="!changed"><Fa :icon="faSave"/> {{ $t('save') }}</MkButton>
+			<MkButton @click="save(true)" primary inline :disabled="!changed"><i class="fas fa-save"></i> {{ $t('save') }}</MkButton>
 		</div>
 	</div>
 </section>
@@ -30,15 +30,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faLink } from '@fortawesome/free-solid-svg-icons';
-import { faSave } from '@fortawesome/free-regular-svg-icons';
-import MkButton from '@/components/ui/button.vue';
-import MkInput from '@/components/ui/input.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import MkInfo from '@/components/ui/info.vue';
-import MkSelect from '@/components/ui/select.vue';
-import * as os from '@/os';
+import MkButton from '@client/components/ui/button.vue';
+import MkInput from '@client/components/ui/input.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import MkInfo from '@client/components/ui/info.vue';
+import MkSelect from '@client/components/ui/select.vue';
+import * as os from '@client/os';
 import { webhookTypes } from '../../../types';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -53,9 +52,9 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.webhookNotification,
-				icon: faLink
+				icon: 'fas fa-link'
 			},
 			enableWebhook: this.$i.enableWebhookNotification,
 			url: this.$i.webhookUrl,
@@ -63,7 +62,6 @@ export default defineComponent({
 			types: webhookTypes,
 			type: this.$i.webhookType || 'slack',
 			secret: this.$i.webhookSecret,
-			faSave, faLink,
 		}
 	},
 
@@ -95,7 +93,7 @@ export default defineComponent({
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {

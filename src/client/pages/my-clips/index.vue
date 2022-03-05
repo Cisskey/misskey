@@ -1,10 +1,10 @@
 <template>
 <div class="_section qtcaoidl">
-	<MkButton @click="create" primary class="add"><Fa :icon="faPlus"/> {{ $ts.add }}</MkButton>
+	<MkButton @click="create" primary class="add"><i class="fas fa-plus"></i> {{ $ts.add }}</MkButton>
 
 	<div class="_content">
 		<MkPagination :pagination="pagination" #default="{items}" ref="list" class="list">
-			<MkA v-for="item in items" :key="item.id" :to="`/clips/${item.id}`" class="item _panel _vMargin">
+			<MkA v-for="item in items" :key="item.id" :to="`/clips/${item.id}`" class="item _panel _gap">
 				<b>{{ item.name }}</b>
 				<div v-if="item.description" class="description">{{ item.description }}</div>
 			</MkA>
@@ -15,10 +15,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faPlus, faPaperclip } from '@fortawesome/free-solid-svg-icons';
-import MkPagination from '@/components/ui/pagination.vue';
-import MkButton from '@/components/ui/button.vue';
-import * as os from '@/os';
+import MkPagination from '@client/components/ui/pagination.vue';
+import MkButton from '@client/components/ui/button.vue';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -28,11 +28,11 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.clip,
-				icon: faPaperclip,
+				icon: 'fas fa-paperclip',
 				action: {
-					icon: faPlus,
+					icon: 'fas fa-plus',
 					handler: this.create
 				}
 			},
@@ -41,7 +41,6 @@ export default defineComponent({
 				limit: 10,
 			},
 			draft: null,
-			faPlus
 		};
 	},
 
@@ -96,7 +95,7 @@ export default defineComponent({
 				> .description {
 					margin-top: 8px;
 					padding-top: 8px;
-					border-top: solid 1px var(--divider);
+					border-top: solid 0.5px var(--divider);
 				}
 			}
 		}

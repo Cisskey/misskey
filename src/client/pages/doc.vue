@@ -3,18 +3,18 @@
 	<div class="title">{{ title }}</div>
 	<div class="body" v-html="body"></div>
 	<div class="footer">
-		<MkLink :url="`https://github.com/syuilo/misskey/blob/master/src/docs/${lang}/${doc}.md`" class="at">{{ $ts.docSource }}</MkLink>
+		<MkLink :url="`https://github.com/misskey-dev/misskey/blob/master/src/docs/${lang}/${doc}.md`" class="at">{{ $ts.docSource }}</MkLink>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue';
-import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import MarkdownIt from 'markdown-it';
 import MarkdownItAnchor from 'markdown-it-anchor';
-import { url, lang } from '@/config';
-import MkLink from '@/components/link.vue';
+import { url, lang } from '@client/config';
+import MkLink from '@client/components/link.vue';
+import * as symbols from '@client/symbols';
 
 const markdown = MarkdownIt({
 	html: true
@@ -38,9 +38,9 @@ export default defineComponent({
 
 	data() {
 		return {
-			INFO: computed(() => this.title ? {
+			[symbols.PAGE_INFO]: computed(() => this.title ? {
 				title: this.title,
-				icon: faQuestionCircle,
+				icon: 'fas fa-question-circle',
 			} : null),
 			title: null,
 			body: null,
@@ -60,7 +60,7 @@ export default defineComponent({
 
 	methods: {
 		fetchDoc() {
-			fetch(`${url}/assets/docs/${lang}/${this.doc}.md`).then(res => res.text()).then(md => {
+			fetch(`${url}/doc-assets/${lang}/${this.doc}.md`).then(res => res.text()).then(md => {
 				this.parse(md);
 			});
 		},
@@ -150,7 +150,7 @@ export default defineComponent({
 			font-size: 1.25em;
 			padding: 0 0 0.5em 0;
 			margin: 1.5em 0 1em 0;
-			border-bottom: solid 1px var(--divider);
+			border-bottom: solid 0.5px var(--divider);
 		}
 
 		::v-deep(table) {
@@ -170,7 +170,7 @@ export default defineComponent({
 		::v-deep(kbd.key) {
 			display: inline-block;
 			padding: 6px 8px;
-			border: solid 1px var(--divider);
+			border: solid 0.5px var(--divider);
 			border-radius: 4px;
 			box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 		}

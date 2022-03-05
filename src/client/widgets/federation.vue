@@ -1,6 +1,6 @@
 <template>
-<MkContainer :show-header="props.showHeader" :body-togglable="bodyTogglable" :scrollable="scrollable">
-	<template #header><Fa :icon="faGlobe"/>{{ $ts._widgets.federation }}</template>
+<MkContainer :show-header="props.showHeader" :foldable="foldable" :scrollable="scrollable">
+	<template #header><i class="fas fa-globe"></i>{{ $ts._widgets.federation }}</template>
 
 	<div class="wbrkwalb">
 		<MkLoading v-if="fetching"/>
@@ -20,11 +20,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faGlobe } from '@fortawesome/free-solid-svg-icons';
-import MkContainer from '@/components/ui/container.vue';
+import MkContainer from '@client/components/ui/container.vue';
 import define from './define';
-import MkMiniChart from '@/components/mini-chart.vue';
-import * as os from '@/os';
+import MkMiniChart from '@client/components/mini-chart.vue';
+import * as os from '@client/os';
 
 const widget = define({
 	name: 'federation',
@@ -42,7 +41,7 @@ export default defineComponent({
 		MkContainer, MkMiniChart
 	},
 	props: {
-		bodyTogglable: {
+		foldable: {
 			type: Boolean,
 			required: false,
 			default: false
@@ -58,7 +57,6 @@ export default defineComponent({
 			instances: [],
 			charts: [],
 			fetching: true,
-			faGlobe
 		};
 	},
 	mounted() {
@@ -89,8 +87,7 @@ export default defineComponent({
 	$bodyInfoHieght: 16px;
 
 	height: (62px + 1px) + (62px + 1px) + (62px + 1px) + (62px + 1px) + 62px;
-	overflow: hidden; // overflow: clip; をSafariが対応したら消す
-	overflow: clip;
+	overflow: hidden;
 
 	> .instances {
 		.chart-move {
@@ -101,7 +98,7 @@ export default defineComponent({
 			display: flex;
 			align-items: center;
 			padding: 14px 16px;
-			border-bottom: solid 1px var(--divider);
+			border-bottom: solid 0.5px var(--divider);
 
 			> img {
 				display: block;
@@ -114,17 +111,16 @@ export default defineComponent({
 
 			> .body {
 				flex: 1;
-				overflow: hidden; // overflow: clip; をSafariが対応したら消す
-				overflow: clip;
+				overflow: hidden;
 				font-size: 0.9em;
 				color: var(--fg);
+				padding-right: 8px;
 
 				> .a {
 					display: block;
 					width: 100%;
 					white-space: nowrap;
-					overflow: hidden; // overflow: clip; をSafariが対応したら消す
-					overflow: clip;
+					overflow: hidden;
 					text-overflow: ellipsis;
 					line-height: $bodyTitleHieght;
 				}
@@ -134,6 +130,9 @@ export default defineComponent({
 					font-size: 75%;
 					opacity: 0.7;
 					line-height: $bodyInfoHieght;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 			}
 

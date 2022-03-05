@@ -3,14 +3,14 @@
 	<FormGroup>
 		<template #label>{{ $ts.emailAddress }}</template>
 		<FormLink to="/settings/email/address">
-			<template v-if="$i.email && !$i.emailVerified" #icon><Fa :icon="faExclamationTriangle" style="color: var(--warn);"/></template>
-			<template v-else-if="$i.email && $i.emailVerified" #icon><Fa :icon="faCheck" style="color: var(--success);"/></template>
+			<template v-if="$i.email && !$i.emailVerified" #icon><i class="fas fa-exclamation-triangle" style="color: var(--warn);"></i></template>
+			<template v-else-if="$i.email && $i.emailVerified" #icon><i class="fas fa-check" style="color: var(--success);"></i></template>
 			{{ $i.email || $ts.notSet }}
 		</FormLink>
 	</FormGroup>
 
 	<FormLink to="/settings/email/notification">
-		<template #icon><Fa :icon="faBell"/></template>
+		<template #icon><i class="fas fa-bell"></i></template>
 		{{ $ts.emailNotification }}
 	</FormLink>
 
@@ -22,14 +22,13 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faCog, faExclamationTriangle, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { faBell, faEnvelope } from '@fortawesome/free-regular-svg-icons';
-import FormButton from '@/components/form/button.vue';
-import FormLink from '@/components/form/link.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import FormSwitch from '@/components/form/switch.vue';
-import * as os from '@/os';
+import FormButton from '@client/components/form/button.vue';
+import FormLink from '@client/components/form/link.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import FormSwitch from '@client/components/form/switch.vue';
+import * as os from '@client/os';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -44,16 +43,15 @@ export default defineComponent({
 	
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.email,
-				icon: faEnvelope
+				icon: 'fas fa-envelope'
 			},
-			faCog, faExclamationTriangle, faCheck, faBell
 		}
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {

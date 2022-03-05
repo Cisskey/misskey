@@ -1,13 +1,13 @@
 <template>
-<MkModal ref="modal" :manual-showing="manualShowing" :src="src" @click="$refs.modal.close()" @opening="opening" @close="$emit('close')" @closed="$emit('closed')" v-slot="{ showing }">
-	<MkEmojiPicker v-show="showing !== false" :show-pinned="showPinned" :as-reaction-picker="asReactionPicker" @chosen="chosen" ref="picker"/>
+<MkModal ref="modal" :manual-showing="manualShowing" :src="src" :front="true" @click="$refs.modal.close()" @opening="opening" @close="$emit('close')" @closed="$emit('closed')">
+	<MkEmojiPicker :show-pinned="showPinned" :as-reaction-picker="asReactionPicker" @chosen="chosen" ref="picker"/>
 </MkModal>
 </template>
 
 <script lang="ts">
 import { defineComponent, markRaw } from 'vue';
-import MkModal from '@/components/ui/modal.vue';
-import MkEmojiPicker from '@/components/emoji-picker.vue';
+import MkModal from '@client/components/ui/modal.vue';
+import MkEmojiPicker from '@client/components/emoji-picker.vue';
 
 export default defineComponent({
 	components: {
@@ -123,7 +123,7 @@ export default defineComponent({
 		> .index {
 			min-height: var(--height);
 			position: relative;
-			border-bottom: solid 1px var(--divider);
+			border-bottom: solid 0.5px var(--divider);
 				
 			> .arrow {
 				position: absolute;
@@ -181,7 +181,7 @@ export default defineComponent({
 			}
 
 			&.result {
-				border-bottom: solid 1px var(--divider);
+				border-bottom: solid 0.5px var(--divider);
 
 				&:empty {
 					display: none;

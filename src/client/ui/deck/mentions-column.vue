@@ -1,6 +1,6 @@
 <template>
 <XColumn :column="column" :is-stacked="isStacked">
-	<template #header><Fa :icon="faAt" style="margin-right: 8px;"/>{{ column.name }}</template>
+	<template #header><i class="fas fa-at" style="margin-right: 8px;"></i>{{ column.name }}</template>
 
 	<XNotes :pagination="pagination" @before="before()" @after="after()"/>
 </XColumn>
@@ -8,11 +8,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faAt } from '@fortawesome/free-solid-svg-icons';
-import Progress from '@/scripts/loading';
+import Progress from '@client/scripts/loading';
 import XColumn from './column.vue';
-import XNotes from '@/components/notes.vue';
-import * as os from '@/os';
+import XNotes from '@client/components/notes.vue';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -37,7 +36,6 @@ export default defineComponent({
 				endpoint: 'notes/mentions',
 				limit: 10,
 			},
-			faAt
 		}
 	},
 

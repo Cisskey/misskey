@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, h } from 'vue';
-import MkRadio from '@/components/ui/radio.vue';
+import MkRadio from '@client/components/ui/radio.vue';
 import './form.scss';
 
 export default defineComponent({
@@ -18,6 +18,9 @@ export default defineComponent({
 		}
 	},
 	watch: {
+		modelValue() {
+			this.value = this.modelValue;
+		},
 		value() {
 			this.$emit('update:modelValue', this.value);
 		}
@@ -69,8 +72,8 @@ export default defineComponent({
 			display: inline-block;
 			vertical-align: bottom;
 			position: relative;
-			width: 20px;
-			height: 20px;
+			width: 16px;
+			height: 16px;
 			margin-right: 8px;
 			background: none;
 			border: 2px solid var(--inputBorder);

@@ -1,7 +1,7 @@
 <template>
 <XColumn :func="{ handler: func, title: $ts.selectChannel }" :column="column" :is-stacked="isStacked" :indicated="indicated" @change-active-state="onChangeActiveState">
 	<template #header>
-		<Fa :icon="faSatelliteDish"/>
+		<i class="fas fa-satellite-dish"></i>
 		<span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
@@ -12,11 +12,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faCog, faSatelliteDish, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import XColumn from './column.vue';
-import XTimeline from '@/components/timeline.vue';
-import XPostForm from '@/components/post-form.vue';
-import * as os from '@/os';
+import XTimeline from '@client/components/timeline.vue';
+import XPostForm from '@client/components/post-form.vue';
+import * as os from '@client/os';
 import { removeColumn, updateColumn } from './deck-store';
 
 export default defineComponent({
@@ -43,7 +42,6 @@ export default defineComponent({
 			indicated: false,
 			columnActive: true,
 			showFixedPostForm: this.column.showFixedPostForm || false,
-			faCog, faSatelliteDish, faEye, faEyeSlash,
 		};
 	},
 
@@ -70,11 +68,11 @@ export default defineComponent({
 	methods: {
 		async func(ev) {
 			await os.modalMenu([{
-				icon: faCog,
+				icon: 'fas fa-cog',
 				text: this.$t('selectChannel'),
 				action: this.selectChannel
 			}, {
-				icon: this.showFixedPostForm ? faEyeSlash : faEye,
+				icon: this.showFixedPostForm ? 'fas fa-eye-slash' : 'fas fa-eye',
 				text: this.showFixedPostForm ? this.$t('_deck.hideFixedPostForm') : this.$t('_deck.showFixedPostForm'),
 				action: () => {
 					this.showFixedPostForm = !this.showFixedPostForm;

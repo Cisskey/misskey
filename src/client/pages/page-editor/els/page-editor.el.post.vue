@@ -1,13 +1,13 @@
 <template>
 <XContainer @remove="() => $emit('remove')" :draggable="true">
-	<template #header><Fa :icon="faPaperPlane"/> {{ $ts._pages.blocks.post }}</template>
+	<template #header><i class="fas fa-paper-plane"></i> {{ $ts._pages.blocks.post }}</template>
 
 	<section style="padding: 16px;">
 		<MkTextarea v-model:value="value.text">{{ $ts._pages.blocks._post.text }}</MkTextarea>
 		<MkSwitch v-model:value="value.attachCanvasImage"><span>{{ $ts._pages.blocks._post.attachCanvasImage }}</span></MkSwitch>
 		<MkInput v-if="value.attachCanvasImage" v-model:value="value.canvasId"><span>{{ $ts._pages.blocks._post.canvasId }}</span></MkInput>
 		<MkSelect v-model:value="value.channelId">
-			<template #label>{{ $t('_pages.blocks._post.channel') }}</template>
+			<template #label>{{ $ts._pages.blocks._post.channel }}</template>
 			<option value=""></option>
 			<option v-for="channel in channels" :value="channel.id">{{ channel.name }}</option>
 		</MkSelect>
@@ -17,13 +17,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faPaperPlane } from '@fortawesome/free-regular-svg-icons';
 import XContainer from '../page-editor.container.vue';
-import MkTextarea from '@/components/ui/textarea.vue';
-import MkInput from '@/components/ui/input.vue';
-import MkSwitch from '@/components/ui/switch.vue';
-import MkSelect from '@/components/ui/select.vue';
-import * as os from '@/os';
+import MkTextarea from '@client/components/ui/textarea.vue';
+import MkInput from '@client/components/ui/input.vue';
+import MkSwitch from '@client/components/ui/switch.vue';
+import MkSelect from '@client/components/ui/select.vue';
+import * as os from '@client/os';
 
 export default defineComponent({
 	components: {
@@ -39,7 +38,6 @@ export default defineComponent({
 	data() {
 		return {
 			channels: [],
-			faPaperPlane
 		};
 	},
 

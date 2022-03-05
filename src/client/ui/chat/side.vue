@@ -1,9 +1,9 @@
 <template>
 <div class="mrajymqm _narrow_" v-if="component">
 	<header class="header" @contextmenu.prevent.stop="onContextmenu">
-		<button class="_button" @click="back()" v-if="history.length > 0"><Fa :icon="faChevronLeft"/></button>
+		<button class="_button" @click="back()" v-if="history.length > 0"><i class="fas fa-chevron-left"></i></button>
 		<XHeader class="title" :info="pageInfo" :with-back="false" :center="false"/>
-		<button class="_button" @click="close()"><Fa :icon="faTimes"/></button>
+		<button class="_button" @click="close()"><i class="fas fa-times"></i></button>
 	</header>
 	<component :is="component" v-bind="props" :ref="changePage"/>
 </div>
@@ -11,12 +11,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faTimes, faChevronLeft, faExpandAlt, faWindowMaximize, faExternalLinkAlt, faLink } from '@fortawesome/free-solid-svg-icons';
 import XHeader from '../_common_/header.vue';
-import * as os from '@/os';
-import copyToClipboard from '@/scripts/copy-to-clipboard';
-import { resolve } from '@/router';
-import { url } from '@/config';
+import * as os from '@client/os';
+import copyToClipboard from '@client/scripts/copy-to-clipboard';
+import { resolve } from '@client/router';
+import { url } from '@client/config';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -38,7 +38,6 @@ export default defineComponent({
 			props: {},
 			pageInfo: null,
 			history: [],
-			faTimes, faChevronLeft,
 		};
 	},
 
@@ -51,8 +50,8 @@ export default defineComponent({
 	methods: {
 		changePage(page) {
 			if (page == null) return;
-			if (page.INFO) {
-				this.pageInfo = page.INFO;
+			if (page[symbols.PAGE_INFO]) {
+				this.pageInfo = page[symbols.PAGE_INFO];
 			}
 		},
 
@@ -81,28 +80,28 @@ export default defineComponent({
 				type: 'label',
 				text: this.path,
 			}, {
-				icon: faExpandAlt,
+				icon: 'fas fa-expand-alt',
 				text: this.$ts.showInPage,
 				action: () => {
 					this.$router.push(this.path);
 					this.close();
 				}
 			}, {
-				icon: faWindowMaximize,
+				icon: 'fas fa-window-maximize',
 				text: this.$ts.openInWindow,
 				action: () => {
 					os.pageWindow(this.path);
 					this.close();
 				}
 			}, null, {
-				icon: faExternalLinkAlt,
+				icon: 'fas fa-external-link-alt',
 				text: this.$ts.openInNewTab,
 				action: () => {
 					window.open(this.url, '_blank');
 					this.close();
 				}
 			}, {
-				icon: faLink,
+				icon: 'fas fa-link',
 				text: this.$ts.copyLink,
 				action: () => {
 					copyToClipboard(this.url);
@@ -117,7 +116,7 @@ export default defineComponent({
 .mrajymqm {
 	$header-height: 54px; // TODO: どこかに集約したい
 
-	--section-padding: 16px;
+	--root-margin: 16px;
 	--margin: var(--marginHalf);
 
 	height: 100%;
@@ -137,7 +136,7 @@ export default defineComponent({
 		-webkit-backdrop-filter: blur(32px);
 		backdrop-filter: blur(32px);
 		background-color: var(--header);
-		border-bottom: solid 1px var(--divider);
+		border-bottom: solid 0.5px var(--divider);
 		box-sizing: border-box;
 
 		> ._button {

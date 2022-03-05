@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { instanceName } from '@/config';
+import { instanceName } from '@client/config';
 
 export default defineComponent({
 	props: {
@@ -44,8 +44,7 @@ export default defineComponent({
 
 	height: $height;
 	border-radius: 4px 0 0 4px;
-	overflow: hidden; // overflow: clip; をSafariが対応したら消す
-	overflow: clip;
+	overflow: hidden;
 	color: #fff;
 
 	> .icon {

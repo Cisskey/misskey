@@ -5,6 +5,10 @@
 		<FormSwitch v-model:value="autoAcceptFollowed" :disabled="!isLocked" @update:value="save()">{{ $ts.autoAcceptFollowed }}</FormSwitch>
 		<template #caption>{{ $ts.lockedAccountInfo }}</template>
 	</FormGroup>
+	<FormSwitch v-model:value="hideOnlineStatus" @update:value="save()">
+		{{ $ts.hideOnlineStatus }}
+		<template #desc>{{ $ts.hideOnlineStatusDescription }}</template>
+	</FormSwitch>
 	<FormSwitch v-model:value="noCrawle" @update:value="save()">
 		{{ $ts.noCrawle }}
 		<template #desc>{{ $ts.noCrawleDescription }}</template>
@@ -29,13 +33,13 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faLockOpen } from '@fortawesome/free-solid-svg-icons';
-import FormSwitch from '@/components/form/switch.vue';
-import FormSelect from '@/components/form/select.vue';
-import FormBase from '@/components/form/base.vue';
-import FormGroup from '@/components/form/group.vue';
-import * as os from '@/os';
-import { defaultStore } from '@/store';
+import FormSwitch from '@client/components/form/switch.vue';
+import FormSelect from '@client/components/form/select.vue';
+import FormBase from '@client/components/form/base.vue';
+import FormGroup from '@client/components/form/group.vue';
+import * as os from '@client/os';
+import { defaultStore } from '@client/store';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -49,14 +53,15 @@ export default defineComponent({
 	
 	data() {
 		return {
-			INFO: {
+			[symbols.PAGE_INFO]: {
 				title: this.$ts.privacy,
-				icon: faLockOpen
+				icon: 'fas fa-lock-open'
 			},
 			isLocked: false,
 			autoAcceptFollowed: false,
 			noCrawle: false,
 			isExplorable: false,
+			hideOnlineStatus: false,
 		}
 	},
 
@@ -71,10 +76,11 @@ export default defineComponent({
 		this.autoAcceptFollowed = this.$i.autoAcceptFollowed;
 		this.noCrawle = this.$i.noCrawle;
 		this.isExplorable = this.$i.isExplorable;
+		this.hideOnlineStatus = this.$i.hideOnlineStatus;
 	},
 
 	mounted() {
-		this.$emit('info', this.INFO);
+		this.$emit('info', this[symbols.PAGE_INFO]);
 	},
 
 	methods: {
@@ -84,6 +90,7 @@ export default defineComponent({
 				autoAcceptFollowed: !!this.autoAcceptFollowed,
 				noCrawle: !!this.noCrawle,
 				isExplorable: !!this.isExplorable,
+				hideOnlineStatus: !!this.hideOnlineStatus,
 			});
 		}
 	}
