@@ -63,8 +63,6 @@ export default define(meta, async (ps, user) => {
 		query.andWhere(`COALESCE(note.cw, '') NOT ILIKE :word`, { word: `%${word}%` });
 	}
 
-	query.leftJoinAndSelect('note.user', 'user');
-
 	if (user) generateMutedUserQuery(query, user);
 
 	let notes = await query
