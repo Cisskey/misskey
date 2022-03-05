@@ -31,7 +31,7 @@
 
 	<FormSelect v-model:value="timestampFormat">
 		<template #label>{{ $ts.timestampFormat }}</template>
-		<option v-for="tf in timestampFormats" :value="tf" :key="tf">{{ $ts['_timestampFormats.' + tf] }}</option>
+		<option v-for="tf in timestampFormats" :value="tf" :key="tf">{{ $ts._timestampFormats[tf] }}</option>
 	</FormSelect>
 
 	<FormGroup>
