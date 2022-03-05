@@ -42,7 +42,6 @@ export default defineComponent({
 			indicated: false,
 			columnActive: true,
 			showFixedPostForm: this.column.showFixedPostForm || false,
-			faCog, faSatelliteDish, faEye, faEyeSlash,
 		};
 	},
 
@@ -69,11 +68,11 @@ export default defineComponent({
 	methods: {
 		async func(ev) {
 			await os.modalMenu([{
-				icon: faCog,
+				icon: 'fas fa-cog',
 				text: this.$t('selectChannel'),
 				action: this.selectChannel
 			}, {
-				icon: this.showFixedPostForm ? faEyeSlash : faEye,
+				icon: this.showFixedPostForm ? 'fas fa-eye-slash' : 'fas fa-eye',
 				text: this.showFixedPostForm ? this.$t('_deck.hideFixedPostForm') : this.$t('_deck.showFixedPostForm'),
 				action: () => {
 					this.showFixedPostForm = !this.showFixedPostForm;
