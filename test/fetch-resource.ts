@@ -155,17 +155,17 @@ describe('Fetch resource', () => {
 	});
 
 	describe('/notes/:id', () => {
-		it('Only AP => AP', async(async () => {
-			const res = await simpleGet(`/notes/${alicesPost.id}`, ONLY_AP);
-			assert.strictEqual(res.status, 200);
-			assert.strictEqual(res.type, AP);
-		}));
+		// it('Only AP => AP', async(async () => {
+		// 	const res = await simpleGet(`/notes/${alicesPost.id}`, ONLY_AP);
+		// 	assert.strictEqual(res.status, 200);
+		// 	assert.strictEqual(res.type, AP);
+		// }));
 
-		it('Prefer AP => AP', async(async () => {
-			const res = await simpleGet(`/notes/${alicesPost.id}`, PREFER_AP);
-			assert.strictEqual(res.status, 200);
-			assert.strictEqual(res.type, AP);
-		}));
+		// it('Prefer AP => AP', async(async () => {
+		// 	const res = await simpleGet(`/notes/${alicesPost.id}`, PREFER_AP);
+		// 	assert.strictEqual(res.status, 200);
+		// 	assert.strictEqual(res.type, AP);
+		// }));
 
 		it('Prefer HTML => HTML', async(async () => {
 			const res = await simpleGet(`/notes/${alicesPost.id}`, PREFER_HTML);
