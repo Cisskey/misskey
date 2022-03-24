@@ -1,7 +1,7 @@
 import * as P from 'parsimmon';
 import { createLeaf, createTree, urlRegex } from './prelude';
 import { takeWhile, cumulativeSum } from '../prelude/array';
-import parseAcct from '../misc/acct';
+import { parseAcct } from '../misc/acct';
 import { toUnicode } from 'punycode';
 import { emojiRegex } from '../misc/emoji-regex';
 
