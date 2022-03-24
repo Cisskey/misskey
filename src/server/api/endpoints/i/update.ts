@@ -1,5 +1,5 @@
 import $ from 'cafy';
-import * as mfm from 'mfm-js';
+import * as mfm from '../../../../mfm/index';
 import { ID } from '@/misc/cafy-id';
 import { publishMainStream, publishUserEvent } from '@/services/stream';
 import acceptAllFollowRequests from '@/services/following/requests/accept-all';

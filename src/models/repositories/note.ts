@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, In } from 'typeorm';
-import * as mfm from 'mfm-js';
+import * as mfm from '../../mfm/index';
 import { Note } from '@/models/entities/note';
 import { User } from '@/models/entities/user';
 import { Users, PollVotes, DriveFiles, NoteReactions, Followings, Polls, Channels } from '../index';

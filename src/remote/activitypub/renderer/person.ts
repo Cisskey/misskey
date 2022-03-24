@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import * as mfm from 'mfm-js';
+import * as mfm from '../../../mfm/index';
 import renderImage from './image';
 import renderKey from './key';
 import config from '@/config/index';

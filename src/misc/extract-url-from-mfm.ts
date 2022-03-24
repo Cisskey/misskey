@@ -1,4 +1,4 @@
-import * as mfm from 'mfm-js';
+import * as mfm from '@/mfm/index';
 import { unique } from '@/prelude/array';
 
 // unique without hash

@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import * as mfm from 'mfm-js';
+import { parse } as mfm from '@client/../mfm/parse';
 import { extractUrlFromMfm } from '@/misc/extract-url-from-mfm';
 import MkUrlPreview from '@client/components/url-preview.vue';
 import * as os from '@client/os';

@@ -128,7 +128,7 @@
 
 <script lang="ts">
 import { defineAsyncComponent, defineComponent, markRaw } from 'vue';
-import * as mfm from 'mfm-js';
+import { parse } as mfm from '@client/../mfm/parse';
 import { sum } from '../../prelude/array';
 import XSub from './note.sub.vue';
 import XNoteHeader from './note-header.vue';

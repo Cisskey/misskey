@@ -62,7 +62,7 @@ import insertTextAtCursor from 'insert-text-at-cursor';
 import { length } from 'stringz';
 import { toASCII } from 'punycode/';
 import XNotePreview from './note-preview.vue';
-import * as mfm from 'mfm-js';
+import { parse } as mfm from '@client/../mfm/parse';
 import { host, url } from '@client/config';
 import { erase, unique } from '../../prelude/array';
 import { extractMentions } from '@/misc/extract-mentions';

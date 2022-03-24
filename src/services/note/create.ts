@@ -1,4 +1,4 @@
-import * as mfm from 'mfm-js';
+import * as mfm from '../../mfm/index';
 import es from '../../db/elasticsearch';
 import { publishMainStream, publishNotesStream } from '@/services/stream';
 import DeliverManager from '@/remote/activitypub/deliver-manager';
