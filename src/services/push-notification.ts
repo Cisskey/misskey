@@ -2,7 +2,7 @@ import * as push from 'web-push';
 import config from '@/config/index';
 import { SwSubscriptions } from '@/models/index';
 import { fetchMeta } from '@/misc/fetch-meta';
-import { postWebhookJob } from './queue';
+import { postWebhookJob } from '../queue';
 import { UserProfiles } from '@/models';
 import { Packed } from '@/misc/schema';
 
