@@ -1,5 +1,5 @@
 <template>
-<div class="rrevdjwt" :class="{ left: align === 'left' }"
+<div class="rrevdjwt" :class="{ left: align === 'left', pointer: point === 'top' }"
 	ref="items"
 	@contextmenu.self="e => e.preventDefault()"
 	v-hotkey="keymap"
@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, unref } from 'vue';
 import { focusPrev, focusNext } from '@client/scripts/focus';
 import contains from '@client/scripts/contains';
 
@@ -58,7 +58,11 @@ export default defineComponent({
 		align: {
 			type: String,
 			requried: false
-		}
+		},
+		point: {
+			type: String,
+			requried: false
+		},
 	},
 	emits: ['close'],
 	data() {
@@ -75,21 +79,26 @@ export default defineComponent({
 			};
 		},
 	},
-	created() {
-		const items = ref(this.items.filter(item => item !== undefined));
+	watch: {
+		items: {
+			handler() {
+				const items = ref(unref(this.items).filter(item => item !== undefined));
 
-		for (let i = 0; i < items.value.length; i++) {
-			const item = items.value[i];
-			
-			if (item && item.then) { // if item is Promise
-				items.value[i] = { type: 'pending' };
-				item.then(actualItem => {
-					items.value[i] = actualItem;
-				});
-			}
+				for (let i = 0; i < items.value.length; i++) {
+					const item = items.value[i];
+					
+					if (item && item.then) { // if item is Promise
+						items.value[i] = { type: 'pending' };
+						item.then(actualItem => {
+							items.value[i] = actualItem;
+						});
+					}
+				}
+
+				this._items = items;
+			},
+			immediate: true
 		}
-
-		this._items = items;
 	},
 	mounted() {
 		if (this.viaKeyboard) {
@@ -137,6 +146,22 @@ export default defineComponent({
 .rrevdjwt {
 	padding: 8px 0;
 
+	&.pointer {
+		&:before {
+			--size: 8px;
+			content: '';
+			display: block;
+			position: absolute;
+			top: calc(0px - (var(--size) * 2));
+			left: 0;
+			right: 0;
+			width: 0;
+			margin: auto;
+			border: solid var(--size) transparent;
+			border-bottom-color: var(--popup);
+		}
+	}
+
 	&.left {
 		> .item {
 			text-align: left;
@@ -171,13 +196,13 @@ export default defineComponent({
 		}
 
 		&:hover {
-			color: #fff;
+			color: var(--fgOnAccent);
 			background: var(--accent);
 			text-decoration: none;
 		}
 
 		&:active {
-			color: #fff;
+			color: var(--fgOnAccent);
 			background: var(--accentDarken);
 		}
 

@@ -1,14 +1,9 @@
 import $ from 'cafy';
 import define from '../../define';
 import { getConnection } from 'typeorm';
-import { insertModerationLog } from '../../../../services/insert-moderation-log';
+import { insertModerationLog } from '@/services/insert-moderation-log';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'データベースのメンテナンスを行います。',
-		'en-US': 'Perform database maintenance.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

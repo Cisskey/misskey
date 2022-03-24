@@ -1,6 +1,8 @@
 <template>
-<div class="_section">
-	<XNotes class="_content" :pagination="pagination" :detail="true" :prop="'note'" @before="before()" @after="after()"/>
+<div class="jmelgwjh">
+	<div class="body">
+		<XNotes class="notes" :pagination="pagination" :detail="true" :prop="'note'" @before="before()" @after="after()"/>
+	</div>
 </div>
 </template>
 
@@ -20,7 +22,8 @@ export default defineComponent({
 		return {
 			[symbols.PAGE_INFO]: {
 				title: this.$ts.favorites,
-				icon: 'fas fa-star'
+				icon: 'fas fa-star',
+				bg: 'var(--bg)',
 			},
 			pagination: {
 				endpoint: 'i/favorites',
@@ -42,3 +45,16 @@ export default defineComponent({
 	}
 });
 </script>
+
+<style lang="scss" scoped>
+.jmelgwjh {
+	background: var(--bg);
+
+	> .body {
+		box-sizing: border-box;
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 16px;
+	}
+}
+</style>

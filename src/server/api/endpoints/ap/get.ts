@@ -1,24 +1,16 @@
 import $ from 'cafy';
 import define from '../../define';
-import Resolver from '../../../../remote/activitypub/resolver';
+import Resolver from '@/remote/activitypub/resolver';
 import { ApiError } from '../../error';
 
 export const meta = {
 	tags: ['federation'],
-
-	desc: {
-		'ja-JP': 'URIを指定してActivityPubオブジェクトを参照します。',
-		'en-US': 'Browse to the ActivityPub object by specifying the URI.'
-	},
 
 	requireCredential: false as const,
 
 	params: {
 		uri: {
 			validator: $.str,
-			desc: {
-				'ja-JP': 'ActivityPubオブジェクトのURI'
-			}
 		},
 	},
 

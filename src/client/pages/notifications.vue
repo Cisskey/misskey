@@ -1,6 +1,6 @@
 <template>
-<div class="_root">
-	<XNotifications class="_content" @before="before" @after="after" page/>
+<div class="clupoqwt" v-size="{ min: [800] }">
+	<XNotifications class="notifications" @before="before" @after="after" page/>
 </div>
 </template>
 
@@ -21,6 +21,7 @@ export default defineComponent({
 			[symbols.PAGE_INFO]: {
 				title: this.$ts.notifications,
 				icon: 'fas fa-bell',
+				bg: 'var(--bg)',
 				actions: [{
 					text: this.$ts.markAllAsRead,
 					icon: 'fas fa-check',
@@ -43,3 +44,17 @@ export default defineComponent({
 	}
 });
 </script>
+
+<style lang="scss" scoped>
+.clupoqwt {
+	&.min-width_800px {
+		background: var(--bg);
+		padding: 32px 0;
+
+		> .notifications {
+			max-width: 800px;
+			margin: 0 auto;
+		}
+	}
+}
+</style>

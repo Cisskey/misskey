@@ -1,18 +1,13 @@
 import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import * as ms from 'ms';
-import deleteBlocking from '../../../../services/blocking/delete';
+import deleteBlocking from '@/services/blocking/delete';
 import define from '../../define';
 import { ApiError } from '../../error';
 import { getUser } from '../../common/getters';
-import { Blockings, Users } from '../../../../models';
+import { Blockings, Users } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したユーザーのブロックを解除します。',
-		'en-US': 'Unblock a user.'
-	},
-
 	tags: ['account'],
 
 	limit: {
@@ -27,10 +22,6 @@ export const meta = {
 	params: {
 		userId: {
 			validator: $.type(ID),
-			desc: {
-				'ja-JP': '対象のユーザーのID',
-				'en-US': 'Target user ID'
-			}
 		}
 	},
 
@@ -57,72 +48,8 @@ export const meta = {
 	res: {
 		type: 'object' as const,
 		optional: false as const, nullable: false as const,
-		properties: {
-			id: {
-				type: 'string' as const,
-				optional: false as const, nullable: false as const,
-				format: 'id',
-				description: 'The unique identifier for this blocking.',
-				example: 'xxxxxxxxxx',
-			},
-			name: {
-				type: 'string' as const,
-				optional: false as const, nullable: true as const
-			},
-			username: {
-				type: 'string' as const,
-				optional: false as const, nullable: false as const
-			},
-			host: {
-				type: 'string' as const,
-				optional: false as const, nullable: true as const
-			},
-			avatarUrl: {
-				type: 'string' as const,
-				optional: false as const, nullable: false as const,
-				format: 'url'
-			},
-			avatarBlurhash: {
-				type: 'string' as const,
-				optional: false as const, nullable: true as const
-			},
-			avatarColor: {
-				type: 'any' as const,
-				optional: false as const, nullable: true as const
-			},
-			emojis: {
-				type: 'array' as const,
-				optional: false as const, nullable: false as const,
-				items: {
-					type: 'object' as const,
-					nullable: false as const, optional: false as const,
-					properties: {
-						name: {
-							type: 'string' as const,
-							nullable: false as const, optional: false as const
-						},
-						host: {
-							type: 'string' as const,
-							nullable: true as const, optional: false as const
-						},
-						url: {
-							type: 'string' as const,
-							nullable: false as const, optional: false as const,
-							format: 'url'
-						},
-						aliases: {
-							type: 'array' as const,
-							nullable: false as const, optional: false as const,
-							items: {
-								type: 'string' as const,
-								nullable: false as const, optional: false as const
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+		ref: 'User',
+	},
 };
 
 export default define(meta, async (ps, user) => {

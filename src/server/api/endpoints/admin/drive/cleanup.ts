@@ -1,14 +1,9 @@
 import { IsNull } from 'typeorm';
 import define from '../../../define';
-import { deleteFile } from '../../../../../services/drive/delete-file';
-import { DriveFiles } from '../../../../../models';
+import { deleteFile } from '@/services/drive/delete-file';
+import { DriveFiles } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '使用されていないユーザーのファイルを削除します。',
-		'en-US': 'Delete the unused user\'s files.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

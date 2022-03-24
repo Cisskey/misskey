@@ -1,21 +1,24 @@
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { Context } from 'cafy';
 import * as path from 'path';
 import * as glob from 'glob';
-import { Schema } from '@/misc/schema';
+import { SimpleSchema } from '@/misc/simple-schema';
+
+//const _filename = fileURLToPath(import.meta.url);
+const _filename = __filename;
+const _dirname = dirname(_filename);
 
 export type Param = {
 	validator: Context<any>;
 	transform?: any;
 	default?: any;
 	deprecated?: boolean;
-	desc?: { [key: string]: string };
 	ref?: string;
 };
 
 export interface IEndpointMeta {
 	stability?: string; //'deprecated' | 'experimental' | 'stable';
-
-	desc?: { [key: string]: string };
 
 	tags?: string[];
 
@@ -31,7 +34,7 @@ export interface IEndpointMeta {
 		};
 	};
 
-	res?: Schema;
+	res?: SimpleSchema;
 
 	/**
 	 * このエンドポイントにリクエストするのにユーザー情報が必須か否か
@@ -105,7 +108,7 @@ export interface IEndpoint {
 }
 
 const files = glob.sync('**/*.js', {
-	cwd: path.resolve(__dirname + '/endpoints/')
+	cwd: path.resolve(_dirname + '/endpoints/')
 });
 
 const endpoints: IEndpoint[] = files.map(f => {

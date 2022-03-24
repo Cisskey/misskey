@@ -2,14 +2,9 @@ import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../../define';
 import { ApiError } from '../../../error';
-import { UserGroups, UserGroupJoinings } from '../../../../../models';
+import { UserGroups, UserGroupJoinings } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したユーザーグループの情報を取得します。',
-		'en-US': 'Show a user group.'
-	},
-
 	tags: ['groups', 'account'],
 
 	requireCredential: true as const,

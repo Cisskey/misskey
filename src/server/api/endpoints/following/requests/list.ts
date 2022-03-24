@@ -1,12 +1,7 @@
 import define from '../../../define';
-import { FollowRequests } from '../../../../../models';
+import { FollowRequests } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '自分に届いたフォローリクエストの一覧を取得します。',
-		'en-US': 'Get all pending received follow requests.'
-	},
-
 	tags: ['following', 'account'],
 
 	requireCredential: true as const,

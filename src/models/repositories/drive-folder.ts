@@ -1,10 +1,8 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { DriveFolders, DriveFiles } from '..';
-import { DriveFolder } from '../entities/drive-folder';
-import { awaitAll } from '../../prelude/await-all';
-import { SchemaType } from '@/misc/schema';
-
-export type PackedDriveFolder = SchemaType<typeof packedDriveFolderSchema>;
+import { DriveFolders, DriveFiles } from '../index';
+import { DriveFolder } from '@/models/entities/drive-folder';
+import { awaitAll } from '@/prelude/await-all';
+import { Packed } from '@/misc/schema';
 
 @EntityRepository(DriveFolder)
 export class DriveFolderRepository extends Repository<DriveFolder> {
@@ -20,7 +18,7 @@ export class DriveFolderRepository extends Repository<DriveFolder> {
 		options?: {
 			detail: boolean
 		}
-	): Promise<PackedDriveFolder> {
+	): Promise<Packed<'DriveFolder'>> {
 		const opts = Object.assign({
 			detail: false
 		}, options);
@@ -59,41 +57,35 @@ export const packedDriveFolderSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'id',
-			description: 'The unique identifier for this Drive folder.',
 			example: 'xxxxxxxxxx',
 		},
 		createdAt: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'date-time',
-			description: 'The date that the Drive folder was created.'
 		},
 		name: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
-			description: 'The folder name.',
 		},
 		foldersCount: {
 			type: 'number' as const,
 			optional: true as const, nullable: false as const,
-			description: 'The count of child folders.',
 		},
 		filesCount: {
 			type: 'number' as const,
 			optional: true as const, nullable: false as const,
-			description: 'The count of child files.',
 		},
 		parentId: {
 			type: 'string' as const,
 			optional: false as const, nullable: true as const,
 			format: 'id',
-			description: 'The parent folder ID of this folder.',
 			example: 'xxxxxxxxxx',
 		},
 		parent: {
 			type: 'object' as const,
 			optional: true as const, nullable: true as const,
-			ref: 'DriveFolder'
+			ref: 'DriveFolder' as const,
 		},
 	},
 };

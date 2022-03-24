@@ -1,18 +1,16 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Users } from '..';
-import { Blocking } from '../entities/blocking';
-import { awaitAll } from '../../prelude/await-all';
-import { SchemaType } from '@/misc/schema';
-import { User } from '../entities/user';
-
-export type PackedBlocking = SchemaType<typeof packedBlockingSchema>;
+import { Users } from '../index';
+import { Blocking } from '@/models/entities/blocking';
+import { awaitAll } from '@/prelude/await-all';
+import { Packed } from '@/misc/schema';
+import { User } from '@/models/entities/user';
 
 @EntityRepository(Blocking)
 export class BlockingRepository extends Repository<Blocking> {
 	public async pack(
 		src: Blocking['id'] | Blocking,
 		me?: { id: User['id'] } | null | undefined
-	): Promise<PackedBlocking> {
+	): Promise<Packed<'Blocking'>> {
 		const blocking = typeof src === 'object' ? src : await this.findOneOrFail(src);
 
 		return await awaitAll({
@@ -41,14 +39,12 @@ export const packedBlockingSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'id',
-			description: 'The unique identifier for this blocking.',
 			example: 'xxxxxxxxxx',
 		},
 		createdAt: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'date-time',
-			description: 'The date that the blocking was created.'
 		},
 		blockeeId: {
 			type: 'string' as const,
@@ -58,8 +54,7 @@ export const packedBlockingSchema = {
 		blockee: {
 			type: 'object' as const,
 			optional: false as const, nullable: false as const,
-			ref: 'User',
-			description: 'The blockee.'
+			ref: 'User' as const,
 		},
 	}
 };

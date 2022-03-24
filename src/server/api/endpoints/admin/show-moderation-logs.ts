@@ -1,15 +1,10 @@
 import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
-import { ModerationLogs } from '../../../../models';
+import { ModerationLogs } from '@/models/index';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'モデレーションログ一覧を表示します。',
-		'en-US': 'Display the moderation log list.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

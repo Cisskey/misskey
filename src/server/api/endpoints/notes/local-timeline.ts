@@ -3,44 +3,32 @@ import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { fetchMeta } from '@/misc/fetch-meta';
 import { ApiError } from '../../error';
-import { Notes } from '../../../../models';
+import { Notes } from '@/models/index';
 import { generateMutedUserQuery } from '../../common/generate-muted-user-query';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query';
-import { activeUsersChart } from '../../../../services/chart';
+import { activeUsersChart } from '@/services/chart/index';
 import { Brackets } from 'typeorm';
 import { generateRepliesQuery } from '../../common/generate-replies-query';
 import { generateMutedNoteQuery } from '../../common/generate-muted-note-query';
 import { generateChannelQuery } from '../../common/generate-channel-query';
+import { generateBlockedUserQuery } from '../../common/generate-block-query';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'ローカルタイムラインを取得します。'
-	},
-
 	tags: ['notes'],
 
 	params: {
 		withFiles: {
 			validator: $.optional.bool,
-			desc: {
-				'ja-JP': 'ファイルが添付された投稿に限定するか否か'
-			}
 		},
 
 		fileType: {
 			validator: $.optional.arr($.str),
-			desc: {
-				'ja-JP': '指定された種類のファイルが添付された投稿のみを取得します'
-			}
 		},
 
 		excludeNsfw: {
 			validator: $.optional.bool,
 			default: false,
-			desc: {
-				'ja-JP': 'true にすると、NSFW指定されたファイルを除外します(fileTypeが指定されている場合のみ有効)'
-			}
 		},
 
 		limit: {
@@ -107,6 +95,7 @@ export default define(meta, async (ps, user) => {
 	generateVisibilityQuery(query, user);
 	if (user) generateMutedUserQuery(query, user);
 	if (user) generateMutedNoteQuery(query, user);
+	if (user) generateBlockedUserQuery(query, user);
 
 	if (ps.withFiles) {
 		query.andWhere('note.fileIds != \'{}\'');

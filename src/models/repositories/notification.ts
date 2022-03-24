@@ -1,14 +1,13 @@
 import { EntityRepository, In, Repository } from 'typeorm';
-import { Users, Notes, UserGroupInvitations, AccessTokens, NoteReactions } from '..';
-import { Notification } from '../entities/notification';
-import { awaitAll } from '../../prelude/await-all';
-import { SchemaType } from '@/misc/schema';
-import { Note } from '../entities/note';
-import { NoteReaction } from '../entities/note-reaction';
-import { User } from '../entities/user';
+import { Users, Notes, UserGroupInvitations, AccessTokens, NoteReactions } from '../index';
+import { Notification } from '@/models/entities/notification';
+import { awaitAll } from '@/prelude/await-all';
+import { Packed } from '@/misc/schema';
+import { Note } from '@/models/entities/note';
+import { NoteReaction } from '@/models/entities/note-reaction';
+import { User } from '@/models/entities/user';
 import { aggregateNoteEmojis, prefetchEmojis } from '@/misc/populate-emojis';
-
-export type PackedNotification = SchemaType<typeof packedNotificationSchema>;
+import { notificationTypes } from '@/types';
 
 @EntityRepository(Notification)
 export class NotificationRepository extends Repository<Notification> {
@@ -19,7 +18,7 @@ export class NotificationRepository extends Repository<Notification> {
 				myReactions: Map<Note['id'], NoteReaction | null>;
 			};
 		}
-	): Promise<PackedNotification> {
+	): Promise<Packed<'Notification'>> {
 		const notification = typeof src === 'object' ? src : await this.findOneOrFail(src);
 		const token = notification.appAccessTokenId ? await AccessTokens.findOneOrFail(notification.appAccessTokenId) : null;
 
@@ -117,29 +116,59 @@ export const packedNotificationSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'id',
-			description: 'The unique identifier for this notification.',
 			example: 'xxxxxxxxxx',
 		},
 		createdAt: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'date-time',
-			description: 'The date that the notification was created.'
+		},
+		isRead: {
+			type: 'boolean' as const,
+			optional: false as const, nullable: false as const,
 		},
 		type: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
-			enum: ['follow', 'followRequestAccepted', 'receiveFollowRequest', 'mention', 'reply', 'renote', 'quote', 'reaction', 'pollVote'],
-			description: 'The type of the notification.'
+			enum: [...notificationTypes],
+		},
+		user: {
+			type: 'object' as const,
+			ref: 'User' as const,
+			optional: true as const, nullable: true as const,
 		},
 		userId: {
 			type: 'string' as const,
 			optional: true as const, nullable: true as const,
 			format: 'id',
 		},
-		user: {
+		note: {
 			type: 'object' as const,
-			ref: 'User',
+			ref: 'Note' as const,
+			optional: true as const, nullable: true as const,
+		},
+		reaction: {
+			type: 'string' as const,
+			optional: true as const, nullable: true as const,
+		},
+		choice: {
+			type: 'number' as const,
+			optional: true as const, nullable: true as const,
+		},
+		invitation: {
+			type: 'object' as const,
+			optional: true as const, nullable: true as const,
+		},
+		body: {
+			type: 'string' as const,
+			optional: true as const, nullable: true as const,
+		},
+		header: {
+			type: 'string' as const,
+			optional: true as const, nullable: true as const,
+		},
+		icon: {
+			type: 'string' as const,
 			optional: true as const, nullable: true as const,
 		},
 	}

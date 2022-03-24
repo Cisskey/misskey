@@ -3,16 +3,11 @@ import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { getNote } from '../../common/getters';
 import { ApiError } from '../../error';
-import { NoteReactions } from '../../../../models';
+import { NoteReactions } from '@/models/index';
 import { DeepPartial } from 'typeorm';
-import { NoteReaction } from '../../../../models/entities/note-reaction';
+import { NoteReaction } from '@/models/entities/note-reaction';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定した投稿のリアクション一覧を取得します。',
-		'en-US': 'Show reactions of a note.'
-	},
-
 	tags: ['notes', 'reactions'],
 
 	requireCredential: false as const,
@@ -20,10 +15,6 @@ export const meta = {
 	params: {
 		noteId: {
 			validator: $.type(ID),
-			desc: {
-				'ja-JP': '対象の投稿のID',
-				'en-US': 'The ID of the target note'
-			}
 		},
 
 		type: {

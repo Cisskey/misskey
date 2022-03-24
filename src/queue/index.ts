@@ -1,16 +1,16 @@
 import * as httpSignature from 'http-signature';
 
-import config from '@/config';
+import config from '@/config/index';
 import { program } from '../argv';
 
 import processDeliver from './processors/deliver';
 import processInbox from './processors/inbox';
-import processDb from './processors/db';
-import procesObjectStorage from './processors/object-storage';
+import processDb from './processors/db/index';
+import procesObjectStorage from './processors/object-storage/index';
 import processWebhook from './processors/webhook';
 import { queueLogger } from './logger';
-import { UserProfiles } from '../models';
-import { DriveFile } from '../models/entities/drive-file';
+import { UserProfiles } from '@/models/entities/user-profile';
+import { DriveFile } from '@/models/entities/drive-file';
 import { getJobInfo } from './get-job-info';
 import { dbQueue, deliverQueue, inboxQueue, objectStorageQueue, webhookQueue } from './queues';
 import { ThinUser } from './types';
@@ -75,16 +75,18 @@ export function deliver(user: ThinUser, content: unknown, to: string | null) {
 	if (to == null) return null;
 
 	const data = {
-		user,
+		user: {
+			id: user.id
+		},
 		content,
 		to
 	};
 
 	return deliverQueue.add(data, {
 		attempts: config.deliverJobMaxAttempts || 12,
+		timeout: 1 * 60 * 1000,	// 1min
 		backoff: {
-			type: 'exponential',
-			delay: 60 * 1000
+			type: 'apBackoff'
 		},
 		removeOnComplete: true,
 		removeOnFail: true
@@ -99,9 +101,9 @@ export function inbox(activity: IActivity, signature: httpSignature.IParsedSigna
 
 	return inboxQueue.add(data, {
 		attempts: config.inboxJobMaxAttempts || 8,
+		timeout: 5 * 60 * 1000,	// 5min
 		backoff: {
-			type: 'exponential',
-			delay: 60 * 1000
+			type: 'apBackoff'
 		},
 		removeOnComplete: true,
 		removeOnFail: true
@@ -176,6 +178,16 @@ export function createImportUserListsJob(user: ThinUser, fileId: DriveFile['id']
 	return dbQueue.add('importUserLists', {
 		user: user,
 		fileId: fileId
+	}, {
+		removeOnComplete: true,
+		removeOnFail: true
+	});
+}
+
+export function createDeleteAccountJob(user: ThinUser, opts: { soft?: boolean; }) {
+	return dbQueue.add('deleteAccount', {
+		user: user,
+		soft: opts.soft
 	}, {
 		removeOnComplete: true,
 		removeOnFail: true

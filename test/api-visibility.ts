@@ -1,26 +1,18 @@
-/*
- * Tests of API (visibility)
- *
- * How to run the tests:
- * > npx cross-env TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true npx mocha test/api-visibility.ts --require ts-node/register
- *
- * To specify test:
- * > npx cross-env TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true npx mocha test/api-visibility.ts --require ts-node/register -g 'test name'
- */
-
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import * as childProcess from 'child_process';
-import { async, signup, request, post, launchServer } from './utils';
+import { async, signup, request, post, startServer, shutdownServer } from './utils';
 
 describe('API visibility', () => {
 	let p: childProcess.ChildProcess;
 
-	before(launchServer(g => p = g));
+	before(async () => {
+		p = await startServer();
+	});
 
-	after(() => {
-		p.kill();
+	after(async () => {
+		await shutdownServer(p);
 	});
 
 	describe('Note visibility', async () => {

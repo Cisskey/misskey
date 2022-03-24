@@ -1,13 +1,8 @@
 import define from '../../../define';
-import { Users } from '../../../../../models';
+import { Users } from '@/models/index';
 import { signup } from '../../../common/signup';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'アカウントを作成します。',
-		'en-US': 'Create a account.'
-	},
-
 	tags: ['admin'],
 
 	params: {
@@ -28,7 +23,6 @@ export const meta = {
 			token: {
 				type: 'string' as const,
 				optional: false as const, nullable: false as const,
-				description: 'Token to access this user.'
 			}
 		}
 	}

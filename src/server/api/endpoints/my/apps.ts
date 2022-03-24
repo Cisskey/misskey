@@ -1,14 +1,9 @@
 import $ from 'cafy';
 import define from '../../define';
-import { Apps } from '../../../../models';
+import { Apps } from '@/models/index';
 
 export const meta = {
 	tags: ['account', 'app'],
-
-	desc: {
-		'ja-JP': '自分のアプリケーション一覧を取得します。',
-		'en-US': 'Get my apps'
-	},
 
 	requireCredential: true as const,
 

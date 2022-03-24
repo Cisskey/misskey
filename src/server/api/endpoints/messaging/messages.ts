@@ -3,17 +3,12 @@ import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { ApiError } from '../../error';
 import { getUser } from '../../common/getters';
-import { MessagingMessages, UserGroups, UserGroupJoinings, Users } from '../../../../models';
+import { MessagingMessages, UserGroups, UserGroupJoinings, Users } from '@/models/index';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { Brackets } from 'typeorm';
 import { readUserMessagingMessage, readGroupMessagingMessage, deliverReadActivity } from '../../common/read-messaging-message';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'トークメッセージ一覧を取得します。',
-		'en-US': 'Get messages of messaging.'
-	},
-
 	tags: ['messaging'],
 
 	requireCredential: true as const,
@@ -23,18 +18,10 @@ export const meta = {
 	params: {
 		userId: {
 			validator: $.optional.type(ID),
-			desc: {
-				'ja-JP': '対象のユーザーのID',
-				'en-US': 'Target user ID'
-			}
 		},
 
 		groupId: {
 			validator: $.optional.type(ID),
-			desc: {
-				'ja-JP': '対象のグループのID',
-				'en-US': 'Target group ID'
-			}
 		},
 
 		limit: {

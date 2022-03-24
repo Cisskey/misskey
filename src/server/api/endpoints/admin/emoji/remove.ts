@@ -1,16 +1,12 @@
 import $ from 'cafy';
 import define from '../../../define';
 import { ID } from '@/misc/cafy-id';
-import { Emojis } from '../../../../../models';
+import { Emojis } from '@/models/index';
 import { getConnection } from 'typeorm';
-import { insertModerationLog } from '../../../../../services/insert-moderation-log';
+import { insertModerationLog } from '@/services/insert-moderation-log';
 import { ApiError } from '../../../error';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'カスタム絵文字を削除します。'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

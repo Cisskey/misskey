@@ -2,10 +2,11 @@ import $ from 'cafy';
 import * as ms from 'ms';
 import define from '../../../define';
 import { ID } from '../../../../../misc/cafy-id';
-import { DriveFiles, GalleryPosts } from '../../../../../models';
+import { DriveFiles, GalleryPosts } from '@/models/index';
 import { genId } from '../../../../../misc/gen-id';
-import { GalleryPost } from '../../../../../models/entities/gallery-post';
+import { GalleryPost } from '@/models/entities/gallery-post';
 import { ApiError } from '../../../error';
+import { DriveFile } from '@/models/entities/drive-file';
 
 export const meta = {
 	tags: ['gallery'],
@@ -55,7 +56,7 @@ export default define(meta, async (ps, user) => {
 			id: fileId,
 			userId: user.id
 		})
-	))).filter(file => file != null);
+	))).filter((file): file is DriveFile => file != null);
 
 	if (files.length === 0) {
 		throw new Error();

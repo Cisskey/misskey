@@ -1,7 +1,7 @@
 import $ from 'cafy';
 import define from '../../../define';
 import { ApiError } from '../../../error';
-import { AuthSessions } from '../../../../../models';
+import { AuthSessions } from '@/models/index';
 
 export const meta = {
 	tags: ['auth'],
@@ -11,10 +11,6 @@ export const meta = {
 	params: {
 		token: {
 			validator: $.str,
-			desc: {
-				'ja-JP': 'セッションのトークン',
-				'en-US': 'The token of a session.'
-			}
 		}
 	},
 

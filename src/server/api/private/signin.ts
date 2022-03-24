@@ -2,9 +2,9 @@ import * as Koa from 'koa';
 import * as bcrypt from 'bcryptjs';
 import * as speakeasy from 'speakeasy';
 import signin from '../common/signin';
-import config from '@/config';
-import { Users, Signins, UserProfiles, UserSecurityKeys, AttestationChallenges } from '../../../models';
-import { ILocalUser } from '../../../models/entities/user';
+import config from '@/config/index';
+import { Users, Signins, UserProfiles, UserSecurityKeys, AttestationChallenges } from '@/models/index';
+import { ILocalUser } from '@/models/entities/user';
 import { genId } from '@/misc/gen-id';
 import { verifyLogin, hash } from '../2fa';
 import { randomBytes } from 'crypto';
@@ -17,6 +17,11 @@ export default async (ctx: Koa.Context) => {
 	const username = body['username'];
 	const password = body['password'];
 	const token = body['token'];
+
+	function error(status: number, error: { id: string }) {
+		ctx.status = status;
+		ctx.body = { error };
+	}
 
 	if (typeof username != 'string') {
 		ctx.status = 400;
@@ -40,8 +45,15 @@ export default async (ctx: Koa.Context) => {
 	}) as ILocalUser;
 
 	if (user == null) {
-		ctx.throw(404, {
-			error: 'user not found'
+		error(404, {
+			id: '6cc579cc-885d-43d8-95c2-b8c7fc963280',
+		});
+		return;
+	}
+
+	if (user.isSuspended) {
+		error(403, {
+			id: 'e03a5f46-d309-4865-9b69-56282d94e1eb',
 		});
 		return;
 	}
@@ -51,7 +63,7 @@ export default async (ctx: Koa.Context) => {
 	// Compare password
 	const same = await bcrypt.compare(password, profile.password!);
 
-	async function fail(status?: number, failure?: { error: string }) {
+	async function fail(status?: number, failure?: { id: string }) {
 		// Append signin history
 		await Signins.insert({
 			id: genId(),
@@ -62,7 +74,7 @@ export default async (ctx: Koa.Context) => {
 			success: false
 		});
 
-		ctx.throw(status || 500, failure || { error: 'someting happened' });
+		error(status || 500, failure || { id: '4e30e80c-e338-45a0-8c8f-44455efa3b76' });
 	}
 
 	if (!profile.twoFactorEnabled) {
@@ -71,7 +83,7 @@ export default async (ctx: Koa.Context) => {
 			return;
 		} else {
 			await fail(403, {
-				error: 'incorrect password'
+				id: '932c904e-9460-45b7-9ce6-7ed33be7eb2c'
 			});
 			return;
 		}
@@ -80,7 +92,7 @@ export default async (ctx: Koa.Context) => {
 	if (token) {
 		if (!same) {
 			await fail(403, {
-				error: 'incorrect password'
+				id: '932c904e-9460-45b7-9ce6-7ed33be7eb2c'
 			});
 			return;
 		}
@@ -97,14 +109,14 @@ export default async (ctx: Koa.Context) => {
 			return;
 		} else {
 			await fail(403, {
-				error: 'invalid token'
+				id: 'cdf1235b-ac71-46d4-a3a6-84ccce48df6f'
 			});
 			return;
 		}
 	} else if (body.credentialId) {
 		if (!same && !profile.usePasswordLessLogin) {
 			await fail(403, {
-				error: 'incorrect password'
+				id: '932c904e-9460-45b7-9ce6-7ed33be7eb2c'
 			});
 			return;
 		}
@@ -120,7 +132,7 @@ export default async (ctx: Koa.Context) => {
 
 		if (!challenge) {
 			await fail(403, {
-				error: 'non-existent challenge'
+				id: '2715a88a-2125-4013-932f-aa6fe72792da'
 			});
 			return;
 		}
@@ -132,7 +144,7 @@ export default async (ctx: Koa.Context) => {
 
 		if (new Date().getTime() - challenge.createdAt.getTime() >= 5 * 60 * 1000) {
 			await fail(403, {
-				error: 'non-existent challenge'
+				id: '2715a88a-2125-4013-932f-aa6fe72792da'
 			});
 			return;
 		}
@@ -148,7 +160,7 @@ export default async (ctx: Koa.Context) => {
 
 		if (!securityKey) {
 			await fail(403, {
-				error: 'invalid credentialId'
+				id: '66269679-aeaf-4474-862b-eb761197e046'
 			});
 			return;
 		}
@@ -167,14 +179,14 @@ export default async (ctx: Koa.Context) => {
 			return;
 		} else {
 			await fail(403, {
-				error: 'invalid challenge data'
+				id: '93b86c4b-72f9-40eb-9815-798928603d1e'
 			});
 			return;
 		}
 	} else {
 		if (!same && !profile.usePasswordLessLogin) {
 			await fail(403, {
-				error: 'incorrect password'
+				id: '932c904e-9460-45b7-9ce6-7ed33be7eb2c'
 			});
 			return;
 		}
@@ -185,7 +197,7 @@ export default async (ctx: Koa.Context) => {
 
 		if (keys.length === 0) {
 			await fail(403, {
-				error: 'no keys found'
+				id: 'f27fd449-9af4-4841-9249-1f989b9fa4a4'
 			});
 			return;
 		}

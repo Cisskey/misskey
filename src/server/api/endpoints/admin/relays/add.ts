@@ -1,15 +1,10 @@
 import { URL } from 'url';
 import $ from 'cafy';
 import define from '../../../define';
-import { addRelay } from '../../../../../services/relay';
+import { addRelay } from '@/services/relay';
 import { ApiError } from '../../../error';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'リレーを追加します。',
-		'en-US': 'Add relay'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

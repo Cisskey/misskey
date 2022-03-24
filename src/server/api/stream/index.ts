@@ -2,19 +2,19 @@ import autobind from 'autobind-decorator';
 import * as websocket from 'websocket';
 import { readNotification } from '../common/read-notification';
 import call from '../call';
-import readNote from '../../../services/note/read';
+import readNote from '@/services/note/read';
 import Channel from './channel';
-import channels from './channels';
+import channels from './channels/index';
 import { EventEmitter } from 'events';
-import { User } from '../../../models/entities/user';
-import { Channel as ChannelModel } from '../../../models/entities/channel';
-import { Users, Followings, Mutings, UserProfiles, ChannelFollowings } from '../../../models';
+import { User } from '@/models/entities/user';
+import { Channel as ChannelModel } from '@/models/entities/channel';
+import { Users, Followings, Mutings, UserProfiles, ChannelFollowings, Blockings } from '@/models/index';
 import { ApiError } from '../error';
-import { AccessToken } from '../../../models/entities/access-token';
-import { UserProfile } from '../../../models/entities/user-profile';
-import { publishChannelStream, publishGroupMessagingStream, publishMessagingStream } from '../../../services/stream';
-import { UserGroup } from '../../../models/entities/user-group';
-import { PackedNote } from '../../../models/repositories/note';
+import { AccessToken } from '@/models/entities/access-token';
+import { UserProfile } from '@/models/entities/user-profile';
+import { publishChannelStream, publishGroupMessagingStream, publishMessagingStream } from '@/services/stream';
+import { UserGroup } from '@/models/entities/user-group';
+import { Packed } from '@/misc/schema';
 
 /**
  * Main stream connection
@@ -24,13 +24,14 @@ export default class Connection {
 	public userProfile?: UserProfile;
 	public following: Set<User['id']> = new Set();
 	public muting: Set<User['id']> = new Set();
+	public blocking: Set<User['id']> = new Set(); // "被"blocking
 	public followingChannels: Set<ChannelModel['id']> = new Set();
 	public token?: AccessToken;
 	private wsConnection: websocket.connection;
 	public subscriber: EventEmitter;
 	private channels: Channel[] = [];
 	private subscribingNotes: any = {};
-	private cachedNotes: PackedNote[] = [];
+	private cachedNotes: Packed<'Note'>[] = [];
 
 	constructor(
 		wsConnection: websocket.connection,
@@ -52,6 +53,7 @@ export default class Connection {
 		if (this.user) {
 			this.updateFollowing();
 			this.updateMuting();
+			this.updateBlocking();
 			this.updateFollowingChannels();
 			this.updateUserProfile();
 
@@ -80,6 +82,8 @@ export default class Connection {
 				this.muting.delete(body.id);
 				break;
 
+			// TODO: block events
+
 			case 'followChannel':
 				this.followingChannels.add(body.id);
 				break;
@@ -90,6 +94,11 @@ export default class Connection {
 
 			case 'updateUserProfile':
 				this.userProfile = body;
+				break;
+
+			case 'terminate':
+				this.wsConnection.close();
+				this.dispose();
 				break;
 
 			default:
@@ -141,8 +150,8 @@ export default class Connection {
 	}
 
 	@autobind
-	public cacheNote(note: PackedNote) {
-		const add = (note: PackedNote) => {
+	public cacheNote(note: Packed<'Note'>) {
+		const add = (note: Packed<'Note'>) => {
 			const existIndex = this.cachedNotes.findIndex(n => n.id === note.id);
 			if (existIndex > -1) {
 				this.cachedNotes[existIndex] = note;
@@ -156,8 +165,8 @@ export default class Connection {
 		};
 
 		add(note);
-		if (note.reply) add(note.reply as PackedNote);
-		if (note.renote) add(note.renote as PackedNote);
+		if (note.reply) add(note.reply);
+		if (note.renote) add(note.renote);
 	}
 
 	@autobind
@@ -368,6 +377,18 @@ export default class Connection {
 		});
 
 		this.muting = new Set<string>(mutings.map(x => x.muteeId));
+	}
+
+	@autobind
+	private async updateBlocking() { // ここでいうBlockingは被Blockingの意
+		const blockings = await Blockings.find({
+			where: {
+				blockeeId: this.user!.id
+			},
+			select: ['blockerId']
+		});
+
+		this.blocking = new Set<string>(blockings.map(x => x.blockerId));
 	}
 
 	@autobind

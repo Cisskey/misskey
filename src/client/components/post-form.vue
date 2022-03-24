@@ -17,7 +17,7 @@
 				<span v-if="visibility === 'followers'"><i class="fas fa-unlock"></i></span>
 				<span v-if="visibility === 'specified'"><i class="fas fa-envelope"></i></span>
 			</button>
-			<button class="submit _buttonPrimary" :disabled="!canPost" @click="post">{{ submitText }}<i :class="reply ? 'fas fa-reply' : renote ? 'fas fa-quote-right' : 'fas fa-paper-plane'"></i></button>
+			<button class="submit _buttonPrimary" :disabled="!canPost" @click="post" data-cy-open-post-form-submit>{{ submitText }}<i :class="reply ? 'fas fa-reply' : renote ? 'fas fa-quote-right' : 'fas fa-paper-plane'"></i></button>
 		</div>
 	</header>
 	<div class="form" :class="{ fixed }">
@@ -36,8 +36,8 @@
 		</div>
 		<MkInfo warn v-if="hasNotSpecifiedMentions" class="hasNotSpecifiedMentions">{{ $ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ $ts.add }}</button></MkInfo>
 		<input v-show="useCw" ref="cw" class="cw" v-model="cw" :placeholder="$ts.annotation" @keydown="onKeydown">
-		<textarea v-model="text" class="text" :class="{ withCw: useCw }" ref="text" :disabled="posting" :placeholder="placeholder" @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd" />
-		<input v-show="useHashtag" ref="hashtag" class="hashtag" v-model="hashtag" :placeholder="$ts.hashtagPlaceholder" @keydown="onKeydown">
+		<textarea v-model="text" class="text" :class="{ withCw: useCw }" ref="text" :disabled="posting" :placeholder="placeholder" @keydown="onKeydown" @paste="onPaste" @compositionupdate="onCompositionUpdate" @compositionend="onCompositionEnd" data-cy-post-form-text/>
+		<input v-show="withHashtags" ref="hashtags" class="hashtags" v-model="hashtags" :placeholder="$ts.hashtags" list="hashtags">
 		<XPostFormAttaches class="attaches" :files="files" @updated="updateFiles" @detach="detachFile" @changeSensitive="updateFileSensitive" @changeName="updateFileName"/>
 		<XPollEditor v-if="poll" :poll="poll" @destroyed="poll = null" @updated="onPollUpdate"/>
 		<footer>
@@ -45,10 +45,13 @@
 			<button class="_button" @click="togglePoll" :class="{ active: poll }" v-tooltip="$ts.poll"><i class="fas fa-poll-h"></i></button>
 			<button class="_button" @click="useCw = !useCw" :class="{ active: useCw }" v-tooltip="$ts.useCw"><i class="fas fa-eye-slash"></i></button>
 			<button class="_button" @click="insertMention" v-tooltip="$ts.mention"><i class="fas fa-at"></i></button>
+			<button class="_button" @click="withHashtags = !withHashtags" :class="{ active: withHashtags }" v-tooltip="$ts.hashtags"><i class="fas fa-hashtag"></i></button>
 			<button class="_button" @click="insertEmoji" v-tooltip="$ts.emoji"><i class="fas fa-laugh-squint"></i></button>
 			<button class="_button" @click="showActions" v-tooltip="$ts.plugin" v-if="postFormActions.length > 0"><i class="fas fa-plug"></i></button>
-			<button class="_button" @click="useHashtag = !useHashtag" :class="{ active: useHashtag }" v-tooltip="$ts.hashtag"><i class="fas fa-hashtag"></i></button>
 		</footer>
+		<datalist id="hashtags">
+			<option v-for="hashtag in recentHashtags" :value="hashtag" :key="hashtag"/>
+		</datalist>
 	</div>
 </div>
 </template>
@@ -63,16 +66,17 @@ import * as mfm from 'mfm-js';
 import { host, url } from '@client/config';
 import { erase, unique } from '../../prelude/array';
 import { extractMentions } from '@/misc/extract-mentions';
-import getAcct from '@/misc/acct/render';
+import { getAcct } from '@/misc/acct';
 import { formatTimeString } from '@/misc/format-time-string';
 import { Autocomplete } from '@client/scripts/autocomplete';
 import { noteVisibilities } from '../../types';
 import * as os from '@client/os';
 import { selectFile } from '@client/scripts/select-file';
-import { notePostInterruptors, postFormActions } from '@client/store';
+import { defaultStore, notePostInterruptors, postFormActions } from '@client/store';
 import { isMobile } from '@client/scripts/is-mobile';
 import { throttle } from 'throttle-debounce';
 import MkInfo from '@client/components/ui/info.vue';
+import { defaultStore } from '@client/store';
 
 export default defineComponent({
 	components: {
@@ -140,9 +144,7 @@ export default defineComponent({
 			files: [],
 			poll: null,
 			useCw: false,
-			useHashtag: false,
 			cw: null,
-			hashtag: '',
 			localOnly: this.$store.state.rememberNoteVisibility ? this.$store.state.localOnly : this.$store.state.defaultNoteLocalOnly,
 			visibility: this.$store.state.rememberNoteVisibility ? this.$store.state.visibility : this.$store.state.defaultNoteVisibility,
 			visibleUsers: [],
@@ -218,19 +220,13 @@ export default defineComponent({
 
 		max(): number {
 			return this.$instance ? this.$instance.maxNoteTextLength : 1000;
-		}
+		},
+
+		withHashtags: defaultStore.makeGetterSetter('postFormWithHashtags'),
+		hashtags: defaultStore.makeGetterSetter('postFormHashtags'),
 	},
 
 	watch: {
-		useHashtag() {
-			// 削除して編集のときは useHashtag の状態を更新させない
-			if (this.initialNote) return;
-			this.$store.set('useHashtag', this.useHashtag);
-		},
-
-		hashtag() {
-			this.$store.set('hashtag', this.hashtag);
-		},
 		text() {
 			this.checkMissingMention();
 		},
@@ -318,7 +314,7 @@ export default defineComponent({
 		// TODO: detach when unmount
 		new Autocomplete(this.$refs.text, this, { model: 'text' });
 		new Autocomplete(this.$refs.cw, this, { model: 'cw' });
-		new Autocomplete(this.$refs.hashtag, this, { model: 'hashtag' });
+		new Autocomplete(this.$refs.hashtags, this, { model: 'hashtags' });
 
 		this.$nextTick(() => {
 			// 書きかけの投稿を復元
@@ -335,8 +331,6 @@ export default defineComponent({
 						this.poll = draft.data.poll;
 					}
 				}
-				this.useHashtag = this.$store.state.useHashtag;
-				this.hashtag = this.$store.state.hashtag;
 			}
 
 			// 削除して編集
@@ -347,12 +341,16 @@ export default defineComponent({
 				this.cw = init.cw;
 				this.useCw = init.cw != null;
 				if (init.poll) {
-					this.poll = init.poll;
+					this.poll = {
+						choices: init.poll.choices.map(x => x.text),
+						multiple: init.poll.multiple,
+						expiresAt: init.poll.expiresAt,
+						expiredAfter: init.poll.expiredAfter,
+					};
 				}
 				this.visibility = init.visibility;
 				this.localOnly = init.localOnly;
 				this.quoteId = init.renote ? init.renote.id : null;
-				this.useHashtag = false;
 			}
 
 			this.$nextTick(() => this.watch());
@@ -613,7 +611,7 @@ export default defineComponent({
 
 		buildText() {
 			let text = this.text.trim();
-			if (this.useHashtag) {
+			if (this.withHashtags) {
 				return text += "\n" + this.hashtag.trim();
 			} else {
 				return text;
@@ -648,8 +646,8 @@ export default defineComponent({
 				this.$nextTick(() => {
 					this.deleteDraft();
 					this.$emit('posted');
-					if (this.text && this.text != '') {
-						const hashtags = mfm.parse(this.text).filter(x => x.type === 'hashtag').map(x => x.props.hashtag);
+					if (data.text && data.text != '') {
+						const hashtags = mfm.parse(data.text).filter(x => x.type === 'hashtag').map(x => x.props.hashtag);
 						const history = JSON.parse(localStorage.getItem('hashtags') || '[]') as string[];
 						localStorage.setItem('hashtags', JSON.stringify(unique(hashtags.concat(history))));
 					}
@@ -680,7 +678,7 @@ export default defineComponent({
 		},
 
 		showActions(ev) {
-			os.modalMenu(postFormActions.map(action => ({
+			os.popupMenu(postFormActions.map(action => ({
 				text: action.title,
 				action: () => {
 					action.handler({
@@ -816,7 +814,7 @@ export default defineComponent({
 		}
 
 		> .cw,
-		> .hashtag,
+		> .hashtags,
 		> .text {
 			display: block;
 			box-sizing: border-box;
@@ -845,10 +843,11 @@ export default defineComponent({
 			border-bottom: solid 0.5px var(--divider);
 		}
 
-		> .hashtag {
-			border-top: solid 1px var(--divider);
+		> .hashtags {
+			z-index: 1;
 			padding-top: 8px;
 			padding-bottom: 8px;
+			border-top: solid 0.5px var(--divider);
 		}
 
 		> .text {
@@ -914,6 +913,7 @@ export default defineComponent({
 			}
 
 			> .cw,
+			> .hashtags,
 			> .text {
 				padding: 0 16px;
 			}

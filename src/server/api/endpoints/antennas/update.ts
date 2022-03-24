@@ -2,15 +2,10 @@ import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { ApiError } from '../../error';
-import { Antennas, UserLists, UserGroupJoinings } from '../../../../models';
-import { publishInternalEvent } from '../../../../services/stream';
+import { Antennas, UserLists, UserGroupJoinings } from '@/models/index';
+import { publishInternalEvent } from '@/services/stream';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'アンテナの情報を更新します。',
-		'en-US': 'Updates the information of the specified antenna.'
-	},
-
 	tags: ['antennas'],
 
 	requireCredential: true as const,

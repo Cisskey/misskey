@@ -3,15 +3,13 @@
 	<div class="auth _section">
 		<div class="avatar" :style="{ backgroundImage: user ? `url('${ user.avatarUrl }')` : null }" v-show="withAvatar"></div>
 		<div class="normal-signin" v-if="!totpLogin">
-			<MkInput v-model:value="username" type="text" pattern="^[a-zA-Z0-9_]+$" spellcheck="false" autofocus required @update:value="onUsernameChange">
-				<span>{{ $ts.username }}</span>
+			<MkInput v-model="username" :placeholder="$ts.username" type="text" pattern="^[a-zA-Z0-9_]+$" spellcheck="false" autofocus required @update:modelValue="onUsernameChange" data-cy-signin-username>
 				<template #prefix>@</template>
 				<template #suffix>@{{ host }}</template>
 			</MkInput>
-			<MkInput v-model:value="password" type="password" :with-password-toggle="true" v-if="!user || user && !user.usePasswordLessLogin" required>
-				<span>{{ $ts.password }}</span>
+			<MkInput v-model="password" :placeholder="$ts.password" type="password" :with-password-toggle="true" v-if="!user || user && !user.usePasswordLessLogin" required data-cy-signin-password>
 				<template #prefix><i class="fas fa-lock"></i></template>
-				<template #desc><button class="_textButton" @click="resetPassword">{{ $ts.forgotPassword }}</button></template>
+				<template #caption><button class="_textButton" @click="resetPassword" type="button">{{ $ts.forgotPassword }}</button></template>
 			</MkInput>
 			<MkButton type="submit" primary :disabled="signing" style="margin: 0 auto;">{{ signing ? $ts.loggingIn : $ts.login }}</MkButton>
 		</div>
@@ -27,12 +25,12 @@
 			</div>
 			<div class="twofa-group totp-group">
 				<p style="margin-bottom:0;">{{ $ts.twoStepAuthentication }}</p>
-				<MkInput v-model:value="password" type="password" :with-password-toggle="true" v-if="user && user.usePasswordLessLogin" required>
-					<span>{{ $ts.password }}</span>
+				<MkInput v-model="password" type="password" :with-password-toggle="true" v-if="user && user.usePasswordLessLogin" required>
+					<template #label>{{ $ts.password }}</template>
 					<template #prefix><i class="fas fa-lock"></i></template>
 				</MkInput>
-				<MkInput v-model:value="token" type="text" pattern="^[0-9]{6}$" autocomplete="off" spellcheck="false" required>
-					<span>{{ $ts.token }}</span>
+				<MkInput v-model="token" type="text" pattern="^[0-9]{6}$" autocomplete="off" spellcheck="false" required>
+					<template #label>{{ $ts.token }}</template>
 					<template #prefix><i class="fas fa-gavel"></i></template>
 				</MkInput>
 				<MkButton type="submit" :disabled="signing" primary style="margin: 0 auto;">{{ signing ? $ts.loggingIn : $ts.login }}</MkButton>
@@ -56,6 +54,7 @@ import { apiUrl, host } from '@client/config';
 import { byteify, hexify } from '@client/scripts/2fa';
 import * as os from '@client/os';
 import { login } from '@client/account';
+import { showSuspendedDialog } from '../scripts/show-suspended-dialog';
 
 export default defineComponent({
 	components: {
@@ -113,7 +112,9 @@ export default defineComponent({
 
 		onLogin(res) {
 			if (this.autoSet) {
-				login(res.i);
+				return login(res.i);
+			} else {
+				return;
 			}
 		},
 
@@ -146,7 +147,7 @@ export default defineComponent({
 				});
 			}).then(res => {
 				this.$emit('login', res);
-				this.onLogin(res);
+				return this.onLogin(res);
 			}).catch(err => {
 				if (err === null) return;
 				os.dialog({
@@ -169,15 +170,7 @@ export default defineComponent({
 						this.signing = false;
 						this.challengeData = res;
 						return this.queryKey();
-					}).catch(() => {
-						os.dialog({
-							type: 'error',
-							text: this.$ts.signinFailed
-						});
-						this.challengeData = null;
-						this.totpLogin = false;
-						this.signing = false;
-					});
+					}).catch(this.loginFailed);
 				} else {
 					this.totpLogin = true;
 					this.signing = false;
@@ -190,14 +183,36 @@ export default defineComponent({
 				}).then(res => {
 					this.$emit('login', res);
 					this.onLogin(res);
-				}).catch(() => {
+				}).catch(this.loginFailed);
+			}
+		},
+
+		loginFailed(err) {
+			switch (err.id) {
+				case '6cc579cc-885d-43d8-95c2-b8c7fc963280': {
 					os.dialog({
 						type: 'error',
-						text: this.$ts.loginFailed
+						title: this.$ts.loginFailed,
+						text: this.$ts.noSuchUser
 					});
-					this.signing = false;
-				});
+					break;
+				}
+				case 'e03a5f46-d309-4865-9b69-56282d94e1eb': {
+					showSuspendedDialog();
+					break;
+				}
+				default: {
+					os.dialog({
+						type: 'error',
+						title: this.$ts.loginFailed,
+						text: JSON.stringify(err)
+					});
+				}
 			}
+
+			this.challengeData = null;
+			this.totpLogin = false;
+			this.signing = false;
 		},
 
 		resetPassword() {

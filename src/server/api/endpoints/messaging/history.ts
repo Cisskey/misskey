@@ -1,15 +1,10 @@
 import $ from 'cafy';
 import define from '../../define';
-import { MessagingMessage } from '../../../../models/entities/messaging-message';
-import { MessagingMessages, Mutings, UserGroupJoinings } from '../../../../models';
+import { MessagingMessage } from '@/models/entities/messaging-message';
+import { MessagingMessages, Mutings, UserGroupJoinings } from '@/models/index';
 import { Brackets } from 'typeorm';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'トークの履歴を取得します。',
-		'en-US': 'Show messaging history.'
-	},
-
 	tags: ['messaging'],
 
 	requireCredential: true as const,

@@ -3,7 +3,7 @@
 	<button class="item _button account" @click="openAccountMenu" v-click-anime>
 		<MkAvatar :user="$i" class="avatar"/><MkAcct class="text" :user="$i"/>
 	</button>
-	<div class="post" @click="post">
+	<div class="post" @click="post" data-cy-open-post-form>
 		<MkButton class="button" primary full>
 			<i class="fas fa-pencil-alt fa-fw"></i><span class="text" v-if="!iconOnly">{{ $ts.note }}</span>
 		</MkButton>
@@ -48,7 +48,7 @@ import { defineComponent } from 'vue';
 import { host } from '@client/config';
 import { search } from '@client/scripts/search';
 import * as os from '@client/os';
-import { sidebarDef } from '@client/sidebar';
+import { menuDef } from '@client/menu';
 import { getAccounts, addAccount, login } from '@client/account';
 import MkButton from '@client/components/ui/button.vue';
 import { StickySidebar } from '@client/scripts/sticky-sidebar';
@@ -65,7 +65,7 @@ export default defineComponent({
 			host: host,
 			accounts: [],
 			connection: null,
-			menuDef: sidebarDef,
+			menuDef: menuDef,
 			iconOnly: false,
 			settingsWindowed: false,
 		};
@@ -86,7 +86,7 @@ export default defineComponent({
 	},
 
 	watch: {
-		'$store.reactiveState.sidebarDisplay.value'() {
+		'$store.reactiveState.menuDisplay.value'() {
 			this.calcViewState();
 		},
 
@@ -111,7 +111,7 @@ export default defineComponent({
 
 	methods: {
 		calcViewState() {
-			this.iconOnly = (window.innerWidth <= 1400) || (this.$store.state.sidebarDisplay === 'icon');
+			this.iconOnly = (window.innerWidth <= 1400) || (this.$store.state.menuDisplay === 'sideIcon');
 			this.settingsWindowed = (window.innerWidth > 1400);
 		},
 
@@ -124,7 +124,7 @@ export default defineComponent({
 		},
 
 		async openAccountMenu(ev) {
-			const storedAccounts = getAccounts().filter(x => x.id !== this.$i.id);
+			const storedAccounts = await getAccounts().then(accounts => accounts.filter(x => x.id !== this.$i.id));
 			const accountsPromise = os.api('users/show', { userIds: storedAccounts.map(x => x.id) });
 
 			const accountItemPromises = storedAccounts.map(a => new Promise(res => {
@@ -139,7 +139,7 @@ export default defineComponent({
 				});
 			}));
 
-			os.modalMenu([...[{
+			os.popupMenu([...[{
 				type: 'link',
 				text: this.$ts.profile,
 				to: `/@${ this.$i.username }`,
@@ -148,7 +148,7 @@ export default defineComponent({
 				icon: 'fas fa-plus',
 				text: this.$ts.addAccount,
 				action: () => {
-					os.modalMenu([{
+					os.popupMenu([{
 						text: this.$ts.existingAccount,
 						action: () => { this.addAccount(); },
 					}, {
@@ -184,8 +184,8 @@ export default defineComponent({
 			}, 'closed');
 		},
 
-		switchAccount(account: any) {
-			const storedAccounts = getAccounts();
+		async switchAccount(account: any) {
+			const storedAccounts = await getAccounts();
 			const token = storedAccounts.find(x => x.id === account.id).token;
 			this.switchAccountWithToken(token);
 		},
@@ -244,7 +244,6 @@ export default defineComponent({
 			> .text {
 				display: none;
 			}
-
 		}
 	}
 
@@ -312,7 +311,7 @@ export default defineComponent({
 		> .indicator {
 			position: absolute;
 			top: 0;
-			left: 20px;
+			left: 0;
 			color: var(--navIndicator);
 			font-size: 8px;
 			animation: blink 1s infinite;

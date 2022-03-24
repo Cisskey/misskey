@@ -1,14 +1,9 @@
 import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
-import { AbuseUserReports } from '../../../../models';
+import { AbuseUserReports } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定した通報を解決済みにします。',
-		'en-US': 'Marks the specified report as resolved.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

@@ -1,16 +1,16 @@
-import { publishNoteStream } from '../stream';
-import renderDelete from '../../remote/activitypub/renderer/delete';
-import renderAnnounce from '../../remote/activitypub/renderer/announce';
-import renderUndo from '../../remote/activitypub/renderer/undo';
-import { renderActivity } from '../../remote/activitypub/renderer';
-import renderTombstone from '../../remote/activitypub/renderer/tombstone';
-import config from '@/config';
+import { publishNoteStream } from '@/services/stream';
+import renderDelete from '@/remote/activitypub/renderer/delete';
+import renderAnnounce from '@/remote/activitypub/renderer/announce';
+import renderUndo from '@/remote/activitypub/renderer/undo';
+import { renderActivity } from '@/remote/activitypub/renderer/index';
+import renderTombstone from '@/remote/activitypub/renderer/tombstone';
+import config from '@/config/index';
 import { registerOrFetchInstanceDoc } from '../register-or-fetch-instance-doc';
-import { User, ILocalUser, IRemoteUser } from '../../models/entities/user';
-import { Note, IMentionedRemoteUsers } from '../../models/entities/note';
-import { Notes, Users, Instances } from '../../models';
-import { notesChart, perUserNotesChart, instanceChart } from '../chart';
-import { deliverToFollowers, deliverToUser } from '../../remote/activitypub/deliver-manager';
+import { User, ILocalUser, IRemoteUser } from '@/models/entities/user';
+import { Note, IMentionedRemoteUsers } from '@/models/entities/note';
+import { Notes, Users, Instances } from '@/models/index';
+import { notesChart, perUserNotesChart, instanceChart } from '@/services/chart/index';
+import { deliverToFollowers, deliverToUser } from '@/remote/activitypub/deliver-manager';
 import { countSameRenotes } from '@/misc/count-same-renotes';
 import { deliverToRelays } from '../relay';
 import { Brackets, In } from 'typeorm';
@@ -35,7 +35,7 @@ export default async function(user: User, note: Note, quiet = false) {
 		});
 
 		//#region ローカルの投稿なら削除アクティビティを配送
-		if (Users.isLocalUser(user)) {
+		if (Users.isLocalUser(user) && !note.localOnly) {
 			let renote: Note | undefined;
 
 			// if deletd note is renote

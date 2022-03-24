@@ -3,17 +3,12 @@ import { ID } from '@/misc/cafy-id';
 import define from '../../../define';
 import { ApiError } from '../../../error';
 import { getUser } from '../../../common/getters';
-import { UserGroups, UserGroupJoinings, UserGroupInvitations } from '../../../../../models';
+import { UserGroups, UserGroupJoinings, UserGroupInvitations } from '@/models/index';
 import { genId } from '@/misc/gen-id';
-import { UserGroupInvitation } from '../../../../../models/entities/user-group-invitation';
-import { createNotification } from '../../../../../services/create-notification';
+import { UserGroupInvitation } from '@/models/entities/user-group-invitation';
+import { createNotification } from '@/services/create-notification';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したユーザーグループに指定したユーザーを招待します。',
-		'en-US': 'Invite a user to a user group.'
-	},
-
 	tags: ['groups', 'users'],
 
 	requireCredential: true as const,
@@ -27,10 +22,6 @@ export const meta = {
 
 		userId: {
 			validator: $.type(ID),
-			desc: {
-				'ja-JP': '対象のユーザーのID',
-				'en-US': 'Target user ID'
-			}
 		},
 	},
 

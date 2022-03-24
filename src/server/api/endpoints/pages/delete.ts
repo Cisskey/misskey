@@ -1,14 +1,10 @@
 import $ from 'cafy';
 import define from '../../define';
 import { ApiError } from '../../error';
-import { Pages } from '../../../../models';
+import { Pages } from '@/models/index';
 import { ID } from '@/misc/cafy-id';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したページを削除します。',
-	},
-
 	tags: ['pages'],
 
 	requireCredential: true as const,
@@ -18,10 +14,6 @@ export const meta = {
 	params: {
 		pageId: {
 			validator: $.type(ID),
-			desc: {
-				'ja-JP': '対象のページのID',
-				'en-US': 'Target page ID.'
-			}
 		},
 	},
 

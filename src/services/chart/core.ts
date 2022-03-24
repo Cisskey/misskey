@@ -7,9 +7,9 @@
 import * as nestedProperty from 'nested-property';
 import autobind from 'autobind-decorator';
 import Logger from '../logger';
-import { Schema } from '@/misc/schema';
+import { SimpleSchema } from '@/misc/simple-schema';
 import { EntitySchema, getRepository, Repository, LessThan, Between } from 'typeorm';
-import { dateUTC, isTimeSame, isTimeBefore, subtractTime, addTime } from '../../prelude/time';
+import { dateUTC, isTimeSame, isTimeBefore, subtractTime, addTime } from '@/prelude/time';
 import { getChartInsertLock } from '@/misc/app-lock';
 
 const logger = new Logger('chart', 'white', process.env.NODE_ENV !== 'test');
@@ -52,11 +52,11 @@ export default abstract class Chart<T extends Record<string, any>> {
 	private static readonly columnDot = '_';
 
 	private name: string;
-	private queue: {
+	private buffer: {
 		diff: DeepPartial<T>;
 		group: string | null;
 	}[] = [];
-	public schema: Schema;
+	public schema: SimpleSchema;
 	protected repository: Repository<Log>;
 
 	protected abstract genNewLog(latest: T): DeepPartial<T>;
@@ -69,7 +69,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 	protected abstract fetchActual(group: string | null): Promise<DeepPartial<T>>;
 
 	@autobind
-	private static convertSchemaToFlatColumnDefinitions(schema: Schema) {
+	private static convertSchemaToFlatColumnDefinitions(schema: SimpleSchema) {
 		const columns = {} as any;
 		const flatColumns = (x: Obj, path?: string) => {
 			for (const [k, v] of Object.entries(x)) {
@@ -93,7 +93,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 	}
 
 	@autobind
-	private static convertFlattenColumnsToObject(x: Record<string, number>) {
+	private static convertFlattenColumnsToObject(x: Record<string, any>): Record<string, any> {
 		const obj = {} as any;
 		for (const k of Object.keys(x).filter(k => k.startsWith(Chart.columnPrefix))) {
 			// now k is ___x_y_z
@@ -181,7 +181,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 	}
 
 	@autobind
-	public static schemaToEntity(name: string, schema: Schema): EntitySchema {
+	public static schemaToEntity(name: string, schema: SimpleSchema): EntitySchema {
 		return new EntitySchema({
 			name: `__chart__${camelToSnake(name)}`,
 			columns: {
@@ -201,16 +201,17 @@ export default abstract class Chart<T extends Record<string, any>> {
 				...Chart.convertSchemaToFlatColumnDefinitions(schema)
 			},
 			indices: [{
-				columns: ['date']
-			}, {
-				columns: ['group']
-			}, {
-				columns: ['date', 'group']
+				columns: ['date', 'group'],
+				unique: true,
+			}, { // groupにnullが含まれると↑のuniqueは機能しないので↓の部分インデックスでカバー
+				columns: ['date'],
+				unique: true,
+				where: '"group" IS NULL'
 			}]
 		});
 	}
 
-	constructor(name: string, schema: Schema, grouped = false) {
+	constructor(name: string, schema: SimpleSchema, grouped = false) {
 		this.name = name;
 		this.schema = schema;
 		const entity = Chart.schemaToEntity(name, schema);
@@ -285,8 +286,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 		const latest = await this.getLatestLog(group);
 
 		if (latest != null) {
-			const obj = Chart.convertFlattenColumnsToObject(
-				latest as Record<string, any>);
+			const obj = Chart.convertFlattenColumnsToObject(latest) as T;
 
 			// 空ログデータを作成
 			data = this.getNewLog(obj);
@@ -315,11 +315,11 @@ export default abstract class Chart<T extends Record<string, any>> {
 			if (currentLog != null) return currentLog;
 
 			// 新規ログ挿入
-			log = await this.repository.save({
+			log = await this.repository.insert({
 				group: group,
 				date: date,
 				...Chart.convertObjectToFlattenColumns(data)
-			});
+			}).then(x => this.repository.findOneOrFail(x.identifiers[0]));
 
 			logger.info(`${this.name + (group ? `:${group}` : '')}: New commit created`);
 
@@ -331,28 +331,28 @@ export default abstract class Chart<T extends Record<string, any>> {
 
 	@autobind
 	protected commit(diff: DeepPartial<T>, group: string | null = null): void {
-		this.queue.push({
+		this.buffer.push({
 			diff, group,
 		});
 	}
 
 	@autobind
 	public async save() {
-		if (this.queue.length === 0) {
+		if (this.buffer.length === 0) {
 			logger.info(`${this.name}: Write skipped`);
 			return;
 		}
 
-		// TODO: 前の時間のログがqueueにあった場合のハンドリング
+		// TODO: 前の時間のログがbufferにあった場合のハンドリング
 		// 例えば、save が20分ごとに行われるとして、前回行われたのは 01:50 だったとする。
-		// 次に save が行われるのは 02:10 ということになるが、もし 01:55 に新規ログが queue に追加されたとすると、
+		// 次に save が行われるのは 02:10 ということになるが、もし 01:55 に新規ログが buffer に追加されたとすると、
 		// そのログは本来は 01:00~ のログとしてDBに保存されて欲しいのに、02:00~ のログ扱いになってしまう。
 		// これを回避するための実装は複雑になりそうなため、一旦保留。
 
 		const update = async (log: Log) => {
 			const finalDiffs = {} as Record<string, number | unknown[]>;
 
-			for (const diff of this.queue.filter(q => q.group === log.group).map(q => q.diff)) {
+			for (const diff of this.buffer.filter(q => q.group === log.group).map(q => q.diff)) {
 				const columns = Chart.convertObjectToFlattenColumns(diff);
 
 				for (const [k, v] of Object.entries(columns)) {
@@ -379,11 +379,11 @@ export default abstract class Chart<T extends Record<string, any>> {
 
 			logger.info(`${this.name + (log.group ? `:${log.group}` : '')}: Updated`);
 
-			// TODO: この一連の処理が始まった後に新たにqueueに入ったものは消さないようにする
-			this.queue = this.queue.filter(q => q.group !== log.group);
+			// TODO: この一連の処理が始まった後に新たにbufferに入ったものは消さないようにする
+			this.buffer = this.buffer.filter(q => q.group !== log.group);
 		};
 
-		const groups = removeDuplicates(this.queue.map(log => log.group));
+		const groups = removeDuplicates(this.buffer.map(log => log.group));
 
 		await Promise.all(groups.map(group => this.getCurrentLog(group).then(log => update(log))));
 	}
@@ -474,13 +474,13 @@ export default abstract class Chart<T extends Record<string, any>> {
 				const log = logs.find(l => isTimeSame(new Date(l.date * 1000), current));
 
 				if (log) {
-					const data = Chart.convertFlattenColumnsToObject(log as Record<string, any>);
-					chart.unshift(Chart.countUniqueFields(data));
+					const data = Chart.convertFlattenColumnsToObject(log);
+					chart.unshift(Chart.countUniqueFields(data) as T);
 				} else {
 					// 隙間埋め
 					const latest = logs.find(l => isTimeBefore(new Date(l.date * 1000), current));
-					const data = latest ? Chart.convertFlattenColumnsToObject(latest as Record<string, any>) : null;
-					chart.unshift(Chart.countUniqueFields(this.getNewLog(data)));
+					const data = latest ? Chart.convertFlattenColumnsToObject(latest) as T : null;
+					chart.unshift(Chart.countUniqueFields(this.getNewLog(data)) as T);
 				}
 			}
 		} else if (span === 'day') {
@@ -497,14 +497,14 @@ export default abstract class Chart<T extends Record<string, any>> {
 
 				if (log) {
 					if (logsForEachDays[currentDayIndex]) {
-						logsForEachDays[currentDayIndex].unshift(Chart.convertFlattenColumnsToObject(log));
+						logsForEachDays[currentDayIndex].unshift(Chart.convertFlattenColumnsToObject(log) as T);
 					} else {
-						logsForEachDays[currentDayIndex] = [Chart.convertFlattenColumnsToObject(log)];
+						logsForEachDays[currentDayIndex] = [Chart.convertFlattenColumnsToObject(log) as T];
 					}
 				} else {
 					// 隙間埋め
 					const latest = logs.find(l => isTimeBefore(new Date(l.date * 1000), current));
-					const data = latest ? Chart.convertFlattenColumnsToObject(latest as Record<string, any>) : null;
+					const data = latest ? Chart.convertFlattenColumnsToObject(latest) as T : null;
 					const newLog = this.getNewLog(data);
 					if (logsForEachDays[currentDayIndex]) {
 						logsForEachDays[currentDayIndex].unshift(newLog);
@@ -516,7 +516,7 @@ export default abstract class Chart<T extends Record<string, any>> {
 
 			for (const logs of logsForEachDays) {
 				const log = this.aggregate(logs);
-				chart.unshift(Chart.countUniqueFields(log));
+				chart.unshift(Chart.countUniqueFields(log) as T);
 			}
 		}
 
@@ -546,8 +546,8 @@ export default abstract class Chart<T extends Record<string, any>> {
 	}
 }
 
-export function convertLog(logSchema: Schema): Schema {
-	const v: Schema = JSON.parse(JSON.stringify(logSchema)); // copy
+export function convertLog(logSchema: SimpleSchema): SimpleSchema {
+	const v: SimpleSchema = JSON.parse(JSON.stringify(logSchema)); // copy
 	if (v.type === 'number') {
 		v.type = 'array';
 		v.items = {

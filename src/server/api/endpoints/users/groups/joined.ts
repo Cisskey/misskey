@@ -1,12 +1,8 @@
 import define from '../../../define';
-import { UserGroups, UserGroupJoinings } from '../../../../../models';
+import { UserGroups, UserGroupJoinings } from '@/models/index';
 import { Not, In } from 'typeorm';
 
 export const meta = {
-	desc: {
-		'ja-JP': '自分の所属するユーザーグループ一覧を取得します。'
-	},
-
 	tags: ['groups', 'account'],
 
 	requireCredential: true as const,

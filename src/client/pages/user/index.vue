@@ -1,9 +1,9 @@
 <template>
 <transition name="fade" mode="out-in">
 	<div class="ftskorzw wide" v-if="user && narrow === false">
-		<MkRemoteCaution v-if="user.host != null" :href="user.url" class="_gap"/>
+		<MkRemoteCaution v-if="user.host != null" :href="user.url"/>
 
-		<div class="banner-container _gap" :style="style">
+		<div class="banner-container" :style="style">
 			<div class="banner" ref="banner" :style="style"></div>
 		</div>
 		<div class="contents">
@@ -60,23 +60,9 @@
 				<XPhotos :user="user" :key="user.id" class="_gap"/>
 			</div>
 			<div class="main">
-				<div class="nav _gap">
-					<MkA :to="userPage(user)" :class="{ active: page === 'index' }" class="link">
-						<i class="fas fa-comment-alt icon"></i>
-						<span>{{ $ts.notes }}</span>
-					</MkA>
-					<MkA :to="userPage(user, 'clips')" :class="{ active: page === 'clips' }" class="link">
-						<i class="fas fa-paperclip icon"></i>
-						<span>{{ $ts.clips }}</span>
-					</MkA>
-					<MkA :to="userPage(user, 'pages')" :class="{ active: page === 'pages' }" class="link">
-						<i class="fas fa-file-alt icon"></i>
-						<span>{{ $ts.pages }}</span>
-					</MkA>
-					<div class="actions">
-						<button @click="menu" class="menu _button"><i class="fas fa-ellipsis-h"></i></button>
-						<MkFollowButton v-if="!$i || $i.id != user.id" :user="user" :inline="true" :transparent="false" :full="true" large class="koudoku"/>
-					</div>
+				<div class="actions">
+					<button @click="menu" class="menu _button"><i class="fas fa-ellipsis-h"></i></button>
+					<MkFollowButton v-if="!$i || $i.id != user.id" :user="user" :inline="true" :transparent="false" :full="true" large class="koudoku"/>
 				</div>
 				<template v-if="page === 'index'">
 					<div v-if="user.pinnedNotes.length > 0" class="_gap">
@@ -178,25 +164,6 @@
 		</div>
 
 		<div class="contents">
-			<div class="nav _gap">
-				<MkA :to="userPage(user)" :class="{ active: page === 'index' }" class="link" v-click-anime>
-					<i class="fas fa-comment-alt icon"></i>
-					<span>{{ $ts.notes }}</span>
-				</MkA>
-				<MkA :to="userPage(user, 'clips')" :class="{ active: page === 'clips' }" class="link" v-click-anime>
-					<i class="fas fa-paperclip icon"></i>
-					<span>{{ $ts.clips }}</span>
-				</MkA>
-				<MkA :to="userPage(user, 'pages')" :class="{ active: page === 'pages' }" class="link" v-click-anime>
-					<i class="fas fa-file-alt icon"></i>
-					<span>{{ $ts.pages }}</span>
-				</MkA>
-				<MkA :to="userPage(user, 'gallery')" :class="{ active: page === 'gallery' }" class="link" v-click-anime>
-					<i class="fas fa-icons icon"></i>
-					<span>{{ $ts.gallery }}</span>
-				</MkA>
-			</div>
-
 			<template v-if="page === 'index'">
 				<div>
 					<div v-if="user.pinnedNotes.length > 0" class="_gap">
@@ -234,11 +201,11 @@ import MkRemoteCaution from '@client/components/remote-caution.vue';
 import MkTab from '@client/components/tab.vue';
 import MkInfo from '@client/components/ui/info.vue';
 import Progress from '@client/scripts/loading';
-import parseAcct from '@/misc/acct/parse';
+import { parseAcct } from '@/misc/acct';
 import { getScrollPosition } from '@client/scripts/scroll';
 import { getUserMenu } from '@client/scripts/get-user-menu';
-import number from '../../filters/number';
-import { userPage, acct as getAcct } from '../../filters/user';
+import number from '@client/filters/number';
+import { userPage, acct as getAcct } from '@client/filters/user';
 import * as os from '@client/os';
 import * as symbols from '@client/symbols';
 
@@ -276,13 +243,34 @@ export default defineComponent({
 		return {
 			[symbols.PAGE_INFO]: computed(() => this.user ? {
 				title: this.user.name ? `${this.user.name} (@${this.user.username})` : `@${this.user.username}`,
+				subtitle: `@${getAcct(this.user)}`,
 				userName: this.user,
 				avatar: this.user,
 				path: `/@${this.user.username}`,
 				share: {
 					title: this.user.name,
 				},
-				menu: () => getUserMenu(this.user),
+				bg: 'var(--bg)',
+				tabs: [{
+					active: this.page === 'index',
+					title: this.$ts.overview,
+					icon: 'fas fa-home',
+				}, {
+					active: this.page === 'clips',
+					title: this.$ts.clips,
+					icon: 'fas fa-paperclip',
+					onClick: () => { this.page = 'clips'; },
+				}, {
+					active: this.page === 'pages',
+					title: this.$ts.pages,
+					icon: 'fas fa-file-alt',
+					onClick: () => { this.page = 'pages'; },
+				}, {
+					active: this.page === 'gallery',
+					title: this.$ts.gallery,
+					icon: 'fas fa-icons',
+					onClick: () => { this.page = 'gallery'; },
+				}]
 			} : null),
 			user: null,
 			error: null,
@@ -314,7 +302,7 @@ export default defineComponent({
 
 	mounted() {
 		window.requestAnimationFrame(this.parallaxLoop);
-		this.narrow = true; //this.$el.clientWidth < 1000;
+		this.narrow = true//this.$el.clientWidth < 1000;
 	},
 
 	beforeUnmount() {
@@ -338,7 +326,7 @@ export default defineComponent({
 		},
 
 		menu(ev) {
-			os.modalMenu(getUserMenu(this.user), ev.currentTarget || ev.target);
+			os.popupMenu(getUserMenu(this.user), ev.currentTarget || ev.target);
 		},
 
 		parallaxLoop() {
@@ -382,13 +370,10 @@ export default defineComponent({
 }
 
 .ftskorzw.wide {
-	max-width: 1150px;
-	margin: 0 auto;
 
 	> .banner-container {
 		position: relative;
-		height: 450px;
-		border-radius: 16px;
+		height: 300px;
 		overflow: hidden;
 		background-size: cover;
 		background-position: center;
@@ -405,6 +390,7 @@ export default defineComponent({
 
 	> .contents {
 		display: flex;
+		padding: 16px;
 
 		> .side {
 			width: 360px;
@@ -562,6 +548,7 @@ export default defineComponent({
 .ftskorzw.narrow {
 	box-sizing: border-box;
 	overflow: clip;
+	background: var(--bg);
 
 	> .punished {
 		font-size: 0.8em;
@@ -614,8 +601,8 @@ export default defineComponent({
 					position: absolute;
 					top: 12px;
 					right: 12px;
-					-webkit-backdrop-filter: blur(8px);
-					backdrop-filter: blur(8px);
+					-webkit-backdrop-filter: var(--blur, blur(8px));
+					backdrop-filter: var(--blur, blur(8px));
 					background: rgba(0, 0, 0, 0.2);
 					padding: 8px;
 					border-radius: 24px;
@@ -773,37 +760,6 @@ export default defineComponent({
 	}
 
 	> .contents {
-		> .nav {
-			display: flex;
-			align-items: center;
-			font-size: 90%;
-
-			> .link {
-				flex: 1;
-				display: inline-block;
-				padding: 16px;
-				text-align: center;
-				border-bottom: solid 3px transparent;
-
-				&:hover {
-					text-decoration: none;
-				}
-
-				&.active {
-					color: var(--accent);
-					border-bottom-color: var(--accent);
-				}
-
-				&:not(.active):hover {
-					color: var(--fgHighlighted);
-				}
-
-				> .icon {
-					margin-right: 6px;
-				}
-			}
-		}
-
 		> .content {
 			margin-bottom: var(--margin);
 		}

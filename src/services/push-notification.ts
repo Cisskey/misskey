@@ -1,15 +1,13 @@
 import * as push from 'web-push';
-import config from '@/config';
-import { SwSubscriptions } from '../models';
+import config from '@/config/index';
+import { SwSubscriptions } from '@/models/index';
 import { fetchMeta } from '@/misc/fetch-meta';
-import { PackedNotification } from '../models/repositories/notification';
-import { PackedMessagingMessage } from '../models/repositories/messaging-message';
-import { postWebhookJob } from '../queue';
-import { UserProfiles } from '../models';
+import { postWebhookJob } from './queue';
+import { UserProfiles } from '@/models';
+import { Packed } from '@/misc/schema';
 
-export const notification = ['notification', 'unreadMessagingMessage'] as const;
-export type notificationType = typeof notification[number];
-export type notificationBody = PackedNotification | PackedMessagingMessage;
+type notificationType = 'notification' | 'unreadMessagingMessage';
+type notificationBody = Packed<'Notification'> | Packed<'MessagingMessage'>;
 
 export default async function(userId: string, type: notificationType, body: notificationBody) {
 	const meta = await fetchMeta();

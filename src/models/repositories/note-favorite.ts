@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { NoteFavorite } from '../entities/note-favorite';
-import { Notes } from '..';
-import { User } from '../entities/user';
+import { NoteFavorite } from '@/models/entities/note-favorite';
+import { Notes } from '../index';
+import { User } from '@/models/entities/user';
 
 @EntityRepository(NoteFavorite)
 export class NoteFavoriteRepository extends Repository<NoteFavorite> {
@@ -35,19 +35,17 @@ export const packedNoteFavoriteSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'id',
-			description: 'The unique identifier for this favorite.',
 			example: 'xxxxxxxxxx',
 		},
 		createdAt: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'date-time',
-			description: 'The date that the favorite was created.'
 		},
 		note: {
 			type: 'object' as const,
 			optional: false as const, nullable: false as const,
-			ref: 'Note',
+			ref: 'Note' as const,
 		},
 		noteId: {
 			type: 'string' as const,

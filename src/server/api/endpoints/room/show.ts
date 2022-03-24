@@ -1,15 +1,11 @@
 import $ from 'cafy';
 import define from '../../define';
 import { ApiError } from '../../error';
-import { Users, UserProfiles } from '../../../../models';
+import { Users, UserProfiles } from '@/models/index';
 import { ID } from '@/misc/cafy-id';
 import { toPunyNullable } from '@/misc/convert-host';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したユーザーの部屋の情報を取得します。',
-	},
-
 	tags: ['room'],
 
 	requireCredential: false as const,
@@ -17,10 +13,6 @@ export const meta = {
 	params: {
 		userId: {
 			validator: $.optional.type(ID),
-			desc: {
-				'ja-JP': '対象のユーザーのID',
-				'en-US': 'Target user ID'
-			}
 		},
 
 		username: {
@@ -67,7 +59,6 @@ export const meta = {
 						props: {
 							type: 'object' as const,
 							optional: true as const, nullable: false as const,
-							description: 'Properties vary depending on the furniture'
 						},
 						position: {
 							type: 'object' as const,

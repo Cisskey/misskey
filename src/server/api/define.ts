@@ -1,9 +1,11 @@
 import * as fs from 'fs';
-import { ILocalUser } from '../../models/entities/user';
+import { ILocalUser } from '@/models/entities/user';
 import { IEndpointMeta } from './endpoints';
 import { ApiError } from './error';
 import { SchemaType } from '@/misc/schema';
-import { AccessToken } from '../../models/entities/access-token';
+import { AccessToken } from '@/models/entities/access-token';
+
+type NonOptional<T> = T extends undefined ? never : T;
 
 type SimpleUserInfo = {
 	id: ILocalUser['id'];
@@ -17,11 +19,12 @@ type SimpleUserInfo = {
 	isSilenced: ILocalUser['isSilenced'];
 };
 
-// TODO: defaultが設定されている場合はその型も考慮する
 type Params<T extends IEndpointMeta> = {
 	[P in keyof T['params']]: NonNullable<T['params']>[P]['transform'] extends Function
 		? ReturnType<NonNullable<T['params']>[P]['transform']>
-		: ReturnType<NonNullable<T['params']>[P]['validator']['get']>[0];
+		: NonNullable<T['params']>[P]['default'] extends null | number | string
+			? NonOptional<ReturnType<NonNullable<T['params']>[P]['validator']['get']>[0]>
+			: ReturnType<NonNullable<T['params']>[P]['validator']['get']>[0];
 };
 
 export type Response = Record<string, any> | void;

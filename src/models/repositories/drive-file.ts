@@ -1,16 +1,14 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { DriveFile } from '../entities/drive-file';
-import { Users, DriveFolders } from '..';
-import { User } from '../entities/user';
+import { DriveFile } from '@/models/entities/drive-file';
+import { Users, DriveFolders } from '../index';
+import { User } from '@/models/entities/user';
 import { toPuny } from '@/misc/convert-host';
-import { awaitAll } from '../../prelude/await-all';
-import { SchemaType } from '@/misc/schema';
-import config from '@/config';
-import { query, appendQuery } from '../../prelude/url';
-import { Meta } from '../entities/meta';
+import { awaitAll } from '@/prelude/await-all';
+import { Packed } from '@/misc/schema';
+import config from '@/config/index';
+import { query, appendQuery } from '@/prelude/url';
+import { Meta } from '@/models/entities/meta';
 import { fetchMeta } from '@/misc/fetch-meta';
-
-export type PackedDriveFile = SchemaType<typeof packedDriveFileSchema>;
 
 type PackOptions = {
 	detail?: boolean,
@@ -59,6 +57,7 @@ export class DriveFileRepository extends Repository<DriveFile> {
 		const { sum } = await this
 			.createQueryBuilder('file')
 			.where('file.userId = :id', { id: id })
+			.andWhere('file.isLink = FALSE')
 			.select('SUM(file.size)', 'sum')
 			.getRawOne();
 
@@ -69,6 +68,7 @@ export class DriveFileRepository extends Repository<DriveFile> {
 		const { sum } = await this
 			.createQueryBuilder('file')
 			.where('file.userHost = :host', { host: toPuny(host) })
+			.andWhere('file.isLink = FALSE')
 			.select('SUM(file.size)', 'sum')
 			.getRawOne();
 
@@ -79,6 +79,7 @@ export class DriveFileRepository extends Repository<DriveFile> {
 		const { sum } = await this
 			.createQueryBuilder('file')
 			.where('file.userHost IS NULL')
+			.andWhere('file.isLink = FALSE')
 			.select('SUM(file.size)', 'sum')
 			.getRawOne();
 
@@ -89,18 +90,19 @@ export class DriveFileRepository extends Repository<DriveFile> {
 		const { sum } = await this
 			.createQueryBuilder('file')
 			.where('file.userHost IS NOT NULL')
+			.andWhere('file.isLink = FALSE')
 			.select('SUM(file.size)', 'sum')
 			.getRawOne();
 
 		return parseInt(sum, 10) || 0;
 	}
 
-	public async pack(src: DriveFile['id'], options?: PackOptions): Promise<PackedDriveFile | null>;
-	public async pack(src: DriveFile, options?: PackOptions): Promise<PackedDriveFile>;
+	public async pack(src: DriveFile['id'], options?: PackOptions): Promise<Packed<'DriveFile'> | null>;
+	public async pack(src: DriveFile, options?: PackOptions): Promise<Packed<'DriveFile'>>;
 	public async pack(
 		src: DriveFile['id'] | DriveFile,
 		options?: PackOptions
-	): Promise<PackedDriveFile | null> {
+	): Promise<Packed<'DriveFile'> | null> {
 		const opts = Object.assign({
 			detail: false,
 			self: false
@@ -150,44 +152,37 @@ export const packedDriveFileSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'id',
-			description: 'The unique identifier for this Drive file.',
 			example: 'xxxxxxxxxx',
 		},
 		createdAt: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'date-time',
-			description: 'The date that the Drive file was created on Misskey.'
 		},
 		name: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
-			description: 'The file name with extension.',
 			example: 'lenna.jpg'
 		},
 		type: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
-			description: 'The MIME type of this Drive file.',
 			example: 'image/jpeg'
 		},
 		md5: {
 			type: 'string' as const,
 			optional: false as const, nullable: false as const,
 			format: 'md5',
-			description: 'The MD5 hash of this Drive file.',
 			example: '15eca7fba0480996e2245f5185bf39f2'
 		},
 		size: {
 			type: 'number' as const,
 			optional: false as const, nullable: false as const,
-			description: 'The size of this Drive file. (bytes)',
 			example: 51469
 		},
 		isSensitive: {
 			type: 'boolean' as const,
 			optional: false as const, nullable: false as const,
-			description: 'Whether this Drive file is sensitive.',
 		},
 		blurhash: {
 			type: 'string' as const,
@@ -218,13 +213,11 @@ export const packedDriveFileSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: true as const,
 			format: 'url',
-			description: 'The URL of this Drive file.',
 		},
 		thumbnailUrl: {
 			type: 'string' as const,
 			optional: false as const, nullable: true as const,
 			format: 'url',
-			description: 'The thumbnail URL of this Drive file.',
 		},
 		comment: {
 			type: 'string' as const,
@@ -234,27 +227,23 @@ export const packedDriveFileSchema = {
 			type: 'string' as const,
 			optional: false as const, nullable: true as const,
 			format: 'id',
-			description: 'The parent folder ID of this Drive file.',
 			example: 'xxxxxxxxxx',
 		},
 		folder: {
 			type: 'object' as const,
 			optional: true as const, nullable: true as const,
-			description: 'The parent folder of this Drive file.',
-			ref: 'DriveFolder'
+			ref: 'DriveFolder' as const,
 		},
 		userId: {
 			type: 'string' as const,
 			optional: false as const, nullable: true as const,
 			format: 'id',
-			description: 'Owner ID of this Drive file.',
 			example: 'xxxxxxxxxx',
 		},
 		user: {
 			type: 'object' as const,
 			optional: true as const, nullable: true as const,
-			description: 'Owner of this Drive file.',
-			ref: 'User'
+			ref: 'User' as const,
 		}
 	},
 };

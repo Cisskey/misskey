@@ -1,13 +1,8 @@
 import $ from 'cafy';
 import define from '../../define';
-import { Users } from '../../../../models';
+import { Users } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '管理者用のユーザー一覧を表示します。',
-		'en-US': 'Displays a list of users for administrators.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

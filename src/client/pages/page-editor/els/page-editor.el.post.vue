@@ -3,10 +3,10 @@
 	<template #header><i class="fas fa-paper-plane"></i> {{ $ts._pages.blocks.post }}</template>
 
 	<section style="padding: 16px;">
-		<MkTextarea v-model:value="value.text">{{ $ts._pages.blocks._post.text }}</MkTextarea>
-		<MkSwitch v-model:value="value.attachCanvasImage"><span>{{ $ts._pages.blocks._post.attachCanvasImage }}</span></MkSwitch>
-		<MkInput v-if="value.attachCanvasImage" v-model:value="value.canvasId"><span>{{ $ts._pages.blocks._post.canvasId }}</span></MkInput>
-		<MkSelect v-model:value="value.channelId">
+		<MkTextarea v-model="value.text">{{ $ts._pages.blocks._post.text }}</MkTextarea>
+		<MkSwitch v-model="value.attachCanvasImage"><span>{{ $ts._pages.blocks._post.attachCanvasImage }}</span></MkSwitch>
+		<MkInput v-if="value.attachCanvasImage" v-model="value.canvasId"><template #label>{{ $ts._pages.blocks._post.canvasId }}</template></MkInput>
+		<MkSelect v-model="value.channelId">
 			<template #label>{{ $ts._pages.blocks._post.channel }}</template>
 			<option value=""></option>
 			<option v-for="channel in channels" :value="channel.id">{{ channel.name }}</option>

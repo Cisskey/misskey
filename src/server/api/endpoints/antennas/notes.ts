@@ -1,18 +1,15 @@
 import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
-import { Antennas, Notes, AntennaNotes } from '../../../../models';
+import readNote from '@/services/note/read';
+import { Antennas, Notes, AntennaNotes } from '@/models/index';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { generateVisibilityQuery } from '../../common/generate-visibility-query';
 import { generateMutedUserQuery } from '../../common/generate-muted-user-query';
 import { ApiError } from '../../error';
+import { generateBlockedUserQuery } from '../../common/generate-block-query';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したアンテナのノート一覧を表示します。',
-		'en-US': 'Displays a list of notes for the specified antenna.'
-	},
-
 	tags: ['antennas', 'account', 'notes'],
 
 	requireCredential: true as const,
@@ -82,10 +79,15 @@ export default define(meta, async (ps, user) => {
 
 	generateVisibilityQuery(query, user);
 	generateMutedUserQuery(query, user);
+	generateBlockedUserQuery(query, user);
 
 	const notes = await query
 		.take(ps.limit!)
 		.getMany();
+
+	if (notes.length > 0) {
+		readNote(user.id, notes);
+	}
 
 	return await Notes.packMany(notes, user);
 });

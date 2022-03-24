@@ -1,26 +1,14 @@
 import { computed, reactive } from 'vue';
+import * as Misskey from 'misskey-js';
 import { api } from './os';
 
 // TODO: 他のタブと永続化されたstateを同期
-
-export type Instance = {
-	emojis: {
-		category: string;
-	}[];
-	ads: {
-		id: string;
-		ratio: number;
-		place: string;
-		url: string;
-		imageUrl: string;
-	}[];
-};
 
 const data = localStorage.getItem('instance');
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
-export const instance: Instance = reactive(data ? JSON.parse(data) : {
+export const instance: Misskey.entities.InstanceMetadata = reactive(data ? JSON.parse(data) : {
 	// TODO: set default values
 });
 
@@ -37,6 +25,7 @@ export async function fetchInstance() {
 }
 
 export const emojiCategories = computed(() => {
+	if (instance.emojis == null) return [];
 	const categories = new Set();
 	for (const emoji of instance.emojis) {
 		categories.add(emoji.category);
@@ -45,6 +34,7 @@ export const emojiCategories = computed(() => {
 });
 
 export const emojiTags = computed(() => {
+	if (instance.emojis == null) return [];
 	const tags = new Set();
 	for (const emoji of instance.emojis) {
 		for (const tag of emoji.aliases) {

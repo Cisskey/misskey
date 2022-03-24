@@ -1,15 +1,10 @@
 import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
-import { PageLikes } from '../../../../models';
+import { PageLikes } from '@/models/index';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 
 export const meta = {
-	desc: {
-		'ja-JP': '「いいね」したページ一覧を取得します。',
-		'en-US': 'Get liked pages'
-	},
-
 	tags: ['account', 'pages'],
 
 	requireCredential: true as const,

@@ -3,15 +3,10 @@ import { ID } from '@/misc/cafy-id';
 import define from '../../../define';
 import { ApiError } from '../../../error';
 import { getNote } from '../../../common/getters';
-import { NoteFavorites } from '../../../../../models';
+import { NoteFavorites } from '@/models/index';
 import { genId } from '@/misc/gen-id';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定した投稿をお気に入りに登録します。',
-		'en-US': 'Favorite a note.'
-	},
-
 	tags: ['notes', 'favorites'],
 
 	requireCredential: true as const,
@@ -21,10 +16,6 @@ export const meta = {
 	params: {
 		noteId: {
 			validator: $.type(ID),
-			desc: {
-				'ja-JP': '対象の投稿のID',
-				'en-US': 'Target note ID.'
-			}
 		}
 	},
 

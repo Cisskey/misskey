@@ -1,9 +1,10 @@
 import autobind from 'autobind-decorator';
 import Channel from '../channel';
-import { Notes, UserListJoinings, UserLists } from '../../../../models';
+import { Notes, UserListJoinings, UserLists } from '@/models/index';
 import { isMutedUserRelated } from '@/misc/is-muted-user-related';
-import { User } from '../../../../models/entities/user';
-import { PackedNote } from '../../../../models/repositories/note';
+import { User } from '@/models/entities/user';
+import { isBlockerUserRelated } from '@/misc/is-blocker-user-related';
+import { Packed } from '@/misc/schema';
 
 export default class extends Channel {
 	public readonly chName = 'userList';
@@ -46,7 +47,7 @@ export default class extends Channel {
 	}
 
 	@autobind
-	private async onNote(note: PackedNote) {
+	private async onNote(note: Packed<'Note'>) {
 		if (!this.listUsers.includes(note.userId)) return;
 
 		if (['followers', 'specified'].includes(note.visibility)) {
@@ -74,6 +75,8 @@ export default class extends Channel {
 
 		// 流れてきたNoteがミュートしているユーザーが関わるものだったら無視する
 		if (isMutedUserRelated(note, this.muting)) return;
+		// 流れてきたNoteがブロックされているユーザーが関わるものだったら無視する
+		if (isBlockerUserRelated(note, this.blocking)) return;
 
 		this.send('note', note);
 	}

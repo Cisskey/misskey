@@ -1,15 +1,10 @@
 import $ from 'cafy';
 import define from '../../../define';
 import { ID } from '@/misc/cafy-id';
-import { Announcements } from '../../../../../models';
+import { Announcements } from '@/models/index';
 import { ApiError } from '../../../error';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'アナウンスの内容を変更します。',
-		'en-US': 'Update a annoucement.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

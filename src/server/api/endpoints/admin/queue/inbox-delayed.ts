@@ -1,13 +1,8 @@
 import { URL } from 'url';
 import define from '../../../define';
-import { inboxQueue } from '../../../../../queue';
+import { inboxQueue } from '@/queue/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'このサーバーへのキューの遅延一覧を返します。',
-		'en-US': 'Returns a list of queue delays to this server.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,
@@ -26,11 +21,9 @@ export const meta = {
 				anyOf: [
 					{
 						type: 'string' as const,
-						description: 'FQDN to fediverse server'
 					},
 					{
 						type: 'number' as const,
-						description: 'Delayed queue counts'
 					}
 				]
 			}

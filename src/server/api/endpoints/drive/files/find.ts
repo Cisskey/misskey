@@ -1,7 +1,7 @@
 import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../../define';
-import { DriveFiles } from '../../../../../models';
+import { DriveFiles } from '@/models/index';
 
 export const meta = {
 	requireCredential: true as const,
@@ -17,10 +17,7 @@ export const meta = {
 
 		folderId: {
 			validator: $.optional.nullable.type(ID),
-			default: null as any,
-			desc: {
-				'ja-JP': 'フォルダID'
-			}
+			default: null,
 		},
 	},
 

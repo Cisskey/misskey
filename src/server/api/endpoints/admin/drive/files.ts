@@ -1,15 +1,10 @@
 import $ from 'cafy';
 import define from '../../../define';
-import { DriveFiles } from '../../../../../models';
+import { DriveFiles } from '@/models/index';
 import { makePaginationQuery } from '../../../common/make-pagination-query';
 import { ID } from '@/misc/cafy-id';
 
 export const meta = {
-	desc: {
-		'ja-JP': '管理用のドライブの一覧を表示します。',
-		'en-US': 'Displays a list of management drives.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: false as const,

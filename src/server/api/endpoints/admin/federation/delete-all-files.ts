@@ -1,14 +1,9 @@
 import $ from 'cafy';
 import define from '../../../define';
-import { deleteFile } from '../../../../../services/drive/delete-file';
-import { DriveFiles } from '../../../../../models';
+import { deleteFile } from '@/services/drive/delete-file';
+import { DriveFiles } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したドメインのファイルを全て削除します。',
-		'en-US': 'Deletes all files in the specified domain.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

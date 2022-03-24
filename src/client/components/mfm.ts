@@ -9,6 +9,7 @@ import { concat } from '@client/../prelude/array';
 import MkFormula from '@client/components/formula.vue';
 import MkCode from '@client/components/code.vue';
 import MkGoogle from '@client/components/google.vue';
+import MkSparkle from '@client/components/sparkle.vue';
 import MkA from '@client/components/global/a.vue';
 import { host } from '@client/config';
 import 'animate.css/animate.min.css';

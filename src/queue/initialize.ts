@@ -1,5 +1,5 @@
 import * as Bull from 'bull';
-import config from '@/config';
+import config from '@/config/index';
 
 export function initialize<T>(name: string, limitPerSec = -1, limitDuration?: number, groupKey?: string) {
 	return new Bull<T>(name, {
@@ -13,11 +13,23 @@ export function initialize<T>(name: string, limitPerSec = -1, limitDuration?: nu
 
 		// deliver, inbox (5/5s)との互換性のため
 		limiter: limitPerSec > 0 ? {
-			max: limitPerSec * 5,
-			duration: 5000,
-			max: limitDuration ? limitPerSec : limitPerSec * 5,
-			duration: limitDuration || 5000,
-			groupKey: groupKey,
-		} : undefined
+			max: limitPerSec,
+			duration: 1000
+		} : undefined,
+		settings: {
+			backoffStrategies: {
+				apBackoff
+			}
+		}
 	});
+}
+
+// ref. https://github.com/misskey-dev/misskey/pull/7635#issue-971097019
+function apBackoff(attemptsMade: number, err: Error) {
+	const baseDelay = 60 * 1000;	// 1min
+	const maxBackoff = 8 * 60 * 60 * 1000;	// 8hours
+	let backoff = (Math.pow(2, attemptsMade) - 1) * baseDelay;
+	backoff = Math.min(backoff, maxBackoff);
+	backoff += Math.round(backoff * Math.random() * 0.2);
+	return backoff;
 }

@@ -1,16 +1,11 @@
 import $ from 'cafy';
 import define from '../../../define';
-import { UserGroups, UserGroupJoinings } from '../../../../../models';
+import { UserGroups, UserGroupJoinings } from '@/models/index';
 import { genId } from '@/misc/gen-id';
-import { UserGroup } from '../../../../../models/entities/user-group';
-import { UserGroupJoining } from '../../../../../models/entities/user-group-joining';
+import { UserGroup } from '@/models/entities/user-group';
+import { UserGroupJoining } from '@/models/entities/user-group-joining';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'ユーザーグループを作成します。',
-		'en-US': 'Create a user group.'
-	},
-
 	tags: ['groups'],
 
 	requireCredential: true as const,

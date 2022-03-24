@@ -2,14 +2,9 @@ import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { makePaginationQuery } from '../../common/make-pagination-query';
-import { Mutings } from '../../../../models';
+import { Mutings } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'ミュートしているユーザー一覧を取得します。',
-		'en-US': 'Get muted users.'
-	},
-
 	tags: ['account'],
 
 	requireCredential: true as const,

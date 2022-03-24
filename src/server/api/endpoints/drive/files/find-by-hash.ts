@@ -1,12 +1,8 @@
 import $ from 'cafy';
 import define from '../../../define';
-import { DriveFiles } from '../../../../../models';
+import { DriveFiles } from '@/models/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': '与えられたMD5ハッシュ値を持つファイルを取得します。',
-	},
-
 	tags: ['drive'],
 
 	requireCredential: true as const,
@@ -16,9 +12,6 @@ export const meta = {
 	params: {
 		md5: {
 			validator: $.str,
-			desc: {
-				'ja-JP': 'ファイルのMD5ハッシュ'
-			}
 		}
 	},
 

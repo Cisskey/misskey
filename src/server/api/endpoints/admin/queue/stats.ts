@@ -2,11 +2,6 @@ import { deliverQueue, inboxQueue, dbQueue, objectStorageQueue, webhookQueue } f
 import define from '../../../define';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'キューの状態を返します。',
-		'en-US': 'Returns the status of the queue.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

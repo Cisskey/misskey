@@ -1,11 +1,11 @@
 <script lang="ts">
-import { defineComponent, h, TransitionGroup } from 'vue';
+import { defineComponent, h, PropType, TransitionGroup } from 'vue';
 import MkAd from '@client/components/global/ad.vue';
 
 export default defineComponent({
 	props: {
 		items: {
-			type: Array,
+			type: Array as PropType<{ id: string; createdAt: string; _shouldInsertAd_: boolean; }[]>,
 			required: true,
 		},
 		direction: {
@@ -48,15 +48,7 @@ export default defineComponent({
 	render() {
 		if (this.items.length === 0) return;
 
-		return h(this.$store.state.animation ? TransitionGroup : 'div', this.$store.state.animation ? {
-			class: 'sqadhkmv' + (this.noGap ? ' noGap _block' : ''),
-			name: 'list',
-			tag: 'div',
-			'data-direction': this.direction,
-			'data-reversed': this.reversed ? 'true' : 'false',
-		} : {
-			class: 'sqadhkmv' + (this.noGap ? ' noGap _block' : ''),
-		}, this.items.map((item, i) => {
+		const renderChildren = () => this.items.map((item, i) => {
 			const el = this.$slots.default({
 				item: item
 			})[0];
@@ -98,7 +90,19 @@ export default defineComponent({
 					return el;
 				}
 			}
-		}));
+		});
+
+		return h(this.$store.state.animation ? TransitionGroup : 'div', this.$store.state.animation ? {
+			class: 'sqadhkmv' + (this.noGap ? ' noGap' : ''),
+			name: 'list',
+			tag: 'div',
+			'data-direction': this.direction,
+			'data-reversed': this.reversed ? 'true' : 'false',
+		} : {
+			class: 'sqadhkmv' + (this.noGap ? ' noGap' : ''),
+		}, {
+			default: renderChildren
+		});
 	},
 });
 </script>

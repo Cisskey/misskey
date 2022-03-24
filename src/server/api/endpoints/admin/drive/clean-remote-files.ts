@@ -1,12 +1,7 @@
 import define from '../../../define';
-import { createCleanRemoteFilesJob } from '../../../../../queue';
+import { createCleanRemoteFilesJob } from '@/queue/index';
 
 export const meta = {
-	desc: {
-		'ja-JP': 'キャッシュされたリモートファイルをすべて削除します。',
-		'en-US': 'Deletes all cached remote files.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,

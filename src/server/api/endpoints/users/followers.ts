@@ -2,16 +2,11 @@ import $ from 'cafy';
 import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import { ApiError } from '../../error';
-import { Users, Followings } from '../../../../models';
+import { Users, Followings } from '@/models/index';
 import { makePaginationQuery } from '../../common/make-pagination-query';
 import { toPunyNullable } from '@/misc/convert-host';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したユーザーのフォロワー一覧を取得します。',
-		'en-US': 'Get followers of a user.'
-	},
-
 	tags: ['users'],
 
 	requireCredential: false as const,
@@ -19,10 +14,6 @@ export const meta = {
 	params: {
 		userId: {
 			validator: $.optional.type(ID),
-			desc: {
-				'ja-JP': '対象のユーザーのID',
-				'en-US': 'Target user ID'
-			}
 		},
 
 		username: {
