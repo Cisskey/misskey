@@ -132,6 +132,7 @@ export class ReactionService {
 		await this.notesRepository.createQueryBuilder().update()
 			.set({
 				reactions: () => sql,
+				reactionTimestamps: () => `jsonb_set("reactionTimestamps", '{${reaction}}', coalesce("reactionTimestamps"->'${reaction}', extract(epoch from now())::text::jsonb))`,
 				... (!user.isBot && reactions === 1 ? { score: () => '"score" + 1' } : {}),
 			})
 			.where('id = :id', { id: note.id })
@@ -230,6 +231,14 @@ export class ReactionService {
 			userId: user.id,
 		});
 		if (!user.isBot && otherReactions === 0) this.notesRepository.decrement({ id: note.id }, 'score', 1);
+
+		await this.notesRepository.createQueryBuilder().update()
+			.set({
+				reactionTimestamps: () => `"reactionTimestamps" - '${exist.reaction}'`,
+			})
+			.where('id = :id', { id: note.id })
+			.andWhere(`"reactions"->>'${exist.reaction}' = '0'`)
+			.execute();
 	
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,
