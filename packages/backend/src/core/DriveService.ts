@@ -162,7 +162,7 @@ export class DriveService {
 				?? `${ meta.objectStorageUseSSL ? 'https' : 'http' }://${ meta.objectStorageEndpoint }${ meta.objectStoragePort ? `:${meta.objectStoragePort}` : '' }/${ meta.objectStorageBucket }`;
 
 			// for original
-			const key = `${meta.objectStoragePrefix}/${uuid()}${ext}`;
+			const key = `${uuid()}${ext}`;
 			const url = `${ baseUrl }/${ key }`;
 
 			// for alts
@@ -179,7 +179,7 @@ export class DriveService {
 			];
 
 			if (alts.webpublic) {
-				webpublicKey = `${meta.objectStoragePrefix}/webpublic-${uuid()}.${alts.webpublic.ext}`;
+				webpublicKey = `webpublic-${uuid()}.${alts.webpublic.ext}`;
 				webpublicUrl = `${ baseUrl }/${ webpublicKey }`;
 
 				this.registerLogger.info(`uploading webpublic: ${webpublicKey}`);
@@ -187,7 +187,7 @@ export class DriveService {
 			}
 
 			if (alts.thumbnail) {
-				thumbnailKey = `${meta.objectStoragePrefix}/thumbnail-${uuid()}.${alts.thumbnail.ext}`;
+				thumbnailKey = `thumbnail-${uuid()}.${alts.thumbnail.ext}`;
 				thumbnailUrl = `${ baseUrl }/${ thumbnailKey }`;
 
 				this.registerLogger.info(`uploading thumbnail: ${thumbnailKey}`);
@@ -368,7 +368,7 @@ export class DriveService {
 
 		const params = {
 			Bucket: meta.objectStorageBucket,
-			Key: key,
+			Key: meta.objectStoragePrefix + key,
 			Body: stream,
 			ContentType: type,
 			CacheControl: 'max-age=31536000, immutable',
@@ -738,7 +738,7 @@ export class DriveService {
 		try {
 			const param = {
 				Bucket: meta.objectStorageBucket,
-				Key: key,
+				Key: meta.objectStoragePrefix + key,
 			} as DeleteObjectCommandInput;
 
 			await this.s3Service.delete(meta, param);
