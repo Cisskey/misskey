@@ -175,11 +175,7 @@ export class NoteEntityService implements OnModuleInit {
 		if (_hint_?.myReactions) {
 			const reactions = _hint_.myReactions.get(note.id);
 			if (reactions) {
-				const myReactions = reactions.map(r => this.reactionService.convertLegacyReaction(r.reaction));
-				return {
-					myReactions: myReactions,
-					myReaction: myReactions[0],
-				};
+				return reactions.map(r => this.reactionService.convertLegacyReaction(r.reaction));
 			}
 		// 実装上抜けがあるだけかもしれないので、「ヒントに含まれてなかったら(=undefinedなら)return」のようにはしない
 		}
@@ -189,11 +185,7 @@ export class NoteEntityService implements OnModuleInit {
 			noteId: note.id,
 		});
 
-		const myReactions = reactions.map(r => this.reactionService.convertLegacyReaction(r.reaction));
-		return {
-			myReactions: myReactions,
-			myReaction: myReactions[0],
-		};
+		return reactions.map(r => this.reactionService.convertLegacyReaction(r.reaction));
 	}
 
 	@bindThis
@@ -331,9 +323,15 @@ export class NoteEntityService implements OnModuleInit {
 
 				poll: note.hasPoll ? this.populatePoll(note, meId) : undefined,
 
-				...(meId ? this.populateMyReactions(note, meId, options?._hint_) : {}),
+				...(meId ? {
+					myReactions: this.populateMyReactions(note, meId, options?._hint_)
+				} : {}),
 			} : {}),
 		});
+
+		if (packed.myReactions) {
+			packed.myReaction = packed.myReactions[0];
+		}
 
 		if (packed.user.isCat && packed.text) {
 			const tokens = packed.text ? mfm.parse(packed.text) : [];
