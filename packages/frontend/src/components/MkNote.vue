@@ -101,11 +101,8 @@
 				<button v-else :class="$style.footerButton" class="_button" disabled>
 					<i class="ti ti-ban"></i>
 				</button>
-				<button v-if="appearNote.myReaction == null" ref="reactButton" :class="$style.footerButton" class="_button" @mousedown="react()">
+				<button ref="reactButton" :class="$style.footerButton" class="_button" @mousedown="react()">
 					<i class="ti ti-plus"></i>
-				</button>
-				<button v-if="appearNote.myReaction != null" ref="reactButton" :class="$style.footerButton" class="_button" @click="undoReact(appearNote)">
-					<i class="ti ti-minus"></i>
 				</button>
 				<button ref="menuButton" :class="$style.footerButton" class="_button" @mousedown="menu()">
 					<i class="ti ti-dots"></i>
@@ -318,14 +315,6 @@ function react(viaKeyboard = false): void {
 		}
 	}, () => {
 		focus();
-	});
-}
-
-function undoReact(note): void {
-	const oldReaction = note.myReaction;
-	if (!oldReaction) return;
-	os.api('notes/reactions/delete', {
-		noteId: note.id,
 	});
 }
 

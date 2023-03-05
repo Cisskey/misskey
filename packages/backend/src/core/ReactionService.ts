@@ -115,30 +115,24 @@ export class ReactionService {
 			await this.noteReactionsRepository.insert(record);
 		} catch (e) {
 			if (isDuplicateKeyValueError(e)) {
-				const exists = await this.noteReactionsRepository.findOneByOrFail({
-					noteId: note.id,
-					userId: user.id,
-				});
-	
-				if (exists.reaction !== reaction) {
-					// 別のリアクションがすでにされていたら置き換える
-					await this.delete(user, note);
-					await this.noteReactionsRepository.insert(record);
-				} else {
-					// 同じリアクションがすでにされていたらエラー
-					throw new IdentifiableError('51c42bb4-931a-456b-bff7-e5a8a70dd298');
-				}
+				// 同じリアクションがすでにされていたらエラー
+				throw new IdentifiableError('51c42bb4-931a-456b-bff7-e5a8a70dd298');
 			} else {
 				throw e;
 			}
 		}
+
+		const reactions = await this.noteReactionsRepository.count({
+			noteId: note.id,
+			userId: user.id,
+		});
 	
 		// Increment reactions count
 		const sql = `jsonb_set("reactions", '{${reaction}}', (COALESCE("reactions"->>'${reaction}', '0')::int + 1)::text::jsonb)`;
 		await this.notesRepository.createQueryBuilder().update()
 			.set({
 				reactions: () => sql,
-				... (!user.isBot ? { score: () => '"score" + 1' } : {}),
+				... (!user.isBot && reactions == 1 ? { score: () => '"score" + 1' } : {}),
 			})
 			.where('id = :id', { id: note.id })
 			.execute();
@@ -199,12 +193,14 @@ export class ReactionService {
 	}
 
 	@bindThis
-	public async delete(user: { id: User['id']; host: User['host']; isBot: User['isBot']; }, note: Note) {
+	public async delete(user: { id: User['id']; host: User['host']; isBot: User['isBot']; }, note: Note, reaction?: string) {
 		// if already unreacted
-		const exist = await this.noteReactionsRepository.findOneBy({
+		const findQuery = {
 			noteId: note.id,
 			userId: user.id,
-		});
+		};
+		if (reaction) findQuery.reaction = reaction;
+		const exist = await this.noteReactionsRepository.findOneBy(reaction);
 	
 		if (exist == null) {
 			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'not reacted');
@@ -226,7 +222,11 @@ export class ReactionService {
 			.where('id = :id', { id: note.id })
 			.execute();
 	
-		if (!user.isBot) this.notesRepository.decrement({ id: note.id }, 'score', 1);
+		const otherReactions = this.noteReactionsRepository.count({
+			noteId: note.id,
+			userId: user.id,
+		});
+		if (!user.isBot && otherReactions == 0) this.notesRepository.decrement({ id: note.id }, 'score', 1);
 	
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,

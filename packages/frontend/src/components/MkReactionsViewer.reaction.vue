@@ -3,7 +3,7 @@
 	ref="buttonEl"
 	v-ripple="canToggle"
 	class="_button"
-	:class="[$style.root, { [$style.reacted]: note.myReaction == reaction, [$style.canToggle]: canToggle }]"
+	:class="[$style.root, { [$style.reacted]: note.myReactions.includes(reaction), [$style.canToggle]: canToggle }]"
 	@click="toggleReaction()"
 >
 	<MkReactionIcon :class="$style.icon" :reaction="reaction" :emoji-url="note.reactionEmojis[reaction.substr(1, reaction.length - 2)]"/>
@@ -37,17 +37,10 @@ const canToggle = computed(() => !props.reaction.match(/@\w/) && $i);
 const toggleReaction = () => {
 	if (!canToggle.value) return;
 
-	const oldReaction = props.note.myReaction;
-	if (oldReaction) {
+	if (props.note.myReactions.includes(props.reaction)) {
 		os.api('notes/reactions/delete', {
 			noteId: props.note.id,
-		}).then(() => {
-			if (oldReaction !== props.reaction) {
-				os.api('notes/reactions/create', {
-					noteId: props.note.id,
-					reaction: props.reaction,
-				});
-			}
+			reaction: props.reaction,
 		});
 	} else {
 		os.api('notes/reactions/create', {

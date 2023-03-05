@@ -29,8 +29,10 @@ const initialReactions = new Set(Object.keys(props.note.reactions));
 let reactions = $ref<[string, number][]>([]);
 let hasMoreReactions = $ref(false);
 
-if (props.note.myReaction && !Object.keys(reactions).includes(props.note.myReaction)) {
-	reactions[props.note.myReaction] = props.note.reactions[props.note.myReaction];
+for (const myReaction of props.note.myReactions) {
+	if (!Object.keys(reactions).includes(myReaction)) {
+		reactions[myReaction] = props.note.reactions[myReaction];
+	}
 }
 
 watch([() => props.note.reactions, () => props.maxNumber], ([newSource, maxNumber]) => {
@@ -55,8 +57,10 @@ watch([() => props.note.reactions, () => props.maxNumber], ([newSource, maxNumbe
 
 	newReactions = newReactions.slice(0, props.maxNumber);
 
-	if (props.note.myReaction && !newReactions.map(([x]) => x).includes(props.note.myReaction)) {
-		newReactions.push([props.note.myReaction, newSource[props.note.myReaction]]);
+	for (const myReaction of props.note.myReactions) {
+		if (!newReactions.map(([x]) => x).includes(myReaction)) {
+			newReactions.push([myReaction, newSource[myReaction]]);
+		}
 	}
 
 	reactions = newReactions;
