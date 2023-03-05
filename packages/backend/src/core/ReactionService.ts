@@ -195,12 +195,11 @@ export class ReactionService {
 	@bindThis
 	public async delete(user: { id: User['id']; host: User['host']; isBot: User['isBot']; }, note: Note, reaction?: string) {
 		// if already unreacted
-		const findQuery = {
+		const exist = await this.noteReactionsRepository.findOneBy({
 			noteId: note.id,
 			userId: user.id,
-		} as FindOptionsWhere<NoteReaction>;
-		if (reaction) findQuery.reaction = reaction;
-		const exist = await this.noteReactionsRepository.findOneBy(findQuery);
+			reaction: reaction,
+		});
 	
 		if (exist == null) {
 			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'not reacted');
