@@ -122,7 +122,7 @@ export class ReactionService {
 			}
 		}
 
-		const reactions = await this.noteReactionsRepository.count({
+		const reactions = await this.noteReactionsRepository.countBy({
 			noteId: note.id,
 			userId: user.id,
 		});
@@ -198,9 +198,9 @@ export class ReactionService {
 		const findQuery = {
 			noteId: note.id,
 			userId: user.id,
-		};
+		} as FindOptionsWhere<NoteReaction>;
 		if (reaction) findQuery.reaction = reaction;
-		const exist = await this.noteReactionsRepository.findOneBy(reaction);
+		const exist = await this.noteReactionsRepository.findOneBy(findQuery);
 	
 		if (exist == null) {
 			throw new IdentifiableError('60527ec9-b4cb-4a88-a6bd-32d3ad26817d', 'not reacted');
@@ -222,7 +222,7 @@ export class ReactionService {
 			.where('id = :id', { id: note.id })
 			.execute();
 	
-		const otherReactions = this.noteReactionsRepository.count({
+		const otherReactions = await this.noteReactionsRepository.countBy({
 			noteId: note.id,
 			userId: user.id,
 		});
