@@ -132,7 +132,7 @@ export class ReactionService {
 		await this.notesRepository.createQueryBuilder().update()
 			.set({
 				reactions: () => sql,
-				... (!user.isBot && reactions == 1 ? { score: () => '"score" + 1' } : {}),
+				... (!user.isBot && reactions === 1 ? { score: () => '"score" + 1' } : {}),
 			})
 			.where('id = :id', { id: note.id })
 			.execute();
@@ -226,7 +226,7 @@ export class ReactionService {
 			noteId: note.id,
 			userId: user.id,
 		});
-		if (!user.isBot && otherReactions == 0) this.notesRepository.decrement({ id: note.id }, 'score', 1);
+		if (!user.isBot && otherReactions === 0) this.notesRepository.decrement({ id: note.id }, 'score', 1);
 	
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,
