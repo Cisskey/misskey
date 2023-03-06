@@ -49,7 +49,7 @@ export class NotificationEntityService implements OnModuleInit {
 		src: Notification['id'] | Notification,
 		options: {
 			_hintForEachNotes_?: {
-				myReactions: Map<Note['id'], NoteReaction | null>;
+				myReactions: Map<Note['id'], NoteReaction[]>;
 			};
 		},
 	): Promise<Packed<'Notification'>> {
@@ -120,7 +120,7 @@ export class NotificationEntityService implements OnModuleInit {
 
 		const notes = notifications.filter(x => x.note != null).map(x => x.note!);
 		const noteIds = notes.map(n => n.id);
-		const myReactionsMap = new Map<Note['id'], NoteReaction | null>();
+		const myReactionsMap = new Map<Note['id'], NoteReaction[]>();
 		const renoteIds = notes.filter(n => n.renoteId != null).map(n => n.renoteId!);
 		const targets = [...noteIds, ...renoteIds];
 		const myReactions = await this.noteReactionsRepository.findBy({
@@ -129,7 +129,7 @@ export class NotificationEntityService implements OnModuleInit {
 		});
 
 		for (const target of targets) {
-			myReactionsMap.set(target, myReactions.find(reaction => reaction.noteId === target) ?? null);
+			myReactionsMap.set(target, myReactions.filter(reaction => reaction.noteId === target));
 		}
 
 		await this.customEmojiService.prefetchEmojis(this.customEmojiService.aggregateNoteEmojis(notes));

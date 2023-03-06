@@ -169,29 +169,23 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	private async populateMyReaction(note: Note, meId: User['id'], _hint_?: {
-		myReactions: Map<Note['id'], NoteReaction | null>;
+	private async populateMyReactions(note: Note, meId: User['id'], _hint_?: {
+		myReactions: Map<Note['id'], NoteReaction[] | null>;
 	}) {
 		if (_hint_?.myReactions) {
-			const reaction = _hint_.myReactions.get(note.id);
-			if (reaction) {
-				return this.reactionService.convertLegacyReaction(reaction.reaction);
-			} else if (reaction === null) {
-				return undefined;
+			const reactions = _hint_.myReactions.get(note.id);
+			if (reactions) {
+				return reactions.map(r => this.reactionService.convertLegacyReaction(r.reaction));
 			}
 		// 実装上抜けがあるだけかもしれないので、「ヒントに含まれてなかったら(=undefinedなら)return」のようにはしない
 		}
 
-		const reaction = await this.noteReactionsRepository.findOneBy({
+		const reactions = await this.noteReactionsRepository.findBy({
 			userId: meId,
 			noteId: note.id,
 		});
 
-		if (reaction) {
-			return this.reactionService.convertLegacyReaction(reaction.reaction);
-		}
-
-		return undefined;
+		return reactions.map(r => this.reactionService.convertLegacyReaction(r.reaction));
 	}
 
 	@bindThis
@@ -256,7 +250,7 @@ export class NoteEntityService implements OnModuleInit {
 			detail?: boolean;
 			skipHide?: boolean;
 			_hint_?: {
-				myReactions: Map<Note['id'], NoteReaction | null>;
+				myReactions: Map<Note['id'], NoteReaction[]>;
 			};
 		},
 	): Promise<Packed<'Note'>> {
@@ -330,10 +324,14 @@ export class NoteEntityService implements OnModuleInit {
 				poll: note.hasPoll ? this.populatePoll(note, meId) : undefined,
 
 				...(meId ? {
-					myReaction: this.populateMyReaction(note, meId, options?._hint_),
+					myReactions: this.populateMyReactions(note, meId, options?._hint_)
 				} : {}),
 			} : {}),
 		});
+
+		if (packed.myReactions) {
+			packed.myReaction = packed.myReactions[0];
+		}
 
 		if (packed.user.isCat && packed.text) {
 			const tokens = packed.text ? mfm.parse(packed.text) : [];
@@ -373,7 +371,7 @@ export class NoteEntityService implements OnModuleInit {
 		if (notes.length === 0) return [];
 
 		const meId = me ? me.id : null;
-		const myReactionsMap = new Map<Note['id'], NoteReaction | null>();
+		const myReactionsMap = new Map<Note['id'], NoteReaction[]>();
 		if (meId) {
 			const renoteIds = notes.filter(n => n.renoteId != null).map(n => n.renoteId!);
 			const targets = [...notes.map(n => n.id), ...renoteIds];
@@ -383,7 +381,7 @@ export class NoteEntityService implements OnModuleInit {
 			});
 
 			for (const target of targets) {
-				myReactionsMap.set(target, myReactions.find(reaction => reaction.noteId === target) ?? null);
+				myReactionsMap.set(target, myReactions.filter(reaction => reaction.noteId === target));
 			}
 		}
 
