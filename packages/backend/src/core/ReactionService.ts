@@ -194,6 +194,10 @@ export class ReactionService {
 
 	@bindThis
 	public async delete(user: { id: User['id']; host: User['host']; isBot: User['isBot']; }, note: Note, reaction?: string) {
+		if (reaction) {
+			reaction = await this.toDbReaction(reaction, user.host);
+		}
+
 		// if already unreacted
 		const exist = await this.noteReactionsRepository.findOneBy({
 			noteId: note.id,
