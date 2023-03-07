@@ -279,6 +279,14 @@ export class NoteEntityService implements OnModuleInit {
 			.filter(x => x.startsWith(':') && x.includes('@') && !x.includes('@.')) // リモートカスタム絵文字のみ
 			.map(x => this.reactionService.decodeReaction(x).reaction.replaceAll(':', ''));
 
+		const reactions = Object.keys(note.reactions)
+			.filter(k => note.reactions[k] > 0)
+			.sort((a, b) => (note.reactionTimestamps[a] || 0) - (note.reactionTimestamps[b] || 0))
+			.reduce<Record<string, number>>((o, k) => {
+				o[k] = note.reactions[k];
+				return o;
+			}, {});
+
 		const packed: Packed<'Note'> = await awaitAll({
 			id: note.id,
 			createdAt: note.createdAt.toISOString(),
@@ -293,7 +301,7 @@ export class NoteEntityService implements OnModuleInit {
 			visibleUserIds: note.visibility === 'specified' ? note.visibleUserIds : undefined,
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
-			reactions: this.reactionService.convertLegacyReactions(note.reactions),
+			reactions: this.reactionService.convertLegacyReactions(reactions),
 			reactionEmojis: this.customEmojiService.populateEmojis(reactionEmojiNames, host),
 			emojis: host != null ? this.customEmojiService.populateEmojis(note.emojis, host) : undefined,
 			tags: note.tags.length > 0 ? note.tags : undefined,
