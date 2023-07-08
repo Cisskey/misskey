@@ -241,7 +241,26 @@ export class ReactionService {
 	@bindThis
 	public async delete(user: { id: User['id']; host: User['host']; isBot: User['isBot']; }, note: Note, reaction?: string) {
 		if (reaction) {
-			reaction = await this.toDbReaction(reaction, user.host);
+			const custom = reaction.match(isCustomEmojiRegexp);
+			if (custom) {
+				const reacterHost = this.utilityService.toPunyNullable(user.host);
+
+				const name = custom[1];
+				const emoji = reacterHost == null
+					? (await this.customEmojiService.localEmojisCache.fetch()).get(name)
+					: await this.emojisRepository.findOneBy({
+						host: reacterHost,
+						name,
+					});
+
+				if (emoji) {
+					reaction = reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
+				} else {
+					reaction = FALLBACK;
+				}
+			} else {
+				reaction = this.normalize(reaction);
+			}
 		}
 
 		// if already unreacted
