@@ -75,7 +75,7 @@ export class ApiCallService implements OnApplicationShutdown {
 				}
 				this.send(reply, res);
 			}).catch((err: ApiError) => {
-				this.send(reply, err.httpStatusCode ? err.httpStatusCode : err.kind === 'client' ? 400 : 500, err);
+				this.send(reply, err.httpStatusCode ? err.httpStatusCode : err.kind === 'client' ? 400 : err.kind === 'permission' ? 403 : 500, err);
 			});
 
 			if (user) {
@@ -100,9 +100,12 @@ export class ApiCallService implements OnApplicationShutdown {
 		request: FastifyRequest<{ Body: Record<string, unknown>, Querystring: Record<string, unknown> }>,
 		reply: FastifyReply,
 	) {
-		const multipartData = await request.file();
+		const multipartData = await request.file().catch(() => {
+			/* Fastify throws if the remote didn't send multipart data. Return 400 below. */
+		});
 		if (multipartData == null) {
 			reply.code(400);
+			reply.send();
 			return;
 		}
 
@@ -126,7 +129,7 @@ export class ApiCallService implements OnApplicationShutdown {
 			}, request).then((res) => {
 				this.send(reply, res);
 			}).catch((err: ApiError) => {
-				this.send(reply, err.httpStatusCode ? err.httpStatusCode : err.kind === 'client' ? 400 : 500, err);
+				this.send(reply, err.httpStatusCode ? err.httpStatusCode : err.kind === 'client' ? 400 : err.kind === 'permission' ? 403 : 500, err);
 			});
 
 			if (user) {
@@ -258,6 +261,17 @@ export class ApiCallService implements OnApplicationShutdown {
 			}
 		}
 
+		if (ep.meta.prohibitMoved) {
+			if (user?.movedToUri) {
+				throw new ApiError({
+					message: 'You have moved your account.',
+					code: 'YOUR_ACCOUNT_MOVED',
+					id: '56f20ec9-fd06-4fa5-841b-edd6d7d4fa31',
+					httpStatusCode: 403,
+				});
+			}
+		}
+
 		if ((ep.meta.requireModerator || ep.meta.requireAdmin) && !user!.isRoot) {
 			const myRoles = await this.roleService.getUserRoles(user!.id);
 			if (ep.meta.requireModerator && !myRoles.some(r => r.isModerator || r.isAdministrator)) {
@@ -318,7 +332,7 @@ export class ApiCallService implements OnApplicationShutdown {
 
 		// API invoking
 		return await ep.exec(data, user, token, file, request.ip, request.headers).catch((err: Error) => {
-			if (err instanceof ApiError) {
+			if (err instanceof ApiError || err instanceof AuthenticationError) {
 				throw err;
 			} else {
 				const errId = uuid();
@@ -345,7 +359,12 @@ export class ApiCallService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined) {
+	public dispose(): void {
 		clearInterval(this.userIpHistoriesClearIntervalId);
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

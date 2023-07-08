@@ -1,9 +1,9 @@
 <template>
-<div class="driuhtrh _gaps">
+<div class="_gaps">
 	<MkButton v-if="$i && ($i.isModerator || $i.policies.canManageCustomEmojis)" primary link to="/custom-emojis-manager">{{ i18n.ts.manageCustomEmojis }}</MkButton>
 
 	<div class="query">
-		<MkInput v-model="q" class="" :placeholder="$ts.search">
+		<MkInput v-model="q" class="" :placeholder="i18n.ts.search">
 			<template #prefix><i class="ti ti-search"></i></template>
 		</MkInput>
 
@@ -14,17 +14,17 @@
 		-->
 	</div>
 
-	<MkFoldableSection v-if="searchEmojis" class="emojis">
-		<template #header>{{ $ts.searchResult }}</template>
-		<div class="zuvgdzyt">
-			<XEmoji v-for="emoji in searchEmojis" :key="emoji.name" class="emoji" :emoji="emoji"/>
+	<MkFoldableSection v-if="searchEmojis">
+		<template #header>{{ i18n.ts.searchResult }}</template>
+		<div :class="$style.emojis">
+			<XEmoji v-for="emoji in searchEmojis" :key="emoji.name" :emoji="emoji"/>
 		</div>
 	</MkFoldableSection>
 	
-	<MkFoldableSection v-for="category in customEmojiCategories" v-once :key="category" class="emojis">
-		<template #header>{{ category || $ts.other }}</template>
-		<div class="zuvgdzyt">
-			<XEmoji v-for="emoji in customEmojis.filter(e => e.category === category)" :key="emoji.name" class="emoji" :emoji="emoji"/>
+	<MkFoldableSection v-for="category in customEmojiCategories" v-once :key="category">
+		<template #header>{{ category || i18n.ts.other }}</template>
+		<div :class="$style.emojis">
+			<XEmoji v-for="emoji in customEmojis.filter(e => e.category === category)" :key="emoji.name" :emoji="emoji"/>
 		</div>
 	</MkFoldableSection>
 </div>
@@ -32,13 +32,14 @@
 
 <script lang="ts" setup>
 import { watch } from 'vue';
+import * as Misskey from 'misskey-js';
 import XEmoji from './emojis.emoji.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import { customEmojis, customEmojiCategories, getCustomEmojiTags } from '@/custom-emojis';
 import { i18n } from '@/i18n';
-import * as Misskey from 'misskey-js';
+import { $i } from '@/account';
 
 const customEmojiTags = getCustomEmojiTags();
 let q = $ref('');
@@ -52,7 +53,15 @@ function search() {
 	}
 
 	if (selectedTags.size === 0) {
-		searchEmojis = customEmojis.value.filter(emoji => emoji.name.includes(q) || emoji.aliases.includes(q));
+		const queryarry = q.match(/\:([a-z0-9_]*)\:/g);
+
+		if (queryarry) {
+			searchEmojis = customEmojis.value.filter(emoji => 
+				queryarry.includes(`:${emoji.name}:`),
+			);
+		} else {
+			searchEmojis = customEmojis.value.filter(emoji => emoji.name.includes(q) || emoji.aliases.includes(q));
+		}
 	} else {
 		searchEmojis = customEmojis.value.filter(emoji => (emoji.name.includes(q) || emoji.aliases.includes(q)) && [...selectedTags].every(t => emoji.aliases.includes(t)));
 	}
@@ -75,36 +84,10 @@ watch($$(selectedTags), () => {
 }, { deep: true });
 </script>
 
-<style lang="scss" scoped>
-.driuhtrh {
-	background: var(--bg);
-
-	> .query {
-		background: var(--bg);
-
-		> .tags {
-			> .tag {
-				display: inline-block;
-				margin: 8px 8px 0 0;
-				padding: 4px 8px;
-				font-size: 0.9em;
-				background: var(--accentedBg);
-				border-radius: 5px;
-
-				&.active {
-					background: var(--accent);
-					color: var(--fgOnAccent);
-				}
-			}
-		}
-	}
-
-	> .emojis {
-		.zuvgdzyt {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-			grid-gap: 12px;
-		}
-	}
+<style lang="scss" module>
+.emojis {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+	grid-gap: 12px;
 }
 </style>

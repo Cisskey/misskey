@@ -31,6 +31,10 @@ export const routes = [{
 	path: '/notes/:noteId',
 	component: page(() => import('./pages/note.vue')),
 }, {
+	name: 'list',
+	path: '/list/:listId',
+	component: page(() => import('./pages/list.vue')),
+}, {
 	path: '/clips/:clipId',
 	component: page(() => import('./pages/clip.vue')),
 }, {
@@ -50,6 +54,10 @@ export const routes = [{
 		name: 'profile',
 		component: page(() => import('./pages/settings/profile.vue')),
 	}, {
+		path: '/roles',
+		name: 'roles',
+		component: page(() => import('./pages/settings/roles.vue')),
+	}, {
 		path: '/privacy',
 		name: 'privacy',
 		component: page(() => import('./pages/settings/privacy.vue')),
@@ -61,6 +69,10 @@ export const routes = [{
 		path: '/drive',
 		name: 'drive',
 		component: page(() => import('./pages/settings/drive.vue')),
+	}, {
+		path: '/drive/cleaner',
+		name: 'drive',
+		component: page(() => import('./pages/settings/drive-cleaner.vue')),
 	}, {
 		path: '/notifications',
 		name: 'notifications',
@@ -154,6 +166,10 @@ export const routes = [{
 		name: 'preferences-backups',
 		component: page(() => import('./pages/settings/preferences-backups.vue')),
 	}, {
+		path: '/migration',
+		name: 'migration',
+		component: page(() => import('./pages/settings/migration.vue')),
+	}, {
 		path: '/custom-css',
 		name: 'general',
 		component: page(() => import('./pages/settings/custom-css.vue')),
@@ -161,14 +177,6 @@ export const routes = [{
 		path: '/accounts',
 		name: 'profile',
 		component: page(() => import('./pages/settings/accounts.vue')),
-	}, {
-		path: '/account-info',
-		name: 'other',
-		component: page(() => import('./pages/settings/account-info.vue')),
-	}, {
-		path: '/delete-account',
-		name: 'other',
-		component: page(() => import('./pages/settings/delete-account.vue')),
 	}, {
 		path: '/other',
 		name: 'other',
@@ -193,6 +201,9 @@ export const routes = [{
 }, {
 	path: '/about-misskey',
 	component: page(() => import('./pages/about-misskey.vue')),
+}, {
+	path: '/ads',
+	component: page(() => import('./pages/ads.vue')),
 }, {
 	path: '/theme-editor',
 	component: page(() => import('./pages/theme-editor.vue')),
@@ -231,9 +242,6 @@ export const routes = [{
 }, {
 	path: '/scratchpad',
 	component: page(() => import('./pages/scratchpad.vue')),
-}, {
-	path: '/preview',
-	component: page(() => import('./pages/preview.vue')),
 }, {
 	path: '/auth/:token',
 	component: page(() => import('./pages/auth.vue')),
@@ -381,6 +389,14 @@ export const routes = [{
 		name: 'settings',
 		component: page(() => import('./pages/admin/settings.vue')),
 	}, {
+		path: '/branding',
+		name: 'branding',
+		component: page(() => import('./pages/admin/branding.vue')),
+	}, {
+		path: '/moderation',
+		name: 'moderation',
+		component: page(() => import('./pages/admin/moderation.vue')),
+	}, {
 		path: '/email-settings',
 		name: 'email-settings',
 		component: page(() => import('./pages/admin/email-settings.vue')),
@@ -408,6 +424,10 @@ export const routes = [{
 		path: '/other-settings',
 		name: 'other-settings',
 		component: page(() => import('./pages/admin/other-settings.vue')),
+	}, {
+		path: '/server-rules',
+		name: 'server-rules',
+		component: page(() => import('./pages/admin/server-rules.vue')),
 	}, {
 		path: '/',
 		component: page(() => import('./pages/_empty_.vue')),

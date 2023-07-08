@@ -1,9 +1,9 @@
 <template>
 <Transition
-	:enter-active-class="$store.state.animation ? $style.transition_fade_enterActive : ''"
-	:leave-active-class="$store.state.animation ? $style.transition_fade_leaveActive : ''"
-	:enter-from-class="$store.state.animation ? $style.transition_fade_enterFrom : ''"
-	:leave-to-class="$store.state.animation ? $style.transition_fade_leaveTo : ''"
+	:enterActiveClass="defaultStore.state.animation ? $style.transition_fade_enterActive : ''"
+	:leaveActiveClass="defaultStore.state.animation ? $style.transition_fade_leaveActive : ''"
+	:enterFromClass="defaultStore.state.animation ? $style.transition_fade_enterFrom : ''"
+	:leaveToClass="defaultStore.state.animation ? $style.transition_fade_leaveTo : ''"
 	mode="out-in"
 >
 	<MkLoading v-if="fetching"/>
@@ -13,7 +13,7 @@
 	<div v-else-if="empty" key="_empty_" class="empty">
 		<slot name="empty">
 			<div class="_fullinfo">
-				<img src="https://xn--931a.moe/assets/info.jpg" class="_ghost"/>
+				<img :src="infoImageUrl" class="_ghost"/>
 				<div>{{ i18n.ts.nothing }}</div>
 			</div>
 		</slot>
@@ -21,14 +21,14 @@
 
 	<div v-else ref="rootEl">
 		<div v-show="pagination.reversed && more" key="_more_" class="_margin">
-			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary @click="fetchMoreAhead">
+			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMoreAhead : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMoreAhead">
 				{{ i18n.ts.loadMore }}
 			</MkButton>
 			<MkLoading v-else class="loading"/>
 		</div>
 		<slot :items="items" :fetching="fetching || moreFetching"></slot>
 		<div v-show="!pagination.reversed && more" key="_more_" class="_margin">
-			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMore : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary @click="fetchMore">
+			<MkButton v-if="!moreFetching" v-appear="(enableInfiniteScroll && !props.disableAutoLoad) ? fetchMore : null" :class="$style.more" :disabled="moreFetching" :style="{ cursor: moreFetching ? 'wait' : 'pointer' }" primary rounded @click="fetchMore">
 				{{ i18n.ts.loadMore }}
 			</MkButton>
 			<MkLoading v-else class="loading"/>
@@ -73,6 +73,8 @@ export type Paging<E extends keyof misskey.Endpoints = keyof misskey.Endpoints> 
 };
 </script>
 <script lang="ts" setup>
+import { infoImageUrl } from '@/instance';
+
 const props = withDefaults(defineProps<{
 	pagination: Paging;
 	disableAutoLoad?: boolean;
@@ -163,21 +165,22 @@ async function init(): Promise<void> {
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await os.api(props.pagination.endpoint, {
 		...params,
-		limit: props.pagination.noPaging ? (props.pagination.limit || 10) : (props.pagination.limit || 10) + 1,
+		limit: props.pagination.limit ?? 10,
 	}).then(res => {
 		for (let i = 0; i < res.length; i++) {
 			const item = res[i];
 			if (i === 3) item._shouldInsertAd_ = true;
 		}
-		if (!props.pagination.noPaging && (res.length > (props.pagination.limit || 10))) {
-			res.pop();
+
+		if (res.length === 0 || props.pagination.noPaging) {
+			items.value = res;
+			more.value = false;
+		} else {
 			if (props.pagination.reversed) moreFetching.value = true;
 			items.value = res;
 			more.value = true;
-		} else {
-			items.value = res;
-			more.value = false;
 		}
+
 		offset.value = res.length;
 		error.value = false;
 		fetching.value = false;
@@ -198,7 +201,7 @@ const fetchMore = async (): Promise<void> => {
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await os.api(props.pagination.endpoint, {
 		...params,
-		limit: SECOND_FETCH_LIMIT + 1,
+		limit: SECOND_FETCH_LIMIT,
 		...(props.pagination.offsetMode ? {
 			offset: offset.value,
 		} : {
@@ -227,20 +230,7 @@ const fetchMore = async (): Promise<void> => {
 			});
 		};
 
-		if (res.length > SECOND_FETCH_LIMIT) {
-			res.pop();
-
-			if (props.pagination.reversed) {
-				reverseConcat(res).then(() => {
-					more.value = true;
-					moreFetching.value = false;
-				});
-			} else {
-				items.value = items.value.concat(res);
-				more.value = true;
-				moreFetching.value = false;
-			}
-		} else {
+		if (res.length === 0) {
 			if (props.pagination.reversed) {
 				reverseConcat(res).then(() => {
 					more.value = false;
@@ -249,6 +239,17 @@ const fetchMore = async (): Promise<void> => {
 			} else {
 				items.value = items.value.concat(res);
 				more.value = false;
+				moreFetching.value = false;
+			}
+		} else {
+			if (props.pagination.reversed) {
+				reverseConcat(res).then(() => {
+					more.value = true;
+					moreFetching.value = false;
+				});
+			} else {
+				items.value = items.value.concat(res);
+				more.value = true;
 				moreFetching.value = false;
 			}
 		}
@@ -264,20 +265,19 @@ const fetchMoreAhead = async (): Promise<void> => {
 	const params = props.pagination.params ? isRef(props.pagination.params) ? props.pagination.params.value : props.pagination.params : {};
 	await os.api(props.pagination.endpoint, {
 		...params,
-		limit: SECOND_FETCH_LIMIT + 1,
+		limit: SECOND_FETCH_LIMIT,
 		...(props.pagination.offsetMode ? {
 			offset: offset.value,
 		} : {
 			sinceId: items.value[items.value.length - 1].id,
 		}),
 	}).then(res => {
-		if (res.length > SECOND_FETCH_LIMIT) {
-			res.pop();
-			items.value = items.value.concat(res);
-			more.value = true;
-		} else {
+		if (res.length === 0) {
 			items.value = items.value.concat(res);
 			more.value = false;
+		} else {
+			items.value = items.value.concat(res);
+			more.value = true;
 		}
 		offset.value += res.length;
 		moreFetching.value = false;

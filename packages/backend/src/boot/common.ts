@@ -16,12 +16,16 @@ export async function server() {
 	app.enableShutdownHooks();
 
 	const serverService = app.get(ServerService);
-	serverService.launch();
+	await serverService.launch();
 
-	app.get(ChartManagementService).start();
-	app.get(JanitorService).start();
-	app.get(QueueStatsService).start();
-	app.get(ServerStatsService).start();
+	if (process.env.NODE_ENV !== 'test') {
+		app.get(ChartManagementService).start();
+		app.get(JanitorService).start();
+		app.get(QueueStatsService).start();
+		app.get(ServerStatsService).start();
+	}
+
+	return app;
 }
 
 export async function jobQueue() {
@@ -32,4 +36,6 @@ export async function jobQueue() {
 
 	jobQueue.get(QueueProcessorService).start();
 	jobQueue.get(ChartManagementService).start();
+
+	return jobQueue;
 }

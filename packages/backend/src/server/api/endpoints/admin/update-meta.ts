@@ -17,7 +17,6 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		disableRegistration: { type: 'boolean', nullable: true },
-		useStarForReactionFallback: { type: 'boolean', nullable: true },
 		pinnedUsers: { type: 'array', nullable: true, items: {
 			type: 'string',
 		} },
@@ -27,10 +26,15 @@ export const paramDef = {
 		blockedHosts: { type: 'array', nullable: true, items: {
 			type: 'string',
 		} },
+		sensitiveWords: { type: 'array', nullable: true, items: {
+			type: 'string',
+		} },
 		themeColor: { type: 'string', nullable: true, pattern: '^#[0-9a-fA-F]{6}$' },
 		mascotImageUrl: { type: 'string', nullable: true },
 		bannerUrl: { type: 'string', nullable: true },
-		errorImageUrl: { type: 'string', nullable: true },
+		serverErrorImageUrl: { type: 'string', nullable: true },
+		infoImageUrl: { type: 'string', nullable: true },
+		notFoundImageUrl: { type: 'string', nullable: true },
 		iconUrl: { type: 'string', nullable: true },
 		backgroundImageUrl: { type: 'string', nullable: true },
 		logoImageUrl: { type: 'string', nullable: true },
@@ -56,10 +60,6 @@ export const paramDef = {
 		proxyAccountId: { type: 'string', format: 'misskey:id', nullable: true },
 		maintainerName: { type: 'string', nullable: true },
 		maintainerEmail: { type: 'string', nullable: true },
-		pinnedPages: { type: 'array', items: {
-			type: 'string',
-		} },
-		pinnedClipId: { type: 'string', format: 'misskey:id', nullable: true },
 		langs: { type: 'array', items: {
 			type: 'string',
 		} },
@@ -94,6 +94,10 @@ export const paramDef = {
 		objectStorageS3ForcePathStyle: { type: 'boolean' },
 		enableIpLogging: { type: 'boolean' },
 		enableActiveEmailValidation: { type: 'boolean' },
+		enableChartsForRemoteUser: { type: 'boolean' },
+		enableChartsForFederatedInstances: { type: 'boolean' },
+		serverRules: { type: 'array', items: { type: 'string' } },
+		preservedUsernames: { type: 'array', items: { type: 'string' } },
 	},
 	required: [],
 } as const;
@@ -115,10 +119,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				set.disableRegistration = ps.disableRegistration;
 			}
 
-			if (typeof ps.useStarForReactionFallback === 'boolean') {
-				set.useStarForReactionFallback = ps.useStarForReactionFallback;
-			}
-
 			if (Array.isArray(ps.pinnedUsers)) {
 				set.pinnedUsers = ps.pinnedUsers.filter(Boolean);
 			}
@@ -131,6 +131,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				set.blockedHosts = ps.blockedHosts.filter(Boolean).map(x => x.toLowerCase());
 			}
 
+			if (Array.isArray(ps.sensitiveWords)) {
+				set.sensitiveWords = ps.sensitiveWords.filter(Boolean);
+			}
+		
 			if (ps.themeColor !== undefined) {
 				set.themeColor = ps.themeColor;
 			}
@@ -145,6 +149,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.iconUrl !== undefined) {
 				set.iconUrl = ps.iconUrl;
+			}
+
+			if (ps.serverErrorImageUrl !== undefined) {
+				set.serverErrorImageUrl = ps.serverErrorImageUrl;
+			}
+
+			if (ps.infoImageUrl !== undefined) {
+				set.infoImageUrl = ps.infoImageUrl;
+			}
+
+			if (ps.notFoundImageUrl !== undefined) {
+				set.notFoundImageUrl = ps.notFoundImageUrl;
 			}
 
 			if (ps.backgroundImageUrl !== undefined) {
@@ -247,14 +263,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				set.langs = ps.langs.filter(Boolean);
 			}
 
-			if (Array.isArray(ps.pinnedPages)) {
-				set.pinnedPages = ps.pinnedPages.filter(Boolean);
-			}
-
-			if (ps.pinnedClipId !== undefined) {
-				set.pinnedClipId = ps.pinnedClipId;
-			}
-
 			if (ps.summalyProxy !== undefined) {
 				set.summalyProxy = ps.summalyProxy;
 			}
@@ -287,10 +295,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				set.smtpPass = ps.smtpPass;
 			}
 
-			if (ps.errorImageUrl !== undefined) {
-				set.errorImageUrl = ps.errorImageUrl;
-			}
-
 			if (ps.enableServiceWorker !== undefined) {
 				set.enableServiceWorker = ps.enableServiceWorker;
 			}
@@ -304,7 +308,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			}
 
 			if (ps.tosUrl !== undefined) {
-				set.ToSUrl = ps.tosUrl;
+				set.termsOfServiceUrl = ps.tosUrl;
 			}
 
 			if (ps.repositoryUrl !== undefined) {
@@ -385,6 +389,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.enableActiveEmailValidation !== undefined) {
 				set.enableActiveEmailValidation = ps.enableActiveEmailValidation;
+			}
+
+			if (ps.enableChartsForRemoteUser !== undefined) {
+				set.enableChartsForRemoteUser = ps.enableChartsForRemoteUser;
+			}
+
+			if (ps.enableChartsForFederatedInstances !== undefined) {
+				set.enableChartsForFederatedInstances = ps.enableChartsForFederatedInstances;
+			}
+
+			if (ps.serverRules !== undefined) {
+				set.serverRules = ps.serverRules;
+			}
+
+			if (ps.preservedUsernames !== undefined) {
+				set.preservedUsernames = ps.preservedUsernames;
 			}
 
 			await this.metaService.update(set);

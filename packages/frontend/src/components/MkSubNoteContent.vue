@@ -1,15 +1,15 @@
 <template>
 <div :class="[$style.root, { [$style.collapsed]: collapsed }]">
-	<div :class="$style.body">
+	<div>
 		<span v-if="note.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 		<span v-if="note.deletedAt" style="opacity: 0.5">({{ i18n.ts.deleted }})</span>
 		<MkA v-if="note.replyId" :class="$style.reply" :to="`/notes/${note.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
-		<Mfm v-if="note.text" :text="note.text" :author="note.user" :i="$i" :emoji-urls="note.emojis"/>
+		<Mfm v-if="note.text" :text="note.text" :author="note.user" :i="$i" :emojiUrls="note.emojis"/>
 		<MkA v-if="note.renoteId" :class="$style.rp" :to="`/notes/${note.renoteId}`">RN: ...</MkA>
 	</div>
 	<details v-if="note.files.length > 0">
-		<summary>({{ $t('withNFiles', { n: note.files.length }) }})</summary>
-		<MkMediaList :media-list="note.files"/>
+		<summary>({{ i18n.t('withNFiles', { n: note.files.length }) }})</summary>
+		<MkMediaList :mediaList="note.files"/>
 	</details>
 	<details v-if="note.poll">
 		<summary>{{ i18n.ts.poll }}</summary>
@@ -27,6 +27,7 @@ import * as misskey from 'misskey-js';
 import MkMediaList from '@/components/MkMediaList.vue';
 import MkPoll from '@/components/MkPoll.vue';
 import { i18n } from '@/i18n';
+import { $i } from '@/account';
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -73,10 +74,6 @@ const collapsed = $ref(
 			}
 		}
 	}
-}
-
-.body {
-
 }
 
 .reply {

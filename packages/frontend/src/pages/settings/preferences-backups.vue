@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, useCssModule } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { v4 as uuid } from 'uuid';
 import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
@@ -40,15 +40,13 @@ import MkInfo from '@/components/MkInfo.vue';
 import * as os from '@/os';
 import { ColdDeviceStorage, defaultStore } from '@/store';
 import { unisonReload } from '@/scripts/unison-reload';
-import { stream } from '@/stream';
+import { useStream } from '@/stream';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
 import { version, host } from '@/config';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { miLocalStorage } from '@/local-storage';
 const { t, ts } = i18n;
-
-useCssModule();
 
 const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'menu',
@@ -59,6 +57,8 @@ const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'tl',
 	'overridedDeviceKind',
 	'serverDisconnectedBehavior',
+	'collapseRenotes',
+	'showNoteActionsOnlyHover',
 	'nsfw',
 	'animation',
 	'animatedMfm',
@@ -71,6 +71,7 @@ const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'useBlurEffectForModal',
 	'useBlurEffect',
 	'showFixedPostForm',
+	'showFixedPostFormInChannel',
 	'enableInfiniteScroll',
 	'useReactionPickerForContextMenu',
 	'showGapBetweenNotesInTimeline',
@@ -85,6 +86,7 @@ const defaultStoreSaveKeys: (keyof typeof defaultStore['state'])[] = [
 	'squareAvatars',
 	'numberOfPageCache',
 	'aiChanMode',
+	'mediaListWithOneImageAppearance',
 ];
 const coldDeviceStorageSaveKeys: (keyof typeof ColdDeviceStorage.default)[] = [
 	'lightTheme',
@@ -121,7 +123,7 @@ type Profile = {
 	};
 };
 
-const connection = $i && stream.useChannel('main');
+const connection = $i && useStream().useChannel('main');
 
 let profiles = $ref<Record<string, Profile> | null>(null);
 
@@ -396,7 +398,7 @@ function menu(ev: MouseEvent, profileId: string) {
 		icon: 'ti ti-device-floppy',
 		action: () => save(profileId),
 	}, null, {
-		text: ts._preferencesBackups.delete,
+		text: ts.delete,
 		icon: 'ti ti-trash',
 		action: () => deleteProfile(profileId),
 		danger: true,
@@ -420,7 +422,6 @@ onUnmounted(() => {
 definePageMetadata(computed(() => ({
 	title: ts.preferencesBackups,
 	icon: 'ti ti-device-floppy',
-	bg: 'var(--bg)',
 })));
 </script>
 

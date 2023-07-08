@@ -4,15 +4,15 @@ import { Ad } from '@/models/entities/Ad.js';
 import { Announcement } from '@/models/entities/Announcement.js';
 import { AnnouncementRead } from '@/models/entities/AnnouncementRead.js';
 import { Antenna } from '@/models/entities/Antenna.js';
-import { AntennaNote } from '@/models/entities/AntennaNote.js';
 import { App } from '@/models/entities/App.js';
 import { AttestationChallenge } from '@/models/entities/AttestationChallenge.js';
 import { AuthSession } from '@/models/entities/AuthSession.js';
 import { Blocking } from '@/models/entities/Blocking.js';
 import { ChannelFollowing } from '@/models/entities/ChannelFollowing.js';
-import { ChannelNotePining } from '@/models/entities/ChannelNotePining.js';
+import { ChannelFavorite } from '@/models/entities/ChannelFavorite.js';
 import { Clip } from '@/models/entities/Clip.js';
 import { ClipNote } from '@/models/entities/ClipNote.js';
+import { ClipFavorite } from '@/models/entities/ClipFavorite.js';
 import { DriveFile } from '@/models/entities/DriveFile.js';
 import { DriveFolder } from '@/models/entities/DriveFolder.js';
 import { Emoji } from '@/models/entities/Emoji.js';
@@ -26,12 +26,12 @@ import { Meta } from '@/models/entities/Meta.js';
 import { ModerationLog } from '@/models/entities/ModerationLog.js';
 import { MutedNote } from '@/models/entities/MutedNote.js';
 import { Muting } from '@/models/entities/Muting.js';
+import { RenoteMuting } from '@/models/entities/RenoteMuting.js';
 import { Note } from '@/models/entities/Note.js';
 import { NoteFavorite } from '@/models/entities/NoteFavorite.js';
 import { NoteReaction } from '@/models/entities/NoteReaction.js';
 import { NoteThreadMuting } from '@/models/entities/NoteThreadMuting.js';
 import { NoteUnread } from '@/models/entities/NoteUnread.js';
-import { Notification } from '@/models/entities/Notification.js';
 import { Page } from '@/models/entities/Page.js';
 import { PageLike } from '@/models/entities/PageLike.js';
 import { PasswordResetRequest } from '@/models/entities/PasswordResetRequest.js';
@@ -49,12 +49,14 @@ import { User } from '@/models/entities/User.js';
 import { UserIp } from '@/models/entities/UserIp.js';
 import { UserKeypair } from '@/models/entities/UserKeypair.js';
 import { UserList } from '@/models/entities/UserList.js';
+import { UserListFavorite } from './entities/UserListFavorite.js';
 import { UserListJoining } from '@/models/entities/UserListJoining.js';
 import { UserNotePining } from '@/models/entities/UserNotePining.js';
 import { UserPending } from '@/models/entities/UserPending.js';
 import { UserProfile } from '@/models/entities/UserProfile.js';
 import { UserPublickey } from '@/models/entities/UserPublickey.js';
 import { UserSecurityKey } from '@/models/entities/UserSecurityKey.js';
+import { UserMemo } from '@/models/entities/UserMemo.js';
 import { Webhook } from '@/models/entities/Webhook.js';
 import { Channel } from '@/models/entities/Channel.js';
 import { RetentionAggregation } from '@/models/entities/RetentionAggregation.js';
@@ -71,15 +73,15 @@ export {
 	Announcement,
 	AnnouncementRead,
 	Antenna,
-	AntennaNote,
 	App,
 	AttestationChallenge,
 	AuthSession,
 	Blocking,
 	ChannelFollowing,
-	ChannelNotePining,
+	ChannelFavorite,
 	Clip,
 	ClipNote,
+	ClipFavorite,
 	DriveFile,
 	DriveFolder,
 	Emoji,
@@ -93,12 +95,12 @@ export {
 	ModerationLog,
 	MutedNote,
 	Muting,
+	RenoteMuting,
 	Note,
 	NoteFavorite,
 	NoteReaction,
 	NoteThreadMuting,
 	NoteUnread,
-	Notification,
 	Page,
 	PageLike,
 	PasswordResetRequest,
@@ -116,6 +118,7 @@ export {
 	UserIp,
 	UserKeypair,
 	UserList,
+	UserListFavorite,
 	UserListJoining,
 	UserNotePining,
 	UserPending,
@@ -129,6 +132,7 @@ export {
 	RoleAssignment,
 	Flash,
 	FlashLike,
+	UserMemo,
 };
 
 export type AbuseUserReportsRepository = Repository<AbuseUserReport>;
@@ -137,15 +141,15 @@ export type AdsRepository = Repository<Ad>;
 export type AnnouncementsRepository = Repository<Announcement>;
 export type AnnouncementReadsRepository = Repository<AnnouncementRead>;
 export type AntennasRepository = Repository<Antenna>;
-export type AntennaNotesRepository = Repository<AntennaNote>;
 export type AppsRepository = Repository<App>;
 export type AttestationChallengesRepository = Repository<AttestationChallenge>;
 export type AuthSessionsRepository = Repository<AuthSession>;
 export type BlockingsRepository = Repository<Blocking>;
 export type ChannelFollowingsRepository = Repository<ChannelFollowing>;
-export type ChannelNotePiningsRepository = Repository<ChannelNotePining>;
+export type ChannelFavoritesRepository = Repository<ChannelFavorite>;
 export type ClipsRepository = Repository<Clip>;
 export type ClipNotesRepository = Repository<ClipNote>;
+export type ClipFavoritesRepository = Repository<ClipFavorite>;
 export type DriveFilesRepository = Repository<DriveFile>;
 export type DriveFoldersRepository = Repository<DriveFolder>;
 export type EmojisRepository = Repository<Emoji>;
@@ -159,12 +163,12 @@ export type MetasRepository = Repository<Meta>;
 export type ModerationLogsRepository = Repository<ModerationLog>;
 export type MutedNotesRepository = Repository<MutedNote>;
 export type MutingsRepository = Repository<Muting>;
+export type RenoteMutingsRepository = Repository<RenoteMuting>;
 export type NotesRepository = Repository<Note>;
 export type NoteFavoritesRepository = Repository<NoteFavorite>;
 export type NoteReactionsRepository = Repository<NoteReaction>;
 export type NoteThreadMutingsRepository = Repository<NoteThreadMuting>;
 export type NoteUnreadsRepository = Repository<NoteUnread>;
-export type NotificationsRepository = Repository<Notification>;
 export type PagesRepository = Repository<Page>;
 export type PageLikesRepository = Repository<PageLike>;
 export type PasswordResetRequestsRepository = Repository<PasswordResetRequest>;
@@ -182,6 +186,7 @@ export type UsersRepository = Repository<User>;
 export type UserIpsRepository = Repository<UserIp>;
 export type UserKeypairsRepository = Repository<UserKeypair>;
 export type UserListsRepository = Repository<UserList>;
+export type UserListFavoritesRepository = Repository<UserListFavorite>;
 export type UserListJoiningsRepository = Repository<UserListJoining>;
 export type UserNotePiningsRepository = Repository<UserNotePining>;
 export type UserPendingsRepository = Repository<UserPending>;
@@ -195,3 +200,4 @@ export type RolesRepository = Repository<Role>;
 export type RoleAssignmentsRepository = Repository<RoleAssignment>;
 export type FlashsRepository = Repository<Flash>;
 export type FlashLikesRepository = Repository<FlashLike>;
+export type UserMemoRepository = Repository<UserMemo>;

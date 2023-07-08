@@ -18,6 +18,8 @@ export const meta = {
 
 	requireCredential: true,
 
+	prohibitMoved: true,
+
 	limit: {
 		duration: ms('1hour'),
 		max: 300,
@@ -97,6 +99,7 @@ export const paramDef = {
 		} },
 		cw: { type: 'string', nullable: true, maxLength: 100 },
 		localOnly: { type: 'boolean', default: false },
+		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
 		noExtractMentions: { type: 'boolean', default: false },
 		noExtractHashtags: { type: 'boolean', default: false },
 		noExtractEmojis: { type: 'boolean', default: false },
@@ -110,7 +113,7 @@ export const paramDef = {
 			type: 'string',
 			minLength: 1,
 			maxLength: MAX_NOTE_TEXT_LENGTH,
-			nullable: false
+			nullable: false,
 		},
 		fileIds: {
 			type: 'array',
@@ -259,7 +262,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			let channel: Channel | null = null;
 			if (ps.channelId != null) {
-				channel = await this.channelsRepository.findOneBy({ id: ps.channelId });
+				channel = await this.channelsRepository.findOneBy({ id: ps.channelId, isArchived: false });
 
 				if (channel == null) {
 					throw new ApiError(meta.errors.noSuchChannel);
@@ -280,6 +283,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				renote,
 				cw: ps.cw,
 				localOnly: ps.localOnly,
+				reactionAcceptance: ps.reactionAcceptance,
 				visibility: ps.visibility,
 				visibleUsers,
 				channel,

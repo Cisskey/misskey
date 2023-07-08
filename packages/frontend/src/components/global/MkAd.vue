@@ -1,6 +1,14 @@
 <template>
 <div v-if="chosen && !shouldHide" :class="$style.root">
-	<div v-if="!showMenu" :class="[$style.main, $style['form_' + chosen.place]]">
+	<div
+		v-if="!showMenu"
+		:class="[$style.main, {
+			[$style.form_square]: chosen.place === 'square',
+			[$style.form_horizontal]: chosen.place === 'horizontal',
+			[$style.form_horizontalBig]: chosen.place === 'horizontal-big',
+			[$style.form_vertical]: chosen.place === 'vertical',
+		}]"
+	>
 		<a :href="chosen.url" target="_blank" :class="$style.link">
 			<img :src="chosen.imageUrl" :class="$style.img">
 			<button class="_button" :class="$style.i" @click.prevent.stop="toggleMenu"><i :class="$style.iIcon" class="ti ti-info-circle"></i></button>
@@ -9,9 +17,9 @@
 	<div v-else :class="$style.menu">
 		<div :class="$style.menuContainer">
 			<div>Ads by {{ host }}</div>
-			<!--<MkButton class="button" primary>{{ $ts._ad.like }}</MkButton>-->
-			<MkButton v-if="chosen.ratio !== 0" :class="$style.menuButton" @click="reduceFrequency">{{ $ts._ad.reduceFrequencyOfThisAd }}</MkButton>
-			<button class="_textButton" @click="toggleMenu">{{ $ts._ad.back }}</button>
+			<!--<MkButton class="button" primary>{{ i18n.ts._ad.like }}</MkButton>-->
+			<MkButton v-if="chosen.ratio !== 0" :class="$style.menuButton" @click="reduceFrequency">{{ i18n.ts._ad.reduceFrequencyOfThisAd }}</MkButton>
+			<button class="_textButton" @click="toggleMenu">{{ i18n.ts._ad.back }}</button>
 		</div>
 	</div>
 </div>
@@ -20,6 +28,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+import { i18n } from '@/i18n';
 import { instance } from '@/instance';
 import { host } from '@/config';
 import MkButton from '@/components/MkButton.vue';
@@ -82,7 +91,7 @@ const choseAd = (): Ad | null => {
 };
 
 const chosen = ref(choseAd());
-const shouldHide = $ref($i && $i.policies.canHideAds);
+const shouldHide = $ref(!defaultStore.state.forceShowAds && $i && $i.policies.canHideAds && (props.specify == null));
 
 function reduceFrequency(): void {
 	if (chosen.value == null) return;
@@ -121,7 +130,7 @@ function reduceFrequency(): void {
 		}
 	}
 
-	&.form_horizontal-big {
+	&.form_horizontalBig {
 		padding: 8px;
 
 		> .link,

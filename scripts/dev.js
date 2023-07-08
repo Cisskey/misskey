@@ -40,13 +40,20 @@ const fs = require('fs');
 
 	const start = async () => {
 		try {
-			const exist = fs.existsSync(__dirname + '/../packages/backend/built/boot/index.js')
-			if (!exist) throw new Error('not exist yet');
+			const stat = fs.statSync(__dirname + '/../packages/backend/built/boot/index.js');
+			if (!stat) throw new Error('not exist yet');
+			if (stat.size === 0) throw new Error('not built yet');
 
-			await execa('pnpm', ['start'], {
+			const subprocess = await execa('pnpm', ['start'], {
 				cwd: __dirname + '/../',
 				stdout: process.stdout,
 				stderr: process.stderr,
+			});
+
+			// なぜかworkerだけが終了してmasterが残るのでその対策
+			process.on('SIGINT', () => {
+				subprocess.kill('SIGINT');
+				process.exit(0);
 			});
 		} catch (e) {
 			await new Promise(resolve => setTimeout(resolve, 3000));

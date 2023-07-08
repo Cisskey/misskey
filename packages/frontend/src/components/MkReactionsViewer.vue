@@ -1,27 +1,28 @@
 <template>
 <TransitionGroup
-	:enter-active-class="$store.state.animation ? $style.transition_x_enterActive : ''"
-	:leave-active-class="$store.state.animation ? $style.transition_x_leaveActive : ''"
-	:enter-from-class="$store.state.animation ? $style.transition_x_enterFrom : ''"
-	:leave-to-class="$store.state.animation ? $style.transition_x_leaveTo : ''"
-	:move-class="$store.state.animation ? $style.transition_x_move : ''"
+	:enterActiveClass="defaultStore.state.animation ? $style.transition_x_enterActive : ''"
+	:leaveActiveClass="defaultStore.state.animation ? $style.transition_x_leaveActive : ''"
+	:enterFromClass="defaultStore.state.animation ? $style.transition_x_enterFrom : ''"
+	:leaveToClass="defaultStore.state.animation ? $style.transition_x_leaveTo : ''"
+	:moveClass="defaultStore.state.animation ? $style.transition_x_move : ''"
 	tag="div" :class="$style.root"
 >
-	<XReaction v-for="[reaction, count] in reactions" :key="reaction" :reaction="reaction" :count="count" :is-initial="initialReactions.has(reaction)" :note="note"/>
-	<slot v-if="hasMoreReactions" name="more" />
+	<XReaction v-for="[reaction, count] in reactions" :key="reaction" :reaction="reaction" :count="count" :isInitial="initialReactions.has(reaction)" :note="note"/>
+	<slot v-if="hasMoreReactions" name="more"/>
 </TransitionGroup>
 </template>
 
 <script lang="ts" setup>
 import * as misskey from 'misskey-js';
-import XReaction from '@/components/MkReactionsViewer.reaction.vue';
 import { watch } from 'vue';
+import XReaction from '@/components/MkReactionsViewer.reaction.vue';
+import { defaultStore } from '@/store';
 
 const props = withDefaults(defineProps<{
-    note: misskey.entities.Note;
-    maxNumber?: number;
+	note: misskey.entities.Note;
+	maxNumber?: number;
 }>(), {
-    maxNumber: Infinity,
+	maxNumber: Infinity,
 });
 
 const initialReactions = new Set(Object.keys(props.note.reactions));

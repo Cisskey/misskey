@@ -5,7 +5,7 @@
 		<MkNoteHeader :class="$style.header" :note="note" :mini="true"/>
 		<div>
 			<p v-if="note.cw != null" :class="$style.cw">
-				<Mfm v-if="note.cw != ''" style="margin-right: 8px;" :text="note.cw" :author="note.user" :i="$i" :emoji-urls="note.emojis"/>
+				<Mfm v-if="note.cw != ''" style="margin-right: 8px;" :text="note.cw" :author="note.user" :i="$i" :emojiUrls="note.emojis"/>
 				<MkCwButton v-model="showContent" :note="note"/>
 			</p>
 			<div v-show="note.cw == null || showContent">
@@ -22,6 +22,7 @@ import * as misskey from 'misskey-js';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
+import { $i } from '@/account';
 
 const props = defineProps<{
 	note: misskey.entities.Note;
@@ -47,6 +48,9 @@ const showContent = $ref(false);
 	width: 34px;
 	height: 34px;
 	border-radius: 8px;
+	position: sticky !important;
+	top: calc(16px + var(--stickyTop, 0px));
+	left: 0;
 }
 
 .main {

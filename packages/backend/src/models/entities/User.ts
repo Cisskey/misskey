@@ -68,6 +68,25 @@ export class User {
 	})
 	public followingCount: number;
 
+	@Column('varchar', {
+		length: 512,
+		nullable: true,
+		comment: 'The URI of the new account of the User',
+	})
+	public movedToUri: string | null;
+
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'When the user moved to another account',
+	})
+	public movedAt: Date | null;
+
+	@Column('simple-array', {
+		nullable: true,
+		comment: 'URIs the user is known as too',
+	})
+	public alsoKnownAs: string[] | null;
+
 	@Column('integer', {
 		default: 0,
 		comment: 'The count of notes.',
@@ -99,6 +118,26 @@ export class User {
 	})
 	@JoinColumn()
 	public banner: DriveFile | null;
+
+	@Column('varchar', {
+		length: 512, nullable: true,
+	})
+	public avatarUrl: string | null;
+
+	@Column('varchar', {
+		length: 512, nullable: true,
+	})
+	public bannerUrl: string | null;
+
+	@Column('varchar', {
+		length: 128, nullable: true,
+	})
+	public avatarBlurhash: string | null;
+
+	@Column('varchar', {
+		length: 128, nullable: true,
+	})
+	public bannerBlurhash: string | null;
 
 	@Index()
 	@Column('varchar', {
@@ -193,12 +232,6 @@ export class User {
 	})
 	public followersUri: string | null;
 
-	@Column('boolean', {
-		default: false,
-		comment: 'Whether to show users replying to other users in the timeline.',
-	})
-	public showTimelineReplies: boolean;
-
 	@Index({ unique: true })
 	@Column('char', {
 		length: 16, nullable: true, unique: true,
@@ -220,7 +253,19 @@ export type LocalUser = User & {
 	uri: null;
 }
 
+export type PartialLocalUser = Partial<User> & {
+	id: User['id'];
+	host: null;
+	uri: null;
+}
+
 export type RemoteUser = User & {
+	host: string;
+	uri: string;
+}
+
+export type PartialRemoteUser = Partial<User> & {
+	id: User['id'];
 	host: string;
 	uri: string;
 }

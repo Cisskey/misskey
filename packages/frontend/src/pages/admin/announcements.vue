@@ -1,8 +1,8 @@
 <template>
 <MkStickyContainer>
 	<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="900">
-		<div class="ztgjmzrw _gaps_m">
+	<MkSpacer :contentMax="900">
+		<div class="_gaps_m">
 			<section v-for="announcement in announcements" class="">
 				<div class="_panel _gaps_m" style="padding: 24px;">
 					<MkInput v-model="announcement.title">
@@ -69,6 +69,7 @@ function save(announcement) {
 				type: 'success',
 				text: i18n.ts.saved,
 			});
+			refresh();
 		}).catch(err => {
 			os.alert({
 				type: 'error',
@@ -90,6 +91,14 @@ function save(announcement) {
 	}
 }
 
+function refresh() {
+	os.api('admin/announcements/list').then(announcementResponse => {
+		announcements = announcementResponse;
+	});
+}
+
+refresh();
+
 const headerActions = $computed(() => [{
 	asFullButton: true,
 	icon: 'ti ti-plus',
@@ -104,9 +113,3 @@ definePageMetadata({
 	icon: 'ti ti-speakerphone',
 });
 </script>
-
-<style lang="scss" scoped>
-.ztgjmzrw {
-	margin: var(--margin);
-}
-</style>

@@ -1,7 +1,7 @@
 <template>
 <MkStickyContainer>
-	<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="700" :margin-min="16" :margin-max="32">
+	<template #header><XHeader :tabs="headerTabs"/></template>
+	<MkSpacer :contentMax="700" :marginMin="16" :marginMax="32">
 		<FormSuspense :p="init">
 			<div class="_gaps_m">
 				<MkSwitch v-model="enableEmail">
@@ -18,7 +18,7 @@
 						<template #label>{{ i18n.ts.smtpConfig }}</template>
 
 						<div class="_gaps_m">
-							<FormSplit :min-width="280">
+							<FormSplit :minWidth="280">
 								<MkInput v-model="smtpHost">
 									<template #label>{{ i18n.ts.smtpHost }}</template>
 								</MkInput>
@@ -26,7 +26,7 @@
 									<template #label>{{ i18n.ts.smtpPort }}</template>
 								</MkInput>
 							</FormSplit>
-							<FormSplit :min-width="280">
+							<FormSplit :minWidth="280">
 								<MkInput v-model="smtpUser">
 									<template #label>{{ i18n.ts.smtpUser }}</template>
 								</MkInput>
@@ -45,6 +45,16 @@
 			</div>
 		</FormSuspense>
 	</MkSpacer>
+	<template #footer>
+		<div :class="$style.footer">
+			<MkSpacer :contentMax="700" :marginMin="16" :marginMax="16">
+				<div class="_buttons">
+					<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
+					<MkButton rounded @click="testEmail"><i class="ti ti-send"></i> {{ i18n.ts.testEmail }}</MkButton>
+				</div>
+			</MkSpacer>
+		</div>
+	</template>
 </MkStickyContainer>
 </template>
 
@@ -61,6 +71,7 @@ import * as os from '@/os';
 import { fetchInstance, instance } from '@/instance';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import MkButton from '@/components/MkButton.vue';
 
 let enableEmail: boolean = $ref(false);
 let email: any = $ref(null);
@@ -85,7 +96,9 @@ async function testEmail() {
 	const { canceled, result: destination } = await os.inputText({
 		title: i18n.ts.destination,
 		type: 'email',
-		placeholder: instance.maintainerEmail,
+		default: instance.maintainerEmail ?? '',
+		placeholder: 'test@example.com',
+		minLength: 1,
 	});
 	if (canceled) return;
 	os.apiWithDialog('admin/send-email', {
@@ -109,17 +122,6 @@ function save() {
 	});
 }
 
-const headerActions = $computed(() => [{
-	asFullButton: true,
-	text: i18n.ts.testEmail,
-	handler: testEmail,
-}, {
-	asFullButton: true,
-	icon: 'ti ti-check',
-	text: i18n.ts.save,
-	handler: save,
-}]);
-
 const headerTabs = $computed(() => []);
 
 definePageMetadata({
@@ -127,3 +129,10 @@ definePageMetadata({
 	icon: 'ti ti-mail',
 });
 </script>
+
+<style lang="scss" module>
+.footer {
+	-webkit-backdrop-filter: var(--blur, blur(15px));
+	backdrop-filter: var(--blur, blur(15px));
+}
+</style>

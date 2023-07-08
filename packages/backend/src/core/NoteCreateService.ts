@@ -1,6 +1,9 @@
+import { setImmediate } from 'node:timers/promises';
 import * as mfm from 'mfm-js';
 import { In, DataSource } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
+import * as Redis from 'ioredis';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import RE2 from 're2';
 import { extractMentions } from '@/misc/extract-mentions.js';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
 import { extractHashtags } from '@/misc/extract-hashtags.js';
@@ -18,7 +21,7 @@ import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js
 import { checkWordMute } from '@/misc/check-word-mute.js';
 import type { Channel } from '@/models/entities/Channel.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
-import { Cache } from '@/misc/cache.js';
+import { MemorySingleCache } from '@/misc/cache.js';
 import type { UserProfile } from '@/models/entities/UserProfile.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
@@ -29,7 +32,7 @@ import PerUserNotesChart from '@/core/chart/charts/per-user-notes.js';
 import InstanceChart from '@/core/chart/charts/instance.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { CreateNotificationService } from '@/core/CreateNotificationService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { WebhookService } from '@/core/WebhookService.js';
 import { HashtagService } from '@/core/HashtagService.js';
 import { AntennaService } from '@/core/AntennaService.js';
@@ -43,8 +46,10 @@ import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { bindThis } from '@/decorators.js';
 import { DB_MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { RoleService } from '@/core/RoleService.js';
+import { MetaService } from '@/core/MetaService.js';
+import { SearchService } from '@/core/SearchService.js';
 
-const mutedWordsCache = new Cache<{ userId: UserProfile['userId']; mutedWords: UserProfile['mutedWords']; }[]>(1000 * 60 * 5);
+const mutedWordsCache = new MemorySingleCache<{ userId: UserProfile['userId']; mutedWords: UserProfile['mutedWords']; }[]>(1000 * 60 * 5);
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -58,7 +63,7 @@ class NotificationManager {
 
 	constructor(
 		private mutingsRepository: MutingsRepository,
-		private createNotificationService: CreateNotificationService,
+		private notificationService: NotificationService,
 		notifier: { id: User['id']; },
 		note: Note,
 	) {
@@ -99,7 +104,7 @@ class NotificationManager {
 
 			// 通知される側のユーザーが通知する側のユーザーをミュートしていない限りは通知する
 			if (!mentioneesMutedUserIds.includes(this.notifier.id)) {
-				this.createNotificationService.createNotification(x.target, x.reason, {
+				this.notificationService.createNotification(x.target, x.reason, {
 					notifierId: this.notifier.id,
 					noteId: this.note.id,
 				});
@@ -124,6 +129,7 @@ type Option = {
 	files?: DriveFile[] | null;
 	poll?: IPoll | null;
 	localOnly?: boolean | null;
+	reactionAcceptance?: Note['reactionAcceptance'];
 	cw?: string | null;
 	visibility?: string;
 	visibleUsers?: MinimumUser[] | null;
@@ -137,13 +143,18 @@ type Option = {
 };
 
 @Injectable()
-export class NoteCreateService {
+export class NoteCreateService implements OnApplicationShutdown {
+	#shutdownController = new AbortController();
+
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
 
 		@Inject(DI.db)
 		private db: DataSource,
+
+		@Inject(DI.redis)
+		private redisClient: Redis.Redis,
 
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -178,7 +189,7 @@ export class NoteCreateService {
 		private globalEventService: GlobalEventService,
 		private queueService: QueueService,
 		private noteReadService: NoteReadService,
-		private createNotificationService: CreateNotificationService,
+		private notificationService: NotificationService,
 		private relayService: RelayService,
 		private federatedInstanceService: FederatedInstanceService,
 		private hashtagService: HashtagService,
@@ -188,11 +199,13 @@ export class NoteCreateService {
 		private apDeliverManagerService: ApDeliverManagerService,
 		private apRendererService: ApRendererService,
 		private roleService: RoleService,
+		private metaService: MetaService,
+		private searchService: SearchService,
 		private notesChart: NotesChart,
 		private perUserNotesChart: PerUserNotesChart,
 		private activeUsersChart: ActiveUsersChart,
 		private instanceChart: InstanceChart,
-	) {}
+	) { }
 
 	@bindThis
 	public async create(user: {
@@ -226,7 +239,10 @@ export class NoteCreateService {
 		if (data.channel != null) data.localOnly = true;
 
 		if (data.visibility === 'public' && data.channel == null) {
-			if ((await this.roleService.getUserPolicies(user.id)).canPublicNote === false) {
+			const sensitiveWords = (await this.metaService.fetch()).sensitiveWords;
+			if (this.isSensitive(data, sensitiveWords)) {
+				data.visibility = 'home';
+			} else if ((await this.roleService.getUserPolicies(user.id)).canPublicNote === false) {
 				data.visibility = 'home';
 			}
 		}
@@ -313,7 +329,18 @@ export class NoteCreateService {
 
 		const note = await this.insertNote(user, data, tags, emojis, mentionedUsers);
 
-		setImmediate(() => this.postNoteCreated(note, user, data, silent, tags!, mentionedUsers!));
+		if (data.channel) {
+			this.redisClient.xadd(
+				`channelTimeline:${data.channel.id}`,
+				'MAXLEN', '~', '1000',
+				'*',
+				'note', note.id);
+		}
+
+		setImmediate('post created', { signal: this.#shutdownController.signal }).then(
+			() => this.postNoteCreated(note, user, data, silent, tags!, mentionedUsers!),
+			() => { /* aborted, ignore this */ },
+		);
 
 		return note;
 	}
@@ -340,6 +367,7 @@ export class NoteCreateService {
 			emojis,
 			userId: user.id,
 			localOnly: data.localOnly!,
+			reactionAcceptance: data.reactionAcceptance,
 			visibility: data.visibility as any,
 			visibleUserIds: data.visibility === 'specified'
 				? data.visibleUsers
@@ -379,7 +407,7 @@ export class NoteCreateService {
 		// 投稿を作成
 		try {
 			if (insert.hasPoll) {
-			// Start transaction
+				// Start transaction
 				await this.db.transaction(async transactionalEntityManager => {
 					await transactionalEntityManager.insert(Note, insert);
 
@@ -402,7 +430,7 @@ export class NoteCreateService {
 
 			return insert;
 		} catch (e) {
-		// duplicate key error
+			// duplicate key error
 			if (isDuplicateKeyValueError(e)) {
 				const err = new Error('Duplicated note');
 				err.name = 'duplicated';
@@ -423,15 +451,20 @@ export class NoteCreateService {
 		createdAt: User['createdAt'];
 		isBot: User['isBot'];
 	}, data: Option, silent: boolean, tags: string[], mentionedUsers: MinimumUser[]) {
-		// 統計を更新
+		const meta = await this.metaService.fetch();
+
 		this.notesChart.update(note, true);
-		this.perUserNotesChart.update(user, note, true);
+		if (meta.enableChartsForRemoteUser || (user.host == null)) {
+			this.perUserNotesChart.update(user, note, true);
+		}
 
 		// Register host
 		if (this.userEntityService.isRemoteUser(user)) {
-			this.federatedInstanceService.fetch(user.host).then(i => {
+			this.federatedInstanceService.fetch(user.host).then(async i => {
 				this.instancesRepository.increment({ id: i.id }, 'notesCount', 1);
-				this.instanceChart.updateNote(i.host, note, true);
+				if ((await this.metaService.fetch()).enableChartsForFederatedInstances) {
+					this.instanceChart.updateNote(i.host, note, true);
+				}
 			});
 		}
 
@@ -444,7 +477,7 @@ export class NoteCreateService {
 		this.incNotesCountOfUser(user);
 
 		// Word mute
-		mutedWordsCache.fetch(null, () => this.userProfilesRepository.find({
+		mutedWordsCache.fetch(() => this.userProfilesRepository.find({
 			where: {
 				enableWordMute: true,
 			},
@@ -464,26 +497,7 @@ export class NoteCreateService {
 			}
 		});
 
-		// Antenna
-		for (const antenna of (await this.antennaService.getAntennas())) {
-			this.antennaService.checkHitAntenna(antenna, note, user).then(hit => {
-				if (hit) {
-					this.antennaService.addNoteToAntenna(antenna, note, user);
-				}
-			});
-		}
-
-		// Channel
-		if (note.channelId) {
-			this.channelFollowingsRepository.findBy({ followeeId: note.channelId }).then(followings => {
-				for (const following of followings) {
-					this.noteReadService.insertNoteUnread(following.followerId, note, {
-						isSpecified: false,
-						isMentioned: false,
-					});
-				}
-			});
-		}
+		this.antennaService.addNoteToAntennas(note, user);
 
 		if (data.reply) {
 			this.saveReply(data.reply, note);
@@ -496,7 +510,7 @@ export class NoteCreateService {
 
 		if (data.poll && data.poll.expiresAt) {
 			const delay = data.poll.expiresAt.getTime() - Date.now();
-			this.queueService.endedPollNotificationQueue.add({
+			this.queueService.endedPollNotificationQueue.add(note.id, {
 				noteId: note.id,
 			}, {
 				delay,
@@ -537,6 +551,8 @@ export class NoteCreateService {
 
 			this.globalEventService.publishNotesStream(noteObj);
 
+			this.roleService.addNoteToRoleTimeline(noteObj);
+
 			this.webhookService.getActiveWebhooks().then(webhooks => {
 				webhooks = webhooks.filter(x => x.userId === user.id && x.on.includes('note'));
 				for (const webhook of webhooks) {
@@ -546,7 +562,7 @@ export class NoteCreateService {
 				}
 			});
 
-			const nm = new NotificationManager(this.mutingsRepository, this.createNotificationService, user, note);
+			const nm = new NotificationManager(this.mutingsRepository, this.notificationService, user, note);
 
 			await this.createMentionedEvents(mentionedUsers, note, nm);
 
@@ -656,6 +672,31 @@ export class NoteCreateService {
 		// Register to search database
 		this.index(note);
 	}
+	
+	@bindThis
+	private isSensitive(note: Option, sensitiveWord: string[]): boolean {
+		if (sensitiveWord.length > 0) {
+			const text = note.cw ?? note.text ?? '';
+			if (text === '') return false;
+			const matched = sensitiveWord.some(filter => {
+				// represents RegExp
+				const regexp = filter.match(/^\/(.+)\/(.*)$/);
+				// This should never happen due to input sanitisation.
+				if (!regexp) {
+					const words = filter.split(' ');
+					return words.every(keyword => text.includes(keyword));
+				}
+				try {
+					return new RE2(regexp[1], regexp[2]).test(text);
+				} catch (err) {
+					// This should never happen due to input sanitisation.
+					return false;
+				}
+			});
+			if (matched) return true;
+		}
+		return false;
+	}
 
 	@bindThis
 	private incRenoteCount(renote: Note) {
@@ -716,17 +757,9 @@ export class NoteCreateService {
 
 	@bindThis
 	private index(note: Note) {
-		if (note.text == null || this.config.elasticsearch == null) return;
-		/*
-	es!.index({
-		index: this.config.elasticsearch.index ?? 'misskey_note',
-		id: note.id.toString(),
-		body: {
-			text: normalizeForSearch(note.text),
-			userId: note.userId,
-			userHost: note.userHost,
-		},
-	});*/
+		if (note.text == null && note.cw == null) return;
+		
+		this.searchService.indexNote(note);
 	}
 
 	@bindThis
@@ -755,5 +788,15 @@ export class NoteCreateService {
 		);
 
 		return mentionedUsers;
+	}
+
+	@bindThis
+	public dispose(): void {
+		this.#shutdownController.abort();
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

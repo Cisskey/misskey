@@ -4,10 +4,11 @@ import { i18n } from '@/i18n';
 import copyToClipboard from '@/scripts/copy-to-clipboard';
 import { host } from '@/config';
 import * as os from '@/os';
-import { userActions } from '@/store';
+import { defaultStore, userActions } from '@/store';
 import { $i, iAmModerator } from '@/account';
 import { mainRouter } from '@/router';
 import { Router } from '@/nirax';
+import { rolesCache, userListsCache } from '@/cache';
 
 export function getUserMenu(user: misskey.entities.UserDetailed, router: Router = mainRouter) {
 	const meId = $i ? $i.id : null;
@@ -53,6 +54,14 @@ export function getUserMenu(user: misskey.entities.UserDetailed, router: Router 
 		}
 	}
 
+	async function toggleRenoteMute() {
+		os.apiWithDialog(user.isRenoteMuted ? 'renote-mute/delete' : 'renote-mute/create', {
+			userId: user.id,
+		}).then(() => {
+			user.isRenoteMuted = !user.isRenoteMuted;
+		});
+	}
+
 	async function toggleBlock() {
 		if (!await getConfirmed(user.isBlocking ? i18n.ts.unblockConfirm : i18n.ts.blockConfirm)) return;
 
@@ -89,6 +98,27 @@ export function getUserMenu(user: misskey.entities.UserDetailed, router: Router 
 		});
 	}
 
+	async function editMemo(): Promise<void> {
+		const userDetailed = await os.api('users/show', {
+			userId: user.id,
+		});
+		const { canceled, result } = await os.form(i18n.ts.editMemo, {
+			memo: {
+				type: 'string',
+				required: true,
+				multiline: true,
+				label: i18n.ts.memo,
+				default: userDetailed.memo,
+			},
+		});
+		if (canceled) return;
+
+		os.apiWithDialog('users/update-memo', {
+			memo: result.memo,
+			userId: user.id,
+		});
+	}
+
 	let menu = [{
 		icon: 'ti ti-at',
 		text: i18n.ts.copyUsername,
@@ -111,14 +141,20 @@ export function getUserMenu(user: misskey.entities.UserDetailed, router: Router 
 		icon: 'ti ti-mail',
 		text: i18n.ts.sendMessage,
 		action: () => {
-			os.post({ specified: user });
+			os.post({ specified: user, initialText: `@${user.username} ` });
 		},
 	}, null, {
+		icon: 'ti ti-pencil',
+		text: i18n.ts.editMemo,
+		action: () => {
+			editMemo();
+		},
+	}, {
 		type: 'parent',
 		icon: 'ti ti-list',
 		text: i18n.ts.addToList,
 		children: async () => {
-			const lists = await os.api('users/lists/list');
+			const lists = await userListsCache.fetch(() => os.api('users/lists/list'));
 
 			return lists.map(list => ({
 				text: list.name,
@@ -139,12 +175,36 @@ export function getUserMenu(user: misskey.entities.UserDetailed, router: Router 
 				icon: 'ti ti-badges',
 				text: i18n.ts.roles,
 				children: async () => {
-					const roles = await os.api('admin/roles/list');
+					const roles = await rolesCache.fetch(() => os.api('admin/roles/list'));
 
 					return roles.filter(r => r.target === 'manual').map(r => ({
 						text: r.name,
-						action: () => {
-							os.apiWithDialog('admin/roles/assign', { roleId: r.id, userId: user.id });
+						action: async () => {
+							const { canceled, result: period } = await os.select({
+								title: i18n.ts.period,
+								items: [{
+									value: 'indefinitely', text: i18n.ts.indefinitely,
+								}, {
+									value: 'oneHour', text: i18n.ts.oneHour,
+								}, {
+									value: 'oneDay', text: i18n.ts.oneDay,
+								}, {
+									value: 'oneWeek', text: i18n.ts.oneWeek,
+								}, {
+									value: 'oneMonth', text: i18n.ts.oneMonth,
+								}],
+								default: 'indefinitely',
+							});
+							if (canceled) return;
+						
+							const expiresAt = period === 'indefinitely' ? null
+								: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
+								: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+								: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
+								: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+								: null;
+
+							os.apiWithDialog('admin/roles/assign', { roleId: r.id, userId: user.id, expiresAt });
 						},
 					}));
 				},
@@ -155,6 +215,10 @@ export function getUserMenu(user: misskey.entities.UserDetailed, router: Router 
 			icon: user.isMuted ? 'ti ti-eye' : 'ti ti-eye-off',
 			text: user.isMuted ? i18n.ts.unmute : i18n.ts.mute,
 			action: toggleMute,
+		}, {
+			icon: user.isRenoteMuted ? 'ti ti-repeat' : 'ti ti-repeat-off',
+			text: user.isRenoteMuted ? i18n.ts.renoteUnmute : i18n.ts.renoteMute,
+			action: toggleRenoteMute,
 		}, {
 			icon: 'ti ti-ban',
 			text: user.isBlocking ? i18n.ts.unblock : i18n.ts.block,
@@ -173,6 +237,16 @@ export function getUserMenu(user: misskey.entities.UserDetailed, router: Router 
 			icon: 'ti ti-exclamation-circle',
 			text: i18n.ts.reportAbuse,
 			action: reportAbuse,
+		}]);
+	}
+
+	if (defaultStore.state.devMode) {
+		menu = menu.concat([null, {
+			icon: 'ti ti-id',
+			text: i18n.ts.copyUserId,
+			action: () => {
+				copyToClipboard(user.id);
+			},
 		}]);
 	}
 

@@ -1,49 +1,54 @@
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="700">
-		<div class="mk-list-page">
-			<Transition :name="$store.state.animation ? '_transition_zoom' : ''" mode="out-in">
-				<div v-if="list" class="">
-					<div class="">
-						<MkButton inline @click="addUser()">{{ i18n.ts.addUser }}</MkButton>
-						<MkButton inline @click="renameList()">{{ i18n.ts.rename }}</MkButton>
-						<MkButton inline @click="deleteList()">{{ i18n.ts.delete }}</MkButton>
-					</div>
-				</div>
-			</Transition>
+	<MkSpacer :contentMax="700" :class="$style.main">
+		<div v-if="list" class="_gaps">
+			<MkFolder>
+				<template #label>{{ i18n.ts.settings }}</template>
 
-			<Transition :name="$store.state.animation ? '_transition_zoom' : ''" mode="out-in">
-				<div v-if="list" class="members _margin">
-					<div class="">{{ i18n.ts.members }}</div>
-					<div class="">
-						<div class="users">
-							<div v-for="user in users" :key="user.id" class="user _panel">
-								<MkAvatar :user="user" class="avatar" indicator link preview/>
-								<div class="body">
-									<MkUserName :user="user" class="name"/>
-									<MkAcct :user="user" class="acct"/>
-								</div>
-								<div class="action">
-									<button class="_button" @click="removeUser(user)"><i class="ti ti-x"></i></button>
-								</div>
-							</div>
-						</div>
+				<div class="_gaps">
+					<MkInput v-model="name">
+						<template #label>{{ i18n.ts.name }}</template>
+					</MkInput>
+					<MkSwitch v-model="isPublic">{{ i18n.ts.public }}</MkSwitch>
+					<div class="_buttons">
+						<MkButton rounded primary @click="updateSettings">{{ i18n.ts.save }}</MkButton>
+						<MkButton rounded danger @click="deleteList()">{{ i18n.ts.delete }}</MkButton>
 					</div>
 				</div>
-			</Transition>
+			</MkFolder>
+
+			<MkFolder defaultOpen>
+				<template #label>{{ i18n.ts.members }}</template>
+
+				<div class="_gaps_s">
+					<MkButton rounded primary style="margin: 0 auto;" @click="addUser()">{{ i18n.ts.addUser }}</MkButton>
+					<div v-for="user in users" :key="user.id" :class="$style.userItem">
+						<MkA :class="$style.userItemBody" :to="`${userPage(user)}`">
+							<MkUserCardMini :user="user"/>
+						</MkA>
+						<button class="_button" :class="$style.remove" @click="removeUser(user, $event)"><i class="ti ti-x"></i></button>
+					</div>
+				</div>
+			</MkFolder>
 		</div>
 	</MkSpacer>
 </MkStickyContainer>
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os';
 import { mainRouter } from '@/router';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
+import { userPage } from '@/filters/user';
+import MkUserCardMini from '@/components/MkUserCardMini.vue';
+import MkSwitch from '@/components/MkSwitch.vue';
+import MkFolder from '@/components/MkFolder.vue';
+import MkInput from '@/components/MkInput.vue';
+import { userListsCache } from '@/cache';
 
 const props = defineProps<{
 	listId: string;
@@ -51,12 +56,17 @@ const props = defineProps<{
 
 let list = $ref(null);
 let users = $ref([]);
+const isPublic = ref(false);
+const name = ref('');
 
 function fetchList() {
 	os.api('users/lists/show', {
 		listId: props.listId,
 	}).then(_list => {
 		list = _list;
+		name.value = list.name;
+		isPublic.value = list.isPublic;
+
 		os.api('users/show', {
 			userIds: list.userIds,
 		}).then(_users => {
@@ -76,28 +86,20 @@ function addUser() {
 	});
 }
 
-function removeUser(user) {
-	os.api('users/lists/pull', {
-		listId: list.id,
-		userId: user.id,
-	}).then(() => {
-		users = users.filter(x => x.id !== user.id);
-	});
-}
-
-async function renameList() {
-	const { canceled, result: name } = await os.inputText({
-		title: i18n.ts.enterListName,
-		default: list.name,
-	});
-	if (canceled) return;
-
-	await os.api('users/lists/update', {
-		listId: list.id,
-		name: name,
-	});
-
-	list.name = name;
+async function removeUser(user, ev) {
+	os.popupMenu([{
+		text: i18n.ts.remove,
+		icon: 'ti ti-x',
+		danger: true,
+		action: async () => {
+			os.api('users/lists/pull', {
+				listId: list.id,
+				userId: user.id,
+			}).then(() => {
+				users = users.filter(x => x.id !== user.id);
+			});
+		},
+	}], ev.currentTarget ?? ev.target);
 }
 
 async function deleteList() {
@@ -107,11 +109,24 @@ async function deleteList() {
 	});
 	if (canceled) return;
 
-	await os.api('users/lists/delete', {
+	await os.apiWithDialog('users/lists/delete', {
 		listId: list.id,
 	});
-	os.success();
+	userListsCache.delete();
 	mainRouter.push('/my/lists');
+}
+
+async function updateSettings() {
+	await os.apiWithDialog('users/lists/update', {
+		listId: list.id,
+		name: name.value,
+		isPublic: isPublic.value,
+	});
+
+	userListsCache.delete();
+
+	list.name = name.value;
+	list.isPublic = isPublic.value;
 }
 
 watch(() => props.listId, fetchList, { immediate: true });
@@ -126,37 +141,34 @@ definePageMetadata(computed(() => list ? {
 } : null));
 </script>
 
-<style lang="scss" scoped>
-.mk-list-page {
-	> .members {
-		> ._content {
-			> .users {
-				> .user {
-					display: flex;
-					align-items: center;
-					padding: 16px;
+<style lang="scss" module>
+.main {
+	min-height: calc(100cqh - (var(--stickyTop, 0px) + var(--stickyBottom, 0px)));
+}
 
-					> .avatar {
-						width: 50px;
-						height: 50px;
-					}
+.userItem {
+	display: flex;
+}
 
-					> .body {
-						flex: 1;
-						padding: 8px;
+.userItemBody {
+	flex: 1;
+	min-width: 0;
+	margin-right: 8px;
 
-						> .name {
-							display: block;
-							font-weight: bold;
-						}
-
-						> .acct {
-							opacity: 0.5;
-						}
-					}
-				}
-			}
-		}
+	&:hover {
+		text-decoration: none;
 	}
+}
+
+.remove {
+	width: 32px;
+	height: 32px;
+	align-self: center;
+}
+
+.footer {
+	-webkit-backdrop-filter: var(--blur, blur(15px));
+	backdrop-filter: var(--blur, blur(15px));
+	border-top: solid 0.5px var(--divider);
 }
 </style>

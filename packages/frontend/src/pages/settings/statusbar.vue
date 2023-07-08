@@ -3,7 +3,7 @@
 	<MkFolder v-for="x in statusbars" :key="x.id">
 		<template #label>{{ x.type ?? i18n.ts.notSet }}</template>
 		<template #suffix>{{ x.name }}</template>
-		<XStatusbar :_id="x.id" :user-lists="userLists"/>
+		<XStatusbar :_id="x.id" :userLists="userLists"/>
 	</MkFolder>
 	<MkButton primary @click="add">{{ i18n.ts.add }}</MkButton>
 </div>
@@ -47,6 +47,5 @@ const headerTabs = $computed(() => []);
 definePageMetadata({
 	title: i18n.ts.statusbar,
 	icon: 'ti ti-list',
-	bg: 'var(--bg)',
 });
 </script>

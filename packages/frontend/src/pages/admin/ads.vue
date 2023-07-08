@@ -1,9 +1,9 @@
 <template>
 <MkStickyContainer>
 	<template #header><XHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="900">
-		<div class="uqshojas">
-			<div v-for="ad in ads" class="_panel _gaps_m ad">
+	<MkSpacer :contentMax="900">
+		<div>
+			<div v-for="ad in ads" class="_panel _gaps_m" :class="$style.ad">
 				<MkAd v-if="ad.url" :specify="ad"/>
 				<MkInput v-model="ad.url" type="url">
 					<template #label>URL</template>
@@ -113,16 +113,37 @@ function remove(ad) {
 
 function save(ad) {
 	if (ad.id == null) {
-		os.apiWithDialog('admin/ad/create', {
+		os.api('admin/ad/create', {
 			...ad,
 			expiresAt: new Date(ad.expiresAt).getTime(),
 			startsAt: new Date(ad.startsAt).getTime(),
+		}).then(() => {
+			os.alert({
+				type: 'success',
+				text: i18n.ts.saved,
+			});
+			refresh();
+		}).catch(err => {
+			os.alert({
+				type: 'error',
+				text: err,
+			});
 		});
 	} else {
-		os.apiWithDialog('admin/ad/update', {
+		os.api('admin/ad/update', {
 			...ad,
 			expiresAt: new Date(ad.expiresAt).getTime(),
 			startsAt: new Date(ad.startsAt).getTime(),
+		}).then(() => {
+			os.alert({
+				type: 'success',
+				text: i18n.ts.saved,
+			});
+		}).catch(err => {
+			os.alert({
+				type: 'error',
+				text: err,
+			});
 		});
 	}
 }
@@ -141,6 +162,25 @@ function more() {
 		}));
 	});
 }
+
+function refresh() {
+	os.api('admin/ad/list').then(adsResponse => {
+		ads = adsResponse.map(r => {
+			const exdate = new Date(r.expiresAt);
+			const stdate = new Date(r.startsAt);
+			exdate.setMilliseconds(exdate.getMilliseconds() - localTimeDiff);
+			stdate.setMilliseconds(stdate.getMilliseconds() - localTimeDiff);
+			return {
+				...r,
+				expiresAt: exdate.toISOString().slice(0, 16),
+				startsAt: stdate.toISOString().slice(0, 16),
+			};
+		});
+	});
+}
+
+refresh();
+
 const headerActions = $computed(() => [{
 	asFullButton: true,
 	icon: 'ti ti-plus',
@@ -156,14 +196,12 @@ definePageMetadata({
 });
 </script>
 
-<style lang="scss" scoped>
-.uqshojas {
-	> .ad {
-		padding: 32px;
+<style lang="scss" module>
+.ad {
+	padding: 32px;
 
-		&:not(:last-child) {
-			margin-bottom: var(--margin);
-		}
+	&:not(:last-child) {
+		margin-bottom: var(--margin);
 	}
 }
 </style>

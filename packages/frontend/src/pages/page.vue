@@ -1,8 +1,8 @@
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="700">
-		<Transition :name="$store.state.animation ? 'fade' : ''" mode="out-in">
+	<MkSpacer :contentMax="700">
+		<Transition :name="defaultStore.state.animation ? 'fade' : ''" mode="out-in">
 			<div v-if="page" :key="page.id" class="xcukqgmh">
 				<div class="main">
 					<!--
@@ -18,8 +18,8 @@
 					</div>
 					<div class="actions">
 						<div class="like">
-							<MkButton v-if="page.isLiked" v-tooltip="i18n.ts._pages.unlike" class="button" as-like primary @click="unlike()"><i class="ti ti-heart-off"></i><span v-if="page.likedCount > 0" class="count">{{ page.likedCount }}</span></MkButton>
-							<MkButton v-else v-tooltip="i18n.ts._pages.like" class="button" as-like @click="like()"><i class="ti ti-heart"></i><span v-if="page.likedCount > 0" class="count">{{ page.likedCount }}</span></MkButton>
+							<MkButton v-if="page.isLiked" v-tooltip="i18n.ts._pages.unlike" class="button" asLike primary @click="unlike()"><i class="ti ti-heart-off"></i><span v-if="page.likedCount > 0" class="count">{{ page.likedCount }}</span></MkButton>
+							<MkButton v-else v-tooltip="i18n.ts._pages.like" class="button" asLike @click="like()"><i class="ti ti-heart"></i><span v-if="page.likedCount > 0" class="count">{{ page.likedCount }}</span></MkButton>
 						</div>
 						<div class="other">
 							<button v-tooltip="i18n.ts.shareWithNote" v-click-anime class="_button" @click="shareWithNote"><i class="ti ti-repeat ti-fw"></i></button>
@@ -75,6 +75,9 @@ import MkPagination from '@/components/MkPagination.vue';
 import MkPagePreview from '@/components/MkPagePreview.vue';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { pageViewInterruptors, defaultStore } from '@/store';
+import { deepClone } from '@/scripts/clone';
+import { $i } from '@/account';
 
 const props = defineProps<{
 	pageName: string;
@@ -97,8 +100,17 @@ function fetchPage() {
 	os.api('pages/show', {
 		name: props.pageName,
 		username: props.username,
-	}).then(_page => {
+	}).then(async _page => {
 		page = _page;
+
+		// plugin
+		if (pageViewInterruptors.length > 0) {
+			let result = deepClone(_page);
+			for (const interruptor of pageViewInterruptors) {
+				result = await interruptor.handler(result);
+			}
+			page = result;
+		}
 	}).catch(err => {
 		error = err;
 	});

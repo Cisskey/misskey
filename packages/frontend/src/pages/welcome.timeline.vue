@@ -3,36 +3,37 @@
 	<div ref="scrollEl" :class="[$style.scrollbox, { [$style.scroll]: isScrolling }]">
 		<div v-for="note in notes" :key="note.id" :class="$style.note">
 			<div class="_panel" :class="$style.content">
-				<div :class="$style.body">
+				<div>
 					<MkA v-if="note.replyId" class="reply" :to="`/notes/${note.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
-					<Mfm v-if="note.text" :text="note.text" :author="note.user" :i="$i" />
+					<Mfm v-if="note.text" :text="note.text" :author="note.user" :i="$i"/>
 					<MkA v-if="note.renoteId" class="rp" :to="`/notes/${note.renoteId}`">RN: ...</MkA>
 				</div>
 				<div v-if="note.files.length > 0" :class="$style.richcontent">
-					<MkMediaList :media-list="note.files" />
+					<MkMediaList :mediaList="note.files"/>
 				</div>
 				<div v-if="note.poll">
-					<MkPoll :note="note" :readOnly="true" />
+					<MkPoll :note="note" :readOnly="true"/>
 				</div>
 			</div>
-			<MkReactionsViewer ref="reactionsViewer" :note="note" />
+			<MkReactionsViewer ref="reactionsViewer" :note="note"/>
 		</div>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
+import { Note } from 'misskey-js/built/entities';
+import { onUpdated } from 'vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
 import MkMediaList from '@/components/MkMediaList.vue';
 import MkPoll from '@/components/MkPoll.vue';
 import * as os from '@/os';
-import { Note } from 'misskey-js/built/entities';
-import { onUpdated } from 'vue';
 import { getScrollContainer } from '@/scripts/scroll';
+import { $i } from '@/account';
 
 let notes = $ref<Note[]>([]);
 let isScrolling = $ref(false);
-let scrollEl = $ref<HTMLElement>();
+let scrollEl = $shallowRef<HTMLElement>();
 
 os.apiGet('notes/featured').then(_notes => {
 	notes = _notes;

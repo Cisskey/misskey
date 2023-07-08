@@ -1,8 +1,8 @@
 <template>
-<div class="_gaps_m">
+<div v-if="instance.enableEmail" class="_gaps_m">
 	<FormSection first>
 		<template #label>{{ i18n.ts.emailAddress }}</template>
-		<MkInput v-model="emailAddress" type="email" manual-save>
+		<MkInput v-model="emailAddress" type="email" manualSave>
 			<template #prefix><i class="ti ti-mail"></i></template>
 			<template v-if="$i.email && !$i.emailVerified" #caption>{{ i18n.ts.verificationEmailSent }}</template>
 			<template v-else-if="emailAddress === $i.email && $i.emailVerified" #caption><i class="ti ti-check" style="color: var(--success);"></i> {{ i18n.ts.emailVerified }}</template>
@@ -10,7 +10,7 @@
 	</FormSection>
 
 	<FormSection>
-		<MkSwitch :model-value="$i.receiveAnnouncementEmail" @update:model-value="onChangeReceiveAnnouncementEmail">
+		<MkSwitch :modelValue="$i.receiveAnnouncementEmail" @update:modelValue="onChangeReceiveAnnouncementEmail">
 			{{ i18n.ts.receiveAnnouncementFromInstance }}
 		</MkSwitch>
 	</FormSection>
@@ -37,17 +37,22 @@
 		</div>
 	</FormSection>
 </div>
+<div v-if="!instance.enableEmail" class="_gaps_m">
+	<MkInfo>{{ i18n.ts.emailNotSupported }}</MkInfo>
+</div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
 import FormSection from '@/components/form/section.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import * as os from '@/os';
 import { $i } from '@/account';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { instance } from '@/instance';
 
 const emailAddress = ref($i!.email);
 

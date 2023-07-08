@@ -1,5 +1,5 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked" @parent-focus="$event => emit('parent-focus', $event)">
+<XColumn :menu="menu" :column="column" :isStacked="isStacked">
 	<template #header>
 		<i class="ti ti-device-tv"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
@@ -8,13 +8,13 @@
 		<div style="padding: 8px; text-align: center;">
 			<MkButton primary gradate rounded inline @click="post"><i class="ti ti-pencil"></i></MkButton>
 		</div>
-		<MkTimeline ref="timeline" src="channel" :channel="column.channelId" @after="() => emit('loaded')"/>
+		<MkTimeline ref="timeline" src="channel" :channel="column.channelId"/>
 	</template>
 </XColumn>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import * as misskey from 'misskey-js';
 import XColumn from './column.vue';
 import { updateColumn, Column } from './deck-store';
 import MkTimeline from '@/components/MkTimeline.vue';
@@ -27,19 +27,15 @@ const props = defineProps<{
 	isStacked: boolean;
 }>();
 
-const emit = defineEmits<{
-	(ev: 'loaded'): void;
-	(ev: 'parent-focus', direction: 'up' | 'down' | 'left' | 'right'): void;
-}>();
-
 let timeline = $shallowRef<InstanceType<typeof MkTimeline>>();
+let channel = $shallowRef<misskey.entities.Channel>();
 
 if (props.column.channelId == null) {
 	setChannel();
 }
 
 async function setChannel() {
-	const channels = await os.api('channels/followed', {
+	const channels = await os.api('channels/my-favorites', {
 		limit: 100,
 	});
 	const { canceled, result: channel } = await os.select({
@@ -56,12 +52,15 @@ async function setChannel() {
 	});
 }
 
-function post() {
+async function post() {
+	if (!channel || channel.id !== props.column.channelId) {
+		channel = await os.api('channels/show', {
+			channelId: props.column.channelId,
+		});
+	}
+
 	os.post({
-		channel: {
-			id: props.column.channelId,
-		},
-		instant: true,
+		channel,
 	});
 }
 

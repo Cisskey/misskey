@@ -18,6 +18,8 @@ import MkPopupMenu from '@/components/MkPopupMenu.vue';
 import MkContextMenu from '@/components/MkContextMenu.vue';
 import { MenuItem } from '@/types/menu';
 import copyToClipboard from './scripts/copy-to-clipboard';
+import { showMovedDialog } from './scripts/show-moved-dialog';
+import { DriveFile } from 'misskey-js/built/entities';
 
 export const openingWindowsCount = ref(0);
 
@@ -55,6 +57,12 @@ export const apiWithDialog = ((
 		} else if (err.code === 'RATE_LIMIT_EXCEEDED') {
 			title = i18n.ts.cannotPerformTemporary;
 			text = i18n.ts.cannotPerformTemporaryDescription;
+		} else if (err.code === 'INVALID_PARAM') {
+			title = i18n.ts.invalidParamError;
+			text = i18n.ts.invalidParamErrorDescription;
+		} else if (err.code === 'ROLE_PERMISSION_DENIED') {
+			title = i18n.ts.permissionDeniedError;
+			text = i18n.ts.permissionDeniedErrorDescription;
 		} else if (err.code.startsWith('TOO_MANY')) {
 			title = i18n.ts.youCannotCreateAnymore;
 			text = `${i18n.ts.error}: ${err.id}`;
@@ -164,12 +172,6 @@ export function pageWindow(path: string) {
 	}, {}, 'closed');
 }
 
-export function modalPageWindow(path: string) {
-	popup(defineAsyncComponent(() => import('@/components/MkModalPageWindow.vue')), {
-		initialPath: path,
-	}, {}, 'closed');
-}
-
 export function toast(message: string) {
 	popup(MkToast, {
 		message,
@@ -215,6 +217,7 @@ export function actions<T extends {
 	value: string;
 	text: string;
 	primary?: boolean,
+	danger?: boolean,
 }[]>(props: {
 	type: 'error' | 'info' | 'success' | 'warning' | 'waiting' | 'question';
 	title?: string | null;
@@ -229,6 +232,7 @@ export function actions<T extends {
 			actions: props.actions.map(a => ({
 				text: a.text,
 				primary: a.primary,
+				danger: a.danger,
 				callback: () => {
 					resolve({ canceled: false, result: a.value });
 				},
@@ -362,7 +366,7 @@ export function select<C = any>(props: {
 	});
 }
 
-export function success() {
+export function success(): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const showing = ref(true);
 		window.setTimeout(() => {
@@ -377,7 +381,7 @@ export function success() {
 	});
 }
 
-export function waiting() {
+export function waiting(): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const showing = ref(true);
 		popup(MkWaitingDialog, {
@@ -411,7 +415,7 @@ export async function selectUser(opts: { includeSelf?: boolean } = {}) {
 	});
 }
 
-export async function selectDriveFile(multiple: boolean) {
+export async function selectDriveFile(multiple: boolean): Promise<DriveFile[]> {
 	return new Promise((resolve, reject) => {
 		popup(defineAsyncComponent(() => import('@/components/MkDriveSelectDialog.vue')), {
 			type: 'file',
@@ -419,7 +423,7 @@ export async function selectDriveFile(multiple: boolean) {
 		}, {
 			done: files => {
 				if (files) {
-					resolve(multiple ? files : files[0]);
+					resolve(files);
 				}
 			},
 		}, 'closed');
@@ -528,7 +532,7 @@ export function popupMenu(items: MenuItem[] | Ref<MenuItem[]>, src?: HTMLElement
 	width?: number;
 	viaKeyboard?: boolean;
 	onClosing?: () => void;
-}) {
+}): Promise<void> {
 	return new Promise((resolve, reject) => {
 		let dispose;
 		popup(MkPopupMenu, {
@@ -551,7 +555,7 @@ export function popupMenu(items: MenuItem[] | Ref<MenuItem[]>, src?: HTMLElement
 	});
 }
 
-export function contextMenu(items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent) {
+export function contextMenu(items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent): Promise<void> {
 	ev.preventDefault();
 	return new Promise((resolve, reject) => {
 		let dispose;
@@ -569,7 +573,9 @@ export function contextMenu(items: MenuItem[] | Ref<MenuItem[]>, ev: MouseEvent)
 	});
 }
 
-export function post(props: Record<string, any> = {}) {
+export function post(props: Record<string, any> = {}): Promise<void> {
+	showMovedDialog();
+
 	return new Promise((resolve, reject) => {
 		// NOTE: MkPostFormDialogをdynamic importするとiOSでテキストエリアに自動フォーカスできない
 		// NOTE: ただ、dynamic importしない場合、MkPostFormDialogインスタンスが使いまわされ、

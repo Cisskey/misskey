@@ -1,15 +1,17 @@
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="700">
-		<div class="qkcjvfiv">
-			<MkButton primary class="add" @click="create"><i class="ti ti-plus"></i> {{ i18n.ts.createList }}</MkButton>
+	<MkSpacer :contentMax="700">
+		<div class="_gaps">
+			<MkButton primary rounded style="margin: 0 auto;" @click="create"><i class="ti ti-plus"></i> {{ i18n.ts.createList }}</MkButton>
 
-			<MkPagination v-slot="{items}" ref="pagingComponent" :pagination="pagination" class="lists">
-				<MkA v-for="list in items" :key="list.id" class="list _panel" :to="`/my/lists/${ list.id }`">
-					<div class="name">{{ list.name }}</div>
-					<MkAvatars :user-ids="list.userIds"/>
-				</MkA>
+			<MkPagination v-slot="{items}" ref="pagingComponent" :pagination="pagination">
+				<div class="_gaps">
+					<MkA v-for="list in items" :key="list.id" class="_panel" :class="$style.list" :to="`/my/lists/${ list.id }`">
+						<div style="margin-bottom: 4px;">{{ list.name }}</div>
+						<MkAvatars :userIds="list.userIds"/>
+					</MkA>
+				</div>
 			</MkPagination>
 		</div>
 	</MkSpacer>
@@ -24,11 +26,13 @@ import MkAvatars from '@/components/MkAvatars.vue';
 import * as os from '@/os';
 import { i18n } from '@/i18n';
 import { definePageMetadata } from '@/scripts/page-metadata';
+import { userListsCache } from '@/cache';
 
 const pagingComponent = $shallowRef<InstanceType<typeof MkPagination>>();
 
 const pagination = {
 	endpoint: 'users/lists/list' as const,
+	noPaging: true,
 	limit: 10,
 };
 
@@ -38,6 +42,7 @@ async function create() {
 	});
 	if (canceled) return;
 	await os.apiWithDialog('users/lists/create', { name: name });
+	userListsCache.delete();
 	pagingComponent.reload();
 }
 
@@ -55,28 +60,17 @@ definePageMetadata({
 });
 </script>
 
-<style lang="scss" scoped>
-.qkcjvfiv {
-	> .add {
-		margin: 0 auto var(--margin) auto;
-	}
+<style lang="scss" module>
+.list {
+	display: block;
+	padding: 16px;
+	border: solid 1px var(--divider);
+	border-radius: 6px;
+	margin-bottom: 8px;
 
-	> .lists {
-		> .list {
-			display: block;
-			padding: 16px;
-			border: solid 1px var(--divider);
-			border-radius: 6px;
-
-			&:hover {
-				border: solid 1px var(--accent);
-				text-decoration: none;
-			}
-
-			> .name {
-				margin-bottom: 4px;
-			}
-		}
+	&:hover {
+		border: solid 1px var(--accent);
+		text-decoration: none;
 	}
 }
 </style>

@@ -1,11 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import type { AccessTokensRepository, AppsRepository, UsersRepository } from '@/models/index.js';
 import type { LocalUser } from '@/models/entities/User.js';
 import type { AccessToken } from '@/models/entities/AccessToken.js';
-import { Cache } from '@/misc/cache.js';
+import { MemoryKVCache } from '@/misc/cache.js';
 import type { App } from '@/models/entities/App.js';
-import { UserCacheService } from '@/core/UserCacheService.js';
+import { CacheService } from '@/core/CacheService.js';
 import isNativeToken from '@/misc/is-native-token.js';
 import { bindThis } from '@/decorators.js';
 
@@ -17,8 +17,8 @@ export class AuthenticationError extends Error {
 }
 
 @Injectable()
-export class AuthenticateService {
-	private appCache: Cache<App>;
+export class AuthenticateService implements OnApplicationShutdown {
+	private appCache: MemoryKVCache<App>;
 
 	constructor(
 		@Inject(DI.usersRepository)
@@ -30,19 +30,19 @@ export class AuthenticateService {
 		@Inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
 
-		private userCacheService: UserCacheService,
+		private cacheService: CacheService,
 	) {
-		this.appCache = new Cache<App>(Infinity);
+		this.appCache = new MemoryKVCache<App>(Infinity);
 	}
 
 	@bindThis
-	public async authenticate(token: string | null | undefined): Promise<[LocalUser | null | undefined, AccessToken | null | undefined]> {
+	public async authenticate(token: string | null | undefined): Promise<[LocalUser | null, AccessToken | null]> {
 		if (token == null) {
 			return [null, null];
 		}
 	
 		if (isNativeToken(token)) {
-			const user = await this.userCacheService.localUserByNativeTokenCache.fetch(token,
+			const user = await this.cacheService.localUserByNativeTokenCache.fetch(token,
 				() => this.usersRepository.findOneBy({ token }) as Promise<LocalUser | null>);
 	
 			if (user == null) {
@@ -67,7 +67,7 @@ export class AuthenticateService {
 				lastUsedAt: new Date(),
 			});
 	
-			const user = await this.userCacheService.localUserByIdCache.fetch(accessToken.userId,
+			const user = await this.cacheService.localUserByIdCache.fetch(accessToken.userId,
 				() => this.usersRepository.findOneBy({
 					id: accessToken.userId,
 				}) as Promise<LocalUser>);
@@ -84,5 +84,15 @@ export class AuthenticateService {
 				return [user, accessToken];
 			}
 		}
+	}
+
+	@bindThis
+	public dispose(): void {
+		this.appCache.dispose();
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

@@ -10,10 +10,10 @@ import { DriveService } from '@/core/DriveService.js';
 import { createTemp } from '@/misc/create-temp.js';
 import type { Poll } from '@/models/entities/Poll.js';
 import type { Note } from '@/models/entities/Note.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type Bull from 'bull';
-import type { DbUserJobData } from '../types.js';
 import { bindThis } from '@/decorators.js';
+import { QueueLoggerService } from '../QueueLoggerService.js';
+import type * as Bull from 'bullmq';
+import type { DbJobDataWithUser } from '../types.js';
 
 @Injectable()
 export class ExportNotesProcessorService {
@@ -39,12 +39,11 @@ export class ExportNotesProcessorService {
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserJobData>, done: () => void): Promise<void> {
+	public async process(job: Bull.Job<DbJobDataWithUser>): Promise<void> {
 		this.logger.info(`Exporting notes of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
 		if (user == null) {
-			done();
 			return;
 		}
 
@@ -87,7 +86,7 @@ export class ExportNotesProcessorService {
 				}) as Note[];
 
 				if (notes.length === 0) {
-					job.progress(100);
+					job.updateProgress(100);
 					break;
 				}
 
@@ -108,7 +107,7 @@ export class ExportNotesProcessorService {
 					userId: user.id,
 				});
 
-				job.progress(exportedNotesCount / total);
+				job.updateProgress(exportedNotesCount / total);
 			}
 
 			await write(']');
@@ -117,14 +116,12 @@ export class ExportNotesProcessorService {
 			this.logger.succ(`Exported to: ${path}`);
 
 			const fileName = 'notes-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.json';
-			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true });
+			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'json' });
 
 			this.logger.succ(`Exported to: ${driveFile.id}`);
 		} finally {
 			cleanup();
 		}
-
-		done();
 	}
 }
 
@@ -141,5 +138,6 @@ function serialize(note: Note, poll: Poll | null = null): Record<string, unknown
 		visibility: note.visibility,
 		visibleUserIds: note.visibleUserIds,
 		localOnly: note.localOnly,
+		reactionAcceptance: note.reactionAcceptance,
 	};
 }

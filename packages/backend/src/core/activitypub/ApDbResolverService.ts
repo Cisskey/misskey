@@ -1,14 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import escapeRegexp from 'escape-regexp';
 import { DI } from '@/di-symbols.js';
 import type { NotesRepository, UserPublickeysRepository, UsersRepository } from '@/models/index.js';
 import type { Config } from '@/config.js';
-import { Cache } from '@/misc/cache.js';
+import { MemoryKVCache } from '@/misc/cache.js';
 import type { UserPublickey } from '@/models/entities/UserPublickey.js';
-import { UserCacheService } from '@/core/UserCacheService.js';
+import { CacheService } from '@/core/CacheService.js';
 import type { Note } from '@/models/entities/Note.js';
 import { bindThis } from '@/decorators.js';
-import { RemoteUser, User } from '@/models/entities/User.js';
+import { LocalUser, RemoteUser } from '@/models/entities/User.js';
 import { getApId } from './type.js';
 import { ApPersonService } from './models/ApPersonService.js';
 import type { IObject } from './type.js';
@@ -30,9 +30,9 @@ export type UriParseResult = {
 };
 
 @Injectable()
-export class ApDbResolverService {
-	private publicKeyCache: Cache<UserPublickey | null>;
-	private publicKeyByUserIdCache: Cache<UserPublickey | null>;
+export class ApDbResolverService implements OnApplicationShutdown {
+	private publicKeyCache: MemoryKVCache<UserPublickey | null>;
+	private publicKeyByUserIdCache: MemoryKVCache<UserPublickey | null>;
 
 	constructor(
 		@Inject(DI.config)
@@ -47,11 +47,11 @@ export class ApDbResolverService {
 		@Inject(DI.userPublickeysRepository)
 		private userPublickeysRepository: UserPublickeysRepository,
 
-		private userCacheService: UserCacheService,
+		private cacheService: CacheService,
 		private apPersonService: ApPersonService,
 	) {
-		this.publicKeyCache = new Cache<UserPublickey | null>(Infinity);
-		this.publicKeyByUserIdCache = new Cache<UserPublickey | null>(Infinity);
+		this.publicKeyCache = new MemoryKVCache<UserPublickey | null>(Infinity);
+		this.publicKeyByUserIdCache = new MemoryKVCache<UserPublickey | null>(Infinity);
 	}
 
 	@bindThis
@@ -101,19 +101,19 @@ export class ApDbResolverService {
 	 * AP Person => Misskey User in DB
 	 */
 	@bindThis
-	public async getUserFromApId(value: string | IObject): Promise<User | null> {
+	public async getUserFromApId(value: string | IObject): Promise<LocalUser | RemoteUser | null> {
 		const parsed = this.parseUri(value);
 
 		if (parsed.local) {
 			if (parsed.type !== 'users') return null;
 
-			return await this.userCacheService.userByIdCache.fetchMaybe(parsed.id, () => this.usersRepository.findOneBy({
+			return await this.cacheService.userByIdCache.fetchMaybe(parsed.id, () => this.usersRepository.findOneBy({
 				id: parsed.id,
-			}).then(x => x ?? undefined)) ?? null;
+			}).then(x => x ?? undefined)) as LocalUser | undefined ?? null;
 		} else {
-			return await this.userCacheService.uriPersonCache.fetch(parsed.uri, () => this.usersRepository.findOneBy({
+			return await this.cacheService.uriPersonCache.fetch(parsed.uri, () => this.usersRepository.findOneBy({
 				uri: parsed.uri,
-			}));
+			})) as RemoteUser | null;
 		}
 	}
 
@@ -138,7 +138,7 @@ export class ApDbResolverService {
 		if (key == null) return null;
 
 		return {
-			user: await this.userCacheService.findById(key.userId) as RemoteUser,
+			user: await this.cacheService.findUserById(key.userId) as RemoteUser,
 			key,
 		};
 	}
@@ -161,5 +161,16 @@ export class ApDbResolverService {
 			user,
 			key,
 		};
+	}
+
+	@bindThis
+	public dispose(): void {
+		this.publicKeyCache.dispose();
+		this.publicKeyByUserIdCache.dispose();
+	}
+
+	@bindThis
+	public onApplicationShutdown(signal?: string | undefined): void {
+		this.dispose();
 	}
 }

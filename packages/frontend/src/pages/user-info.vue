@@ -1,7 +1,7 @@
 <template>
 <MkStickyContainer>
 	<template #header><MkPageHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs"/></template>
-	<MkSpacer :content-max="600" :margin-min="16" :margin-max="32">
+	<MkSpacer :contentMax="600" :marginMin="16" :marginMax="32">
 		<FormSuspense :p="init">
 			<div v-if="tab === 'overview'" class="_gaps_m">
 				<div class="aeakzknw">
@@ -88,7 +88,7 @@
 			</div>
 
 			<div v-else-if="tab === 'moderation'" class="_gaps_m">
-				<MkSwitch v-model="suspended" @update:model-value="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
+				<MkSwitch v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
 
 				<div>
 					<MkButton v-if="user.host == null && iAmModerator" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
@@ -112,7 +112,7 @@
 						<MkButton v-if="user.host == null && iAmModerator" primary rounded @click="assignRole"><i class="ti ti-plus"></i> {{ i18n.ts.assign }}</MkButton>
 
 						<div v-for="role in info.roles" :key="role.id" :class="$style.roleItem">
-							<MkRolePreview :class="$style.role" :role="role" :for-moderation="true"/>
+							<MkRolePreview :class="$style.role" :role="role" :forModeration="true"/>
 							<button v-if="role.target === 'manual'" class="_button" :class="$style.roleUnassign" @click="unassignRole(role, $event)"><i class="ti ti-x"></i></button>
 							<button v-else class="_button" :class="$style.roleUnassign" disabled><i class="ti ti-ban"></i></button>
 						</div>
@@ -135,10 +135,10 @@
 				<MkFolder>
 					<template #icon><i class="ti ti-cloud"></i></template>
 					<template #label>{{ i18n.ts.files }}</template>
-					<MkFileListForAdmin :pagination="filesPagination" view-mode="grid"/>
+					<MkFileListForAdmin :pagination="filesPagination" viewMode="grid"/>
 				</MkFolder>
 
-				<MkTextarea v-model="moderationNote" manual-save>
+				<MkTextarea v-model="moderationNote" manualSave>
 					<template #label>Moderation note</template>
 				</MkTextarea>
 			</div>
@@ -192,7 +192,7 @@ import { url } from '@/config';
 import { userPage, acct } from '@/filters/user';
 import { definePageMetadata } from '@/scripts/page-metadata';
 import { i18n } from '@/i18n';
-import { iAmAdmin, iAmModerator } from '@/account';
+import { iAmAdmin, iAmModerator, $i } from '@/account';
 import MkRolePreview from '@/components/MkRolePreview.vue';
 
 const props = withDefaults(defineProps<{
@@ -262,14 +262,21 @@ async function updateRemoteUser() {
 }
 
 async function resetPassword() {
-	const { password } = await os.api('admin/reset-password', {
-		userId: user.id,
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: i18n.ts.resetPasswordConfirm,
 	});
-
-	os.alert({
-		type: 'success',
-		text: i18n.t('newPasswordIs', { password }),
-	});
+	if (confirm.canceled) {
+		return;
+	} else {
+		const { password } = await os.api('admin/reset-password', {
+			userId: user.id,
+		});
+		os.alert({
+			type: 'success',
+			text: i18n.t('newPasswordIs', { password }),
+		});
+	}
 }
 
 async function toggleSuspend(v) {
@@ -337,7 +344,31 @@ async function assignRole() {
 	});
 	if (canceled) return;
 
-	await os.apiWithDialog('admin/roles/assign', { roleId, userId: user.id });
+	const { canceled: canceled2, result: period } = await os.select({
+		title: i18n.ts.period,
+		items: [{
+			value: 'indefinitely', text: i18n.ts.indefinitely,
+		}, {
+			value: 'oneHour', text: i18n.ts.oneHour,
+		}, {
+			value: 'oneDay', text: i18n.ts.oneDay,
+		}, {
+			value: 'oneWeek', text: i18n.ts.oneWeek,
+		}, {
+			value: 'oneMonth', text: i18n.ts.oneMonth,
+		}],
+		default: 'indefinitely',
+	});
+	if (canceled2) return;
+
+	const expiresAt = period === 'indefinitely' ? null
+		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
+		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
+		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+		: null;
+
+	await os.apiWithDialog('admin/roles/assign', { roleId, userId: user.id, expiresAt });
 	refreshUser();
 }
 

@@ -6,9 +6,11 @@ import type { Webhook, webhookEventTypes } from '@/models/entities/Webhook.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import type { DbQueue, DeliverQueue, EndedPollNotificationQueue, InboxQueue, ObjectStorageQueue, SystemQueue, WebhookDeliverQueue } from './QueueModule.js';
-import type { ThinUser } from '../queue/types.js';
+import type { Antenna } from '@/server/api/endpoints/i/import-antennas.js';
+import type { DbQueue, DeliverQueue, EndedPollNotificationQueue, InboxQueue, ObjectStorageQueue, RelationshipQueue, SystemQueue, WebhookDeliverQueue } from './QueueModule.js';
+import type { DbJobData, RelationshipJobData, ThinUser } from '../queue/types.js';
 import type httpSignature from '@peertube/http-signature';
+import type * as Bull from 'bullmq';
 
 @Injectable()
 export class QueueService {
@@ -21,12 +23,49 @@ export class QueueService {
 		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
 		@Inject('queue:inbox') public inboxQueue: InboxQueue,
 		@Inject('queue:db') public dbQueue: DbQueue,
+		@Inject('queue:relationship') public relationshipQueue: RelationshipQueue,
 		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
 		@Inject('queue:webhookDeliver') public webhookDeliverQueue: WebhookDeliverQueue,
-	) {}
+	) {
+		this.systemQueue.add('tickCharts', {
+		}, {
+			repeat: { pattern: '55 * * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('resyncCharts', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('cleanCharts', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('aggregateRetention', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('clean', {
+		}, {
+			repeat: { pattern: '0 0 * * *' },
+			removeOnComplete: true,
+		});
+
+		this.systemQueue.add('checkExpiredMutings', {
+		}, {
+			repeat: { pattern: '*/5 * * * *' },
+			removeOnComplete: true,
+		});
+	}
 
 	@bindThis
-	public deliver(user: ThinUser, content: IActivity | null, to: string | null) {
+	public deliver(user: ThinUser, content: IActivity | null, to: string | null, isSharedInbox: boolean) {
 		if (content == null) return null;
 		if (to == null) return null;
 
@@ -36,13 +75,13 @@ export class QueueService {
 			},
 			content,
 			to,
+			isSharedInbox,
 		};
 
-		return this.deliverQueue.add(data, {
+		return this.deliverQueue.add(to, data, {
 			attempts: this.config.deliverJobMaxAttempts ?? 12,
-			timeout: 1 * 60 * 1000,	// 1min
 			backoff: {
-				type: 'apBackoff',
+				type: 'custom',
 			},
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -55,12 +94,11 @@ export class QueueService {
 			activity: activity,
 			signature,
 		};
-	
-		return this.inboxQueue.add(data, {
+
+		return this.inboxQueue.add('', data, {
 			attempts: this.config.inboxJobMaxAttempts ?? 8,
-			timeout: 5 * 60 * 1000,	// 5min
 			backoff: {
-				type: 'apBackoff',
+				type: 'custom',
 			},
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -70,7 +108,7 @@ export class QueueService {
 	@bindThis
 	public createDeleteDriveFilesJob(user: ThinUser) {
 		return this.dbQueue.add('deleteDriveFiles', {
-			user: user,
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -80,7 +118,7 @@ export class QueueService {
 	@bindThis
 	public createExportCustomEmojisJob(user: ThinUser) {
 		return this.dbQueue.add('exportCustomEmojis', {
-			user: user,
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -90,7 +128,7 @@ export class QueueService {
 	@bindThis
 	public createExportNotesJob(user: ThinUser) {
 		return this.dbQueue.add('exportNotes', {
-			user: user,
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -100,7 +138,7 @@ export class QueueService {
 	@bindThis
 	public createExportFavoritesJob(user: ThinUser) {
 		return this.dbQueue.add('exportFavorites', {
-			user: user,
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -110,7 +148,7 @@ export class QueueService {
 	@bindThis
 	public createExportFollowingJob(user: ThinUser, excludeMuting = false, excludeInactive = false) {
 		return this.dbQueue.add('exportFollowing', {
-			user: user,
+			user: { id: user.id },
 			excludeMuting,
 			excludeInactive,
 		}, {
@@ -122,7 +160,7 @@ export class QueueService {
 	@bindThis
 	public createExportMuteJob(user: ThinUser) {
 		return this.dbQueue.add('exportMuting', {
-			user: user,
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -132,7 +170,7 @@ export class QueueService {
 	@bindThis
 	public createExportBlockingJob(user: ThinUser) {
 		return this.dbQueue.add('exportBlocking', {
-			user: user,
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -142,7 +180,17 @@ export class QueueService {
 	@bindThis
 	public createExportUserListsJob(user: ThinUser) {
 		return this.dbQueue.add('exportUserLists', {
-			user: user,
+			user: { id: user.id },
+		}, {
+			removeOnComplete: true,
+			removeOnFail: true,
+		});
+	}
+
+	@bindThis
+	public createExportAntennasJob(user: ThinUser) {
+		return this.dbQueue.add('exportAntennas', {
+			user: { id: user.id },
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -152,7 +200,7 @@ export class QueueService {
 	@bindThis
 	public createImportFollowingJob(user: ThinUser, fileId: DriveFile['id']) {
 		return this.dbQueue.add('importFollowing', {
-			user: user,
+			user: { id: user.id },
 			fileId: fileId,
 		}, {
 			removeOnComplete: true,
@@ -161,9 +209,15 @@ export class QueueService {
 	}
 
 	@bindThis
+	public createImportFollowingToDbJob(user: ThinUser, targets: string[]) {
+		const jobs = targets.map(rel => this.generateToDbJobData('importFollowingToDb', { user, target: rel }));
+		return this.dbQueue.addBulk(jobs);
+	}
+
+	@bindThis
 	public createImportMutingJob(user: ThinUser, fileId: DriveFile['id']) {
 		return this.dbQueue.add('importMuting', {
-			user: user,
+			user: { id: user.id },
 			fileId: fileId,
 		}, {
 			removeOnComplete: true,
@@ -174,7 +228,7 @@ export class QueueService {
 	@bindThis
 	public createImportBlockingJob(user: ThinUser, fileId: DriveFile['id']) {
 		return this.dbQueue.add('importBlocking', {
-			user: user,
+			user: { id: user.id },
 			fileId: fileId,
 		}, {
 			removeOnComplete: true,
@@ -183,9 +237,31 @@ export class QueueService {
 	}
 
 	@bindThis
+	public createImportBlockingToDbJob(user: ThinUser, targets: string[]) {
+		const jobs = targets.map(rel => this.generateToDbJobData('importBlockingToDb', { user, target: rel }));
+		return this.dbQueue.addBulk(jobs);
+	}
+
+	@bindThis
+	private generateToDbJobData<T extends 'importFollowingToDb' | 'importBlockingToDb', D extends DbJobData<T>>(name: T, data: D): {
+		name: string,
+		data: D,
+		opts: Bull.JobsOptions,
+	} {
+		return {
+			name,
+			data,
+			opts: {
+				removeOnComplete: true,
+				removeOnFail: true,
+			},
+		};
+	}
+
+	@bindThis
 	public createImportUserListsJob(user: ThinUser, fileId: DriveFile['id']) {
 		return this.dbQueue.add('importUserLists', {
-			user: user,
+			user: { id: user.id },
 			fileId: fileId,
 		}, {
 			removeOnComplete: true,
@@ -196,8 +272,19 @@ export class QueueService {
 	@bindThis
 	public createImportCustomEmojisJob(user: ThinUser, fileId: DriveFile['id']) {
 		return this.dbQueue.add('importCustomEmojis', {
-			user: user,
+			user: { id: user.id },
 			fileId: fileId,
+		}, {
+			removeOnComplete: true,
+			removeOnFail: true,
+		});
+	}
+
+	@bindThis
+	public createImportAntennasJob(user: ThinUser, antenna: Antenna) {
+		return this.dbQueue.add('importAntennas', {
+			user: { id: user.id },
+			antenna,
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -207,12 +294,64 @@ export class QueueService {
 	@bindThis
 	public createDeleteAccountJob(user: ThinUser, opts: { soft?: boolean; } = {}) {
 		return this.dbQueue.add('deleteAccount', {
-			user: user,
+			user: { id: user.id },
 			soft: opts.soft,
 		}, {
 			removeOnComplete: true,
 			removeOnFail: true,
 		});
+	}
+
+	@bindThis
+	public createFollowJob(followings: { from: ThinUser, to: ThinUser, requestId?: string, silent?: boolean }[]) {
+		const jobs = followings.map(rel => this.generateRelationshipJobData('follow', rel));
+		return this.relationshipQueue.addBulk(jobs);
+	}
+
+	@bindThis
+	public createUnfollowJob(followings: { from: ThinUser, to: ThinUser, requestId?: string }[]) {
+		const jobs = followings.map(rel => this.generateRelationshipJobData('unfollow', rel));
+		return this.relationshipQueue.addBulk(jobs);
+	}
+
+	@bindThis
+	public createDelayedUnfollowJob(followings: { from: ThinUser, to: ThinUser, requestId?: string }[], delay: number) {
+		const jobs = followings.map(rel => this.generateRelationshipJobData('unfollow', rel, { delay }));
+		return this.relationshipQueue.addBulk(jobs);
+	}
+
+	@bindThis
+	public createBlockJob(blockings: { from: ThinUser, to: ThinUser, silent?: boolean }[]) {
+		const jobs = blockings.map(rel => this.generateRelationshipJobData('block', rel));
+		return this.relationshipQueue.addBulk(jobs);
+	}
+
+	@bindThis
+	public createUnblockJob(blockings: { from: ThinUser, to: ThinUser, silent?: boolean }[]) {
+		const jobs = blockings.map(rel => this.generateRelationshipJobData('unblock', rel));
+		return this.relationshipQueue.addBulk(jobs);
+	}
+
+	@bindThis
+	private generateRelationshipJobData(name: 'follow' | 'unfollow' | 'block' | 'unblock', data: RelationshipJobData, opts: Bull.JobsOptions = {}): {
+		name: string,
+		data: RelationshipJobData,
+		opts: Bull.JobsOptions,
+	} {
+		return {
+			name,
+			data: {
+				from: { id: data.from.id },
+				to: { id: data.to.id },
+				silent: data.silent,
+				requestId: data.requestId,
+			},
+			opts: {
+				removeOnComplete: true,
+				removeOnFail: true,
+				...opts,
+			},
+		};
 	}
 
 	@bindThis
@@ -245,12 +384,11 @@ export class QueueService {
 			createdAt: Date.now(),
 			eventId: uuid(),
 		};
-	
-		return this.webhookDeliverQueue.add(data, {
+
+		return this.webhookDeliverQueue.add(webhook.id, data, {
 			attempts: 4,
-			timeout: 1 * 60 * 1000,	// 1min
 			backoff: {
-				type: 'apBackoff',
+				type: 'custom',
 			},
 			removeOnComplete: true,
 			removeOnFail: true,
@@ -262,11 +400,11 @@ export class QueueService {
 		this.deliverQueue.once('cleaned', (jobs, status) => {
 			//deliverLogger.succ(`Cleaned ${jobs.length} ${status} jobs`);
 		});
-		this.deliverQueue.clean(0, 'delayed');
-	
+		this.deliverQueue.clean(0, Infinity, 'delayed');
+
 		this.inboxQueue.once('cleaned', (jobs, status) => {
 			//inboxLogger.succ(`Cleaned ${jobs.length} ${status} jobs`);
 		});
-		this.inboxQueue.clean(0, 'delayed');
+		this.inboxQueue.clean(0, Infinity, 'delayed');
 	}
 }
