@@ -5,9 +5,10 @@ name: Test (misskey.js)
 
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - cisskey
+      - cisskey-v13
   pull_request:
-    branches: [ develop ]
 
 jobs:
   test:
@@ -45,8 +46,8 @@ jobs:
         env:
           CI: true
 
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/misskey-js/coverage/coverage-final.json
+      #- name: Upload Coverage
+      #  uses: codecov/codecov-action@v3
+      #  with:
+      #    token: ${{ secrets.CODECOV_TOKEN }}
+      #    files: ./packages/misskey-js/coverage/coverage-final.json

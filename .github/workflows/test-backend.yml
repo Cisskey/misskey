@@ -3,8 +3,8 @@ name: Test (backend)
 on:
   push:
     branches:
-      - master
-      - develop
+      - cisskey
+      - cisskey-v13
   pull_request:
 
 jobs:
@@ -52,8 +52,8 @@ jobs:
       run: pnpm build
     - name: Test
       run: pnpm jest-and-coverage
-    - name: Upload Coverage
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./packages/backend/coverage/coverage-final.json
+    #- name: Upload Coverage
+    #  uses: codecov/codecov-action@v3
+    #  with:
+    #    token: ${{ secrets.CODECOV_TOKEN }}
+    #    files: ./packages/backend/coverage/coverage-final.json
