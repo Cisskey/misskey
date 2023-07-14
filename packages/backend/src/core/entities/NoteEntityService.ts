@@ -172,7 +172,7 @@ export class NoteEntityService implements OnModuleInit {
 	@bindThis
 	private async populateMyReactions(note: Note, meId: User['id'], _hint_?: {
 		myReactions: Map<Note['id'], NoteReaction[] | null>;
-	}) {
+	}): Promise<string[]> {
 		if (_hint_?.myReactions) {
 			const reactions = _hint_.myReactions.get(note.id);
 			if (reactions) {
@@ -183,7 +183,7 @@ export class NoteEntityService implements OnModuleInit {
 
 		// パフォーマンスのためノートが作成されてから1秒以上経っていない場合はリアクションを取得しない
 		if (note.createdAt.getTime() + 1000 > Date.now()) {
-			return undefined;
+			return [];
 		}
 
 		const reactions = await this.noteReactionsRepository.findBy({
@@ -356,9 +356,7 @@ export class NoteEntityService implements OnModuleInit {
 
 				poll: note.hasPoll ? this.populatePoll(note, meId) : undefined,
 
-				...(meId ? {
-					myReactions: this.populateMyReactions(note, meId, options?._hint_)
-				} : {}),
+				myReactions: meId ? this.populateMyReactions(note, meId, options?._hint_) : [],
 			} : {}),
 		});
 

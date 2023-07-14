@@ -235,7 +235,7 @@ describe('Endpoints', () => {
 			assert.strictEqual(res.status, 204);
 		});
 
-		test('二重にリアクションすると上書きされる', async () => {
+		test('複数リアクションできる', async () => {
 			const bobPost = await post(bob, { text: 'hi' });
 
 			await api('/notes/reactions/create', {
@@ -255,7 +255,7 @@ describe('Endpoints', () => {
 			}, alice);
 
 			assert.strictEqual(resNote.status, 200);
-			assert.deepStrictEqual(resNote.body.reactions, { '🚀': 1 });
+			assert.deepStrictEqual(resNote.body.reactions, { "🥰": 1, "🚀": 1 });
 		});
 
 		test('存在しない投稿にはリアクションできない', async () => {
